@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sign up</title>
+
+    <style>
+        .toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+    </style>
+
+    <!-- Font Icon -->
+    <link rel="stylesheet" href="/userAssets/loginPage/fonts/material-icon/css/material-design-iconic-font.min.css">
+
+    <!-- Main css -->
+    <link rel="stylesheet" href="/userAssets/loginPage/css/style.css">
+</head>
+<body>
+
+
+<div class="container">
+    <div class="signup-content">
+        <div class="signup-form">
+
+            <%if( message!=''){%>
+                
+                <p class="error-message" style="color: red;"><%= message%></p>
+
+                <%}%>
+
+            <h2 class="form-title">Sign up</h2>
+            <form method="POST" action="/signup" class="register-form" id="register-form" onsubmit="return registerValidation()">
+                <div class="form-group">
+                    <label for="name"><i class="zmdi zmdi-account material-icons-name"></i></label>
+                    <input type="text" name="name" id="name" placeholder="Your Name"/>
+                    <p id="nameErr" class="error-message" style="color: red;"></p>
+                </div>
+                <div class="form-group">
+                    <label for="email"><i class="zmdi zmdi-email"></i></label>
+                    <input type="email" name="email" id="email" placeholder="Your Email"/>
+                    <p id="emailErr" class="error-message" style="color: red;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label for="mobile"><i class="zmdi zmdi-email"></i></label>
+                    <input type="number" name="mobile" id="mobile" placeholder="Your Mobile"/>
+                    <p id="mobileErr" class="error-message" style="color: red;"></p>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="password"><i class="zmdi zmdi-lock"></i></label>
+                    <input type="password" name="password" id="password" placeholder="Password"/>
+                    <span toggle="#password" class="zmdi zmdi-eye field-icon toggle-password"></span>
+                    <p id="passwordErr" class="error-message" style="color: red;"></p>
+                </div>
+                <div class="form-group">
+                    <label for="re-pass"><i class="zmdi zmdi-lock-outline"></i></label>
+                    <input type="password" name="conPassword" id="conPassword" placeholder="Repeat your password"/>
+                   
+                    <p id="passwordMismatch" class="error-message" style="color: red;"></p>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" name="agree-term" id="agree-term" class="agree-term" />
+                    <label for="agree-term" class="label-agree-term"><span><span></span></span>I agree all statements in  <a href="#" class="term-service">Terms of service</a></label>
+                </div>
+                <div class="form-group form-button">
+                    <input type="submit" name="signup" id="signup" class="form-submit" value="Register"/>
+                </div>
+            </form>
+        </div>
+        <div class="signup-image">
+            <figure><img src="/userAssets/loginPage/images/signup-image.jpg" alt="sing up image"></figure>
+            <a href="/signin" class="signup-image-link">I am already member</a>
+        </div>
+    </div>
+</div>
+
+ <!-- JS -->
+ <!-- <script src="/userAssets/js/validation.js"></script> -->
+
+<script>
+    function registerValidation() {
+    var name = document.getElementById('name').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var mobile = document.getElementById('mobile').value.trim();
+    var password = document.getElementById('password').value.trim();
+    var conPassword = document.getElementById('conPassword').value.trim();
+
+    // Reset error messages
+    document.getElementById('nameErr').innerText = '';
+    document.getElementById('emailErr').innerText = '';
+    document.getElementById('mobileErr').innerText = '';
+    document.getElementById('passwordErr').innerText = '';
+    document.getElementById('passwordMismatch').innerText = '';
+
+    var isValid = true;
+
+    // Validate name
+    if (name === '') {
+        document.getElementById('nameErr').innerText = 'Name is required';
+        isValid = false;
+    }
+
+    // Validate email
+    if (email === '') {
+        document.getElementById('emailErr').innerText = 'Email is required';
+        isValid = false;
+    } else if (!validateEmail(email)) {
+        document.getElementById('emailErr').innerText = 'Invalid email format';
+        isValid = false;
+    }
+
+    // Validate mobile
+    if (mobile === '') {
+        document.getElementById('mobileErr').innerText = 'Mobile is required';
+        isValid = false;
+    } else if (!validateMobile(mobile)) {
+        document.getElementById('mobileErr').innerText = 'Invalid mobile number';
+        isValid = false;
+    }
+
+    // Validate password
+    if (password === '') {
+        document.getElementById('passwordErr').innerText = 'Password is required';
+        isValid = false;
+    }
+
+    // Validate password match
+    if (conPassword !== password) {
+        document.getElementById('passwordMismatch').innerText = 'Passwords do not match';
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+function validateEmail(email) {
+    // Simple email validation regex
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function validateMobile(mobile) {
+    // Simple mobile number validation regex (10 digits)
+    var mobileRegex = /^\d{10}$/;
+    return mobileRegex.test(mobile);
+}
+
+// Password toggle
+document.querySelector('.toggle-password').addEventListener('click', function() {
+    var passwordInput = document.getElementById('password');
+    var fieldType = passwordInput.getAttribute('type');
+    if (fieldType === 'password') {
+        passwordInput.setAttribute('type', 'text');
+        this.classList.remove('zmdi-eye');
+        this.classList.add('zmdi-eye-off');
+    } else {
+        passwordInput.setAttribute('type', 'password');
+        this.classList.remove('zmdi-eye-off');
+        this.classList.add('zmdi-eye');
+    }
+});
+</script>
+
+ <script src="/userAssets/loginPage/vendor/jquery/jquery.min.js"></script>
+ <script src="/userAssets/loginPage/js/main.js"></script>
+</body>
+</html>
