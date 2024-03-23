@@ -4,9 +4,11 @@ let Category = require('../model/categoryModel');
 //=============== landing page for category control===================
 const allCategory=async(req,res)=>{
     try {
+        //category is set at session
         const category=await Category.find()
+        
         req.session.category=category
-        res.render('category',({category}))
+        res.render('category',{category})
     } catch (error) {
         console.log('This is all category error',error);
         
@@ -100,7 +102,10 @@ const deleteCategory=async(req,res)=>{
 const categoryUnlist=async(req,res)=>{
     try {
        let id =req.query.id;
-       let unlistCategory = await Category.findByIdAndUpdate(id,{status:false},{new:true})
+
+       await Category.updateOne({_id:id},{$set:{status:'blocked'}})
+
+      
         res.redirect('/admin/category');
       
     } catch (error) {
@@ -113,7 +118,7 @@ const categoryUnlist=async(req,res)=>{
 const categoryList=async(req,res)=>{
     try {
        let id =req.query.id;
-       let ListCategory = await Category.findByIdAndUpdate(id,{status:true},{new:true})
+       await Category.updateOne({_id:id},{$set:{status:'active'}})
         res.redirect('/admin/category');
       
     } catch (error) {

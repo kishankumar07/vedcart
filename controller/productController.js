@@ -35,25 +35,31 @@ const addProduct = async (req, res) => {
 
 const createProduct = async (req, res) => {
   try {
+
+   
+
     const { name } = req.body;
     const productData = req.body;
 
     const productExist = await Product.findOne({ name });
-
+   
     if (!productExist) {
-      const caseInsensitiveCategoryExist = await Product.findOne({
+      
+      const caseInsensitiveProductExist = await Product.findOne({
         name: { $regex: new RegExp("^" + name + "$", "i") },
       });
-      if (caseInsensitiveCategoryExist) {
+      if (caseInsensitiveProductExist) {
+       
         res.redirect("/admin/createProduct");
       } else {
+       
         const images = [];
         if (req.files && req.files.length > 0) {
           for (let i = 0; i < req.files.length; i++) {
             images.push(req.files[i].filename);
           }
         }
-
+       
         const newProduct = new Product({
           name: productData.name,
           description: productData.description,
@@ -66,12 +72,15 @@ const createProduct = async (req, res) => {
 
           images: images,
         });
-
+       
         const pr = await newProduct.save();
 
+
+     
         res.redirect("/admin/product");
       }
     } else {
+     
       console.log("Product already exists");
       res.redirect("/admin/addProduct");
     }
@@ -112,59 +121,47 @@ const editProduct = async (req, res) => {
     res.status(500).send("Server Error"); // Send a suitable error response
   }
 };
-//==================Unlist the product=====================
+
+//==unlist the product=------------------
 const unlistProduct = async (req, res) => {
   try {
     const id = req.query.id;
-
+    const currentPage = req.query.page || 1;
     const productExists = await Product.findById(id);
     if (!productExists) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const unlistedProduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        status: false,
-      },
-      { new: true }
+    await Product.updateOne(
+      { _id: productExists._id },
+      { $set: { status: "blocked" } }
     );
 
-    if (!unlistedProduct) {
-      return res.status(400).json({ message: "Failed to unlist product" });
-    }
-
-    res.redirect("/admin/product");
+    res.redirect(`/admin/product?page=${currentPage}`);
   } catch (error) {
-    console.log("error occured in unlistProduct function");
+    console.log("error occurred in unlistProduct function");
   }
 };
 
-//=====================List Product====================
+//===========product listing=================
 const listProduct = async (req, res) => {
   try {
     const id = req.query.id;
+    const currentPage = req.query.page || 1;
 
     const productExists = await Product.findById(id);
     if (!productExists) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    const listedProduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        status: true,
-      },
-      { new: true }
+    await Product.updateOne(
+      { _id: productExists._id },
+      { $set: { status: "active" } }
     );
 
-    if (!listedProduct) {
-      return res.status(400).json({ message: "Failed to list product" });
-    }
-
-    res.redirect("/admin/product");
+    res.redirect(`/admin/product?page=${currentPage }`);
   } catch (error) {
-    console.log("error occured in listProduct function");
+    console.log("error occurred in listProduct function");
   }
 };
 

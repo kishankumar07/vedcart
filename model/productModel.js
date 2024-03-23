@@ -13,10 +13,11 @@ let productSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    category:{
-        type:String,
-       required:true,
-    },
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category',
+        required: true, // Assuming a product must belong to a category
+      },
     quantity:{
         type:Number,     
         default:0
@@ -24,15 +25,17 @@ let productSchema = new mongoose.Schema({
     
     price:{
         type:String,
+        min:0,
         required:true
     },
     images:{
         type:[String]
     },
-    status:{
-        type:Boolean,
-        default:true
-    }
+    status: {
+        type: String,
+        enum: ['active', 'blocked'],
+        default: 'active',
+      },
 
 })
 module.exports = mongoose.model('Product',productSchema);

@@ -15,8 +15,9 @@ let categorySchema = new mongoose.Schema({
         required:true
     },
     status:{
-        type:Boolean,
-        default:true
-    }
+        type:String,
+        enum:['active','blocked'],
+        default:'active'
+    },
 });
 module.exports = mongoose.model('Category',categorySchema);

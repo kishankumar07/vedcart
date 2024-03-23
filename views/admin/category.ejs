@@ -62,8 +62,12 @@
             </div>
             
             <div class="d-grid">
-              <button class="btn btn-primary">Create category</button>
+              <button class="btn btn-primary" > Create category</button>
             </div>
+
+
+        
+
           </form>
         </div>
         <div class="col-md-9">
@@ -116,7 +120,7 @@
                   <td><%= category[i].name%></td>
                   <td><%= category[i].description%></td>
                   
-                  <% if (category[i].status==true) { %>
+                  <% if (category[i].status=='active') { %>
                     <td>
                       <span class="badge rounded-pill alert-success">Active</span>
                     </td>
@@ -147,7 +151,7 @@
 
 
 
-                        <% if(category[i].status === true) {%>
+                        <% if(category[i].status === 'active') {%>
                             <!-- <a class="dropdown-item text-danger" href="/admin/categoryUnlist?id=<%= category[i]._id %>">Unlist</a> -->
 
                             <a class="dropdown-item text-danger" href="#" onclick="confirmUnlist('<%= category[i]._id %>')">Unlist</a>
@@ -195,16 +199,15 @@
         // Reset any existing error messages
         clearErrorMessages();
 
-      
-
-
-        
-        
+    
 
         const name = document.getElementById('product_name').value;
         const image = document.getElementById('image').files[0];
         const description = document.getElementById('description').value;
-
+        
+        // Check if category already exists
+        var categoryName = document.getElementById("product_name").value.trim();
+        var existingCategories = []; // Assuming you have existing category names in this array
         let isValid = true;
 
         // Check if name is empty
@@ -230,6 +233,19 @@
             displayErrorMessage('description-error', 'Please enter a category description.');
             isValid = false;
         }
+
+
+        if (existingCategories.includes(categoryName)) {
+      // Show SweetAlert for duplicate category
+      swal({
+        title: "Duplicate Category!",
+        text: "This category already exists.",
+        icon: "error",
+      });
+      return false; // Prevent form submission
+    }
+
+
 
         return isValid; // Form is valid
     }
@@ -289,6 +305,23 @@
   }
 
 
+
+  function confirmSubmit(categoryId) {
+    Swal.fire({
+          title: "Category already exists",
+         
+          icon: "error",
+          timer: 3000,
+          showConfirmButton: false, // This removes the button
+        }).then((result) => {
+      if (result.isCancelled) {
+        // If confirmed, redirect to the unlist category route with the category ID
+        window.location.href = `/admin/category?id=${categoryId}`;
+      }
+    });
+  }
+
+
  
   
   function searchUsers() {
@@ -313,14 +346,6 @@
       }
     });
   }
-</script>
-
-
-
-
-
-
-
 
 
 

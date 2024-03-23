@@ -32,7 +32,8 @@ const securePassword = async (password) => {
 const loadIndex = async (req, res) => {
   try {
    let product = await Product.find();
-    let category = await Category.find();
+    let category = await Category.find({'status':'active'});
+    
      let user =req.session.userData;
     console.log('user data at loadIndex',user);
 
