@@ -23,7 +23,7 @@
             <div class="container">
                 <div class="signin-content">
                     <div class="signin-image">
-                        <figure><img src="/userAssets/loginPage/images/signin-image.jpg" alt="sing up image"></figure>
+                        <figure><img src="/userAssets/loginPage/images/login_.webp" alt="sing up image"></figure>
                         <a href="/signup" class="signup-image-link">Create an account</a>
                     </div>
 
@@ -40,15 +40,16 @@
                             <!-- error area -->
 
                         <h2 class="form-title">Sign in</h2>
-                        <form method="POST" action="/signin" class="register-form" id="login-form" onsubmit= "return loginValidation()">
+                        <form method="POST" action="/signin" class="register-form" id="login-form" onsubmit="return loginValidation()">
                             <div class="form-group">
                                 <label for="email"><i class="zmdi zmdi-account material-icons-name"></i></label>
-                                <input type="text" name="email" id="email" placeholder="Email"/>
+                                <input type="text" name="email" id="email" placeholder="Email" />
                                 <p id="emailErr" class="error-message" style="color: red;"></p>
                             </div>
                             <div class="form-group">
-                                <label for="password><i class="zmdi zmdi-lock"></i></label>
-                                <input type="password" name="password" id="your_pass" placeholder="Password"/>
+                                <label for="password"><i class="zmdi zmdi-lock"></i></label>
+                                <input type="password" name="password" id="your_pass" placeholder="Password" />
+                                <span toggle="#your_pass" class="zmdi zmdi-eye field-icon toggle-password" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%);"></span>
                                 <p id="passwordErr" class="error-message" style="color: red;"></p>
                             </div>
                             <div class="form-group">
@@ -56,9 +57,10 @@
                                 <label for="remember-me" class="label-agree-term"><span><span></span></span>Remember me</label>
                             </div>
                             <div class="form-group form-button">
-                                <input type="submit" name="signin" id="signin" class="form-submit" value="Log in"/>
+                                <input type="submit" name="signin" id="signin" class="form-submit" value="Log in" />
                             </div>
                         </form>
+                        
                         <div class="social-login">
                             <span class="social-label">Or login with</span>
                             <ul class="socials">
@@ -109,6 +111,24 @@ function validateEmail(email) {
     var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
+
+
+// Password toggle
+document.querySelector('.toggle-password').addEventListener('click', function() {
+    var passwordInput = document.getElementById('your_pass');
+    var fieldType = passwordInput.getAttribute('type');
+    if (fieldType === 'password') {
+        passwordInput.setAttribute('type', 'text');
+        this.classList.remove('zmdi-eye');
+        this.classList.add('zmdi-eye-off');
+    } else {
+        passwordInput.setAttribute('type', 'password');
+        this.classList.remove('zmdi-eye-off');
+        this.classList.add('zmdi-eye');
+    }
+});
+
+
 
     </script>
     <!-- JS -->

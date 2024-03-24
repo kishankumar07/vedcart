@@ -40,11 +40,11 @@ router.get('/signout',userController.signout);
 // Google OAuth routes
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), async(req, res) => {
+router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/signin' }), async(req, res) => {
   // Successful authentication, redirect to home page or dashboard
 
 
- 
+  req.session.userData = req.user; // Assuming user object is available on req.user after authentication
 
  res.redirect('/')
 });

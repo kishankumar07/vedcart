@@ -63,23 +63,39 @@ const logout = async(req,res)=>{
 
 // user page rendering and show details of all users--------------------------------------
 
+
+
 const userField = async(req,res)=>{
     try{
+      
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) ||4;
+        const searchQuery = req.query.search || ''; // Get the search query
+       
+
         // Calculate the skip value to detemine
         const skip = (page - 1) *limit;
-       
-        const user = await User.find({isAdmin:{$ne:1}})
+
+
+        let query = { isAdmin: { $ne: 1 } };
+
+      // Add search query to the database query if it exists
+      if (searchQuery) {
+          const regex = new RegExp(`^${searchQuery}`, 'i');
+          query.name = regex; // Assuming 'name' is the field you want to search
+      }
+
+
+        const users = await User.find(query)
         .skip(skip)
         .limit(limit);
-        //Get the total number of products in the database
+        //Get the total number of users in the database
 
-        const totalProductsCount = await User.countDocuments();
+        const totalUsersCount = await User.countDocuments(query);
 
         //Calculate the total number of pages based on the total products and limit
-        const totalPages = Math.ceil(totalProductsCount / limit);
-        res.render('users',{users:user,page,totalPages,limit});
+        const totalPages = Math.ceil(totalUsersCount / limit);
+        res.render('users',{users,page,totalPages,limit,searchQuery});
         // if(blockUser){
         //     res.redirect('/admin/users');
         // }
@@ -89,33 +105,46 @@ const userField = async(req,res)=>{
         
          }
     }
-// =============Blocking the user==================================
-         let userBlock = async(req,res) =>{
-            try{
-                let id = req.query.id;
-                let blockUser = await User.findByIdAndUpdate(id,{isBlocked:true},{new:true});
-                if(blockUser){
-                    res.redirect('/admin/users');
-                }
-               
-            }catch(err){
-                console.log(err);
-            }
-         }
 
-//=====================Unblocking the user==============================         
-         let userUnBlock = async(req,res) =>{
-            try{
-                let id = req.query.id;
-                let blockUser = await User.findByIdAndUpdate(id,{isBlocked:false},{new:true});
-                if(blockUser){
-                    res.redirect('/admin/users');
-                }
-               
-            }catch(err){
-                console.log(err);
-            }
-         }
+
+
+ 
+
+    const toggleBlockStatus = async (req, res) => {
+      try {
+        // Extract the user ID from the request parameters
+        const userId = req.query.id;
+    
+        // Find the user by ID
+        const user = await User.findById(userId);
+    
+        if (!user) {
+          // If user not found, send an error response
+          return  res.json({ value: "noRecord"});
+        }
+    
+        // Toggle the block status of the user
+        user.isBlocked = !user.isBlocked;
+    
+        // Save the updated user object
+        await user.save();
+    
+        // Send a success response
+        res.json({ value: true});
+        // If an error occurs, send an error response
+       
+       
+      }
+      catch(err){
+        console.error('Error toggling user  block status:', err);
+        res.json({ value: false });
+      }
+    }
+
+    module.exports = {
+      toggleBlockStatus,
+    };
+    
 
 
 module.exports = {
@@ -125,6 +154,5 @@ module.exports = {
     userField,
     logout,
     userField,
-    userBlock,
-    userUnBlock,
+    toggleBlockStatus
 }

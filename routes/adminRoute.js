@@ -17,8 +17,10 @@ router.post('/login',adminController.verifyAdminLogin);
 router.get('/dashboard',adminAuth.isLoggedIn,adminController.adminDashboard);
 router.get('/logout',adminController.logout);
 router.get('/users',adminController.userField)
-router.get('/block',adminController.userBlock)
-router.get('/unblock',adminController.userUnBlock)
+router.post('/toggleBlock',adminController.toggleBlockStatus)
+
+// router.get('/block',adminController.userBlock)
+// router.get('/unblock',adminController.userUnBlock)
 
 
 

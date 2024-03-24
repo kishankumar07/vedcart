@@ -35,7 +35,7 @@ const loadIndex = async (req, res) => {
     let category = await Category.find({'status':'active'});
     
      let user =req.session.userData;
-    console.log('user data at loadIndex',user);
+    // console.log('user data at loadIndex',user);
 
     res.render("home",{user,category,product});
   } catch (error) {
