@@ -5,8 +5,9 @@ let Category = require('../model/categoryModel');
 const allCategory=async(req,res)=>{
     try {
         //category is set at session
+      
         const category=await Category.find()
-        
+       
         req.session.category=category
         res.render('category',{category})
     } catch (error) {
@@ -19,7 +20,11 @@ const allCategory=async(req,res)=>{
 const addCategory=async(req,res)=>{
     try {
         const{name,description}=req.body
+        
+        
         const categoryExist=await Category.findOne({name})
+
+        console.log('category got from db is : ',categoryExist);
         if(categoryExist){
            
             res.redirect('/admin/category')
@@ -28,6 +33,7 @@ const addCategory=async(req,res)=>{
                 name:{$regex:new RegExp('^'+name+'$','i')}
             })
             if(caseInsenstiveCategoryExist){
+                console.log('case insensitivity at backend code found');
                 res.redirect('/admin/category')
             }
             const newCategory=new Category({

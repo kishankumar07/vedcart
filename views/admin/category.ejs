@@ -22,13 +22,16 @@
     <div class="card-body">
       <div class="row">
         <div class="col-md-3">
+        
             <form
             action="/admin/addCategory"
             method="post"
             enctype="multipart/form-data"
-            onsubmit="return validateForm()"
+            onsubmit="return validateForm('<%= JSON.stringify(category) %>')" 
             >
 
+
+         
             <div class="mb-4">
               <label for="product_name" class="form-label">Name</label>
               <input
@@ -62,7 +65,7 @@
             </div>
             
             <div class="d-grid">
-              <button class="btn btn-primary" > Create category</button>
+              <button type="submit" class="btn btn-primary" > Create category</button>
             </div>
 
 
@@ -195,32 +198,42 @@
 
 
 <script>
-     function validateForm() {
+     function validateForm(category) {
         // Reset any existing error messages
         clearErrorMessages();
 
-    
+    // console.log('this is what received in the script of category.ejs passed as parametere ',category);
 
-        const name = document.getElementById('product_name').value;
+        const name = document.getElementById('product_name').value.trim().toLowerCase();
+
+
+        console.log('this is the name from req.body converted to lowercase()',name);
+
+        
         const image = document.getElementById('image').files[0];
         const description = document.getElementById('description').value;
         
         // Check if category already exists
         var categoryName = document.getElementById("product_name").value.trim();
-        var existingCategories = []; // Assuming you have existing category names in this array
+  
+
+
+
+      
+      
         let isValid = true;
 
         // Check if name is empty
         if (name.trim() === '') {
             displayErrorMessage('name-error', 'Please enter a category name.');
             isValid = false;
-        } else if (!isFirstLetterCapital(name)) {
-            displayErrorMessage('name-error', 'Category name should start with a capital letter.');
-            isValid = false;
+        // } else if (!isFirstLetterCapital(name)) {
+        //     displayErrorMessage('name-error', 'Category name should start with a capital letter.');
+        //     isValid = false;
         }
 
         // Check if an image is selected and is of the correct type (jpg or png)
-        if (!image) {
+         if (!image) {
             displayErrorMessage('image-error', 'Please select an image.');
             isValid = false;
         } else if (!isImageTypeValid(image)) {
@@ -235,24 +248,39 @@
         }
 
 
-        if (existingCategories.includes(categoryName)) {
-      // Show SweetAlert for duplicate category
-      swal({
-        title: "Duplicate Category!",
-        text: "This category already exists.",
-        icon: "error",
-      });
-      return false; // Prevent form submission
-    }
+
+        console.log('reached existing category array creation');
+
+      
+        var existingCategories = JSON.parse(category).map(cat => cat.name.toLowerCase()); // Extract category names from array
+
+        console.log('array created is ',existingCategories);
 
 
+
+if (existingCategories.includes(categoryName)) {
+  // Show SweetAlert for duplicate category
+  Swal.fire({
+    title: "Duplicate Category!",
+    text: "This category already exists.",
+    icon: "error",
+    timer: 3000,
+    showConfirmButton: false,
+  });
+  return false; // Prevent form submission
+}
+
+    
 
         return isValid; // Form is valid
+
+
+
     }
 
-    function isFirstLetterCapital(str) {
-        return /^[A-Z]/.test(str);
-    }
+    // function isFirstLetterCapital(str) {
+    //     return /^[A-Z]/.test(str);
+    // }
 
     function isImageTypeValid(file) {
         return /\.(jpg|jpeg|png|webp)$/i.test(file.name);
@@ -300,23 +328,6 @@
       if (result.isConfirmed) {
         // If confirmed, redirect to the unlist category route with the category ID
         window.location.href = `/admin/deleteCategory?id=${categoryId}`;
-      }
-    });
-  }
-
-
-
-  function confirmSubmit(categoryId) {
-    Swal.fire({
-          title: "Category already exists",
-         
-          icon: "error",
-          timer: 3000,
-          showConfirmButton: false, // This removes the button
-        }).then((result) => {
-      if (result.isCancelled) {
-        // If confirmed, redirect to the unlist category route with the category ID
-        window.location.href = `/admin/category?id=${categoryId}`;
       }
     });
   }

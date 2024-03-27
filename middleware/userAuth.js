@@ -3,10 +3,10 @@ const User = require('../model/userModel')
 
 
 
-const isLoggedIn = (req, res, next) => {
+const isLoggedIn = async(req, res, next) => {
 
-    if (req.session.user) {
-        const user = User.findById(req.session.user).lean()
+    if (req.session.userData) {
+        const user = await User.findById(req.session.userData).lean()
        
         if (user) {
             if (user && !user.isBlocked) {
@@ -14,28 +14,28 @@ const isLoggedIn = (req, res, next) => {
                 next();
             } else if (user.isBlocked) {
                 req.session.destroy()
-                res.redirect('/');
+                res.redirect('/signin');
             } else {
-                res.redirect('/login');
+                res.redirect('/signin');
 
             }
         }
         else {
-            res.redirect('/login');
+            res.redirect('/signin');
 
             console.error(error);
             res.status(500).send('No User data found');
         };
     } else {
         
-        res.redirect('/login');
+        res.redirect('/signin');
 
     }
 };
 
 
 const isLoggedOut = (req, res, next) => {
-    if (req.session.user) {
+    if (req.session.userData) {
         res.redirect('/')
     } else {
         next();
@@ -53,7 +53,7 @@ const isLoggedOut = (req, res, next) => {
 
 const isBlocked = async (req,res,next)=>{
     try {
-        const id = req.session.user
+        const id = req.session.userData
         // console.log("this is id of user"+id)
         if(!id){
             next();
@@ -66,7 +66,7 @@ const isBlocked = async (req,res,next)=>{
             req.session.destroy(err => {
                 if (err) throw err;
                 const userSession = req.session;
-                res.render('login',{message:"your account has been blocked by administrator",userSession})
+                res.render('signin',{message:"your account has been blocked by administrator",userSession})
               });
 
             }

@@ -50,6 +50,20 @@
               <div class="price mb-2">₹<%= product[i].price %></div>
               <!-- price.// -->
 
+
+              <% if (product[i].quantity === 0) { %>
+                <h5 style="color: red;"> Quantity : 0 </h5>
+                <% } else if(product[i].quantity <=5) { %>
+                    <span style="color: red;"> Quantity : <%=product[i].quantity%> </span>
+                    <% } else if(product[i].quantity <=15) { %>
+                        <span style="color: #3b5e33;"> Quantity : <%=product[i].quantity%></span>
+                        <% }else{ %>
+                          <span style="color: #3b5e33;"> Quantity : <%=product[i].quantity%></span>
+                          <% } %>
+
+
+<br>
+             
               <a
                 href="/admin/editProduct?id=<%= product[i]._id %>"
                 class="btn btn-sm font-sm rounded btn-brand"

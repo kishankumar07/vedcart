@@ -16,8 +16,13 @@ router.set("views", path.join(__dirname, "../views/user"));
 router.get("/error", userController.errorPage);
 
 //=====User login==================================
+
+
+
+
+
 router.get("/", userController.loadIndex);
-router.get("/signin", userController.signinUser); // If no session it will render login page
+router.get("/signin",userAuth.isLoggedOut, userController.signinUser); // If no session it will render login page
 router.post("/signin", userController.verifyUser);
 router.get("/signup", userController.signUpUser);
 router.post("/signup", userController.createUser);
@@ -26,8 +31,7 @@ router.post("/resendOTP",userController.resendOTP);
 router.get('/signout',userController.signout);
 
 
-
-
+router.get("/shop", userController.shopPage);
 
 
 
@@ -56,3 +60,7 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
 
 
 module.exports = router;
+
+
+
+

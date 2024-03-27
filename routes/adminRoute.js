@@ -19,9 +19,6 @@ router.get('/logout',adminController.logout);
 router.get('/users',adminController.userField)
 router.post('/toggleBlock',adminController.toggleBlockStatus)
 
-// router.get('/block',adminController.userBlock)
-// router.get('/unblock',adminController.userUnBlock)
-
 
 
 //=========product part============================

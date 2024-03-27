@@ -31,9 +31,29 @@ const securePassword = async (password) => {
 //load index-----------------------------------------------
 const loadIndex = async (req, res) => {
   try {
-   let product = await Product.find();
+ 
     let category = await Category.find({'status':'active'});
     
+    let product=[]
+    const pro = await Product.find({ 'status': 'active'})
+    .populate({
+      path: 'category',
+      model: 'Category',
+     
+    })
+    .exec();
+
+    // console.log('this comes in pro after  loading the home page :',pro)
+
+    pro.forEach((e)=>{
+      if(e.category.status=='active')
+      {
+        product.push(e)
+      }
+    })
+
+
+
      let user =req.session.userData;
     // console.log('user data at loadIndex',user);
 
@@ -405,6 +425,43 @@ const signout = async (req, res) => {
   }
 };
 
+
+//=============shop list page======================
+let shopPage = async (req, res) => {
+  try {
+    let user = req.session.userData;
+    const category = await Category.find({ 'status': 'active' });
+    let product = [];
+
+    if (req.query.category) {
+      // Filter products based on the selected category
+      product = await Product.find({ 'status': 'active', 'category': req.query.category })
+        .populate({
+          path: 'category',
+          model: 'Category',
+        })
+        .exec();
+    } else {
+      // Fetch all products if no category is selected
+      product = await Product.find({ 'status': 'active' })
+        .populate({
+          path: 'category',
+          model: 'Category',
+        })
+        .exec();
+    }
+
+    res.render('shopPage', { product, category, user, selectedCategoryId: req.query.category });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+}
+
+
+
+
+
 module.exports = {
   loadIndex,
   verifyUser,
@@ -415,4 +472,14 @@ module.exports = {
   verifyOTP,
   resendOTP,
   signout,
+  shopPage,
+
 };
+
+
+
+
+
+
+
+

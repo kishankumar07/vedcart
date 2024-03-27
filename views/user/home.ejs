@@ -1,5 +1,31 @@
 <%- include('./layouts/header.ejs')%>
 
+
+<style>
+ .product-media {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-link {
+    display: block;
+}
+
+.hover-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.product-link:hover .hover-img {
+    opacity: 1;
+}
+
+
+</style>
+
         <main class="main">
             <div class="intro-slider-container">
                 <div class="intro-slider owl-carousel owl-simple owl-nav-inside" data-toggle="owl" data-owl-options='{
@@ -187,10 +213,15 @@
                                     <div class="product">
                                         <figure class="product-media">
                                           
-                                            <a href="product.html">
-                                                <img src="/adminAssets/imgs/category/<%= product[i].images[0] %>" alt="Product image" class="product-image">
+                                            <a href="product.html" class="product-link">
+                                                <img class="default-img product-image" src="/adminAssets/imgs/category/<%= product[i].images[0] %>" alt="Product image">
+                                                <img class="hover-img product-image" src="/adminAssets/imgs/category/<%= product[i].images[1] %>" alt="Product image">
                                             </a>
-                
+                                            
+                                                    
+                                            
+                                    
+
                                             <div class="product-action-vertical">
                                                 <a href="#" class="btn-product-icon btn-wishlist btn-expandable"><span>add to wishlist</span></a>
                                                 <a href="#" class="btn-product-icon btn-compare" title="Compare"><span>Compare</span></a>
@@ -206,11 +237,11 @@
 
 
                                             <div class="product-cat">
-                                                <a href="#"><%= product[i].category %></a>
+                                                <a href="#"><%= product[i].category.name %></a>
                                             </div><!-- End .product-cat -->
                                             <h3 class="product-title"><a href="product.html"><%= product[i].name %></a></h3><!-- End .product-title -->
                                             <div class="product-price">
-                                                <span class="new-price"><%= product.price %></span>
+                                                <span class="new-price">Rs.<%= product[i].price %></span>
                                                 <span class="old-price">Was $290.00</span>
                                             </div><!-- End .product-price -->
                                             <div class="ratings-container">
