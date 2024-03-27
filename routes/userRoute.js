@@ -32,7 +32,7 @@ router.get('/signout',userController.signout);
 
 
 router.get("/shop", userController.shopPage);
-
+router.get("/productPage", userController.aProductPage);
 
 
 

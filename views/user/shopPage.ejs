@@ -1,6 +1,6 @@
 <%- include('./layouts/header.ejs')%>
 
-
+<!-- category filtration is present at 264 -->
 <style>
   .product-media {
      position: relative;
@@ -33,13 +33,18 @@
         <nav aria-label="breadcrumb" class="breadcrumb-nav mb-3">
           <div class="container">
             <ol class="breadcrumb">
-              <li class="breadcrumb-item"><a href="/">Home</a></li>
-              <li class="breadcrumb-item"><a href="#">Shop</a></li>
-              <li class="breadcrumb-item active" aria-current="page">
-                Electronics
-              </li>
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="#">Shop</a></li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    <% if (categoryName === 'All') { %>
+                        <%= categoryName %>
+                    <% } else { %>
+                        <%= categoryName %>
+                    <% } %>
+                </li>
             </ol>
-          </div>
+        </div>
+        
           <!-- End .container -->
         </nav>
         <!-- End .breadcrumb-nav -->
@@ -67,12 +72,18 @@
                 <div class="toolbox">
                   <div class="toolbox-left" style="display: grid; grid-template-columns: auto;">
                     <div class="search-box" style="width: 200px; height: 31px;">
-                        <form action="/search" method="GET" class="search-form">
-                            <div class="input-group">
-                                <input type="text" name="query" class="form-control" placeholder="Search products">
-                            </div>
-                        </form>
-                    </div>
+
+
+
+                      <input
+                         type="text"
+                      placeholder="Search product"
+                      class="form-control"
+                      id="searchInput"
+                      oninput="searchUsers()"
+                    />
+                  </div>
+                  
                     <div class="toolbox-info">10 products found</div>
                     <!-- End .toolbox-info -->
                 </div>
@@ -103,7 +114,7 @@
                 
                 <!-- End .toolbox -->
 
-                <div class="products mb-3">
+                <div class="products mb-3 tablet">
                   <div class="row">
 
                     <% if(product.length > 0) {%>
@@ -112,8 +123,8 @@
                     <div class="col-6 col-md-4 col-xl-3">
                       <div class="product">
                         <figure class="product-media">
-
-                          <a href="product.html" class="product-link">
+                        
+                          <a href="/productPage?id=<%= product[i]._id %>" class="product-link">
                             <img class="default-img product-image" src="/adminAssets/imgs/category/<%= product[i].images[0] %>" alt="Product image">
                             <img class="hover-img product-image" src="/adminAssets/imgs/category/<%= product[i].images[1] %>" alt="Product image">
                         </a>
@@ -157,7 +168,7 @@
                           </div>
                           <!-- End .product-cat -->
                           <h3 class="product-title">
-                            <a href="product.html"
+                            <a href="/productPage?id=<%=  product[i]._id%>"
                               ><%= product[i].name %></a
                             >
                           </h3>
@@ -253,47 +264,63 @@
                 <div class="sidebar sidebar-shop">
                  
                   <!-- End .widget -->
-               
+              
+
                   <div class="widget">
                     <h3 class="widget-title">Category</h3>
                     <!-- End .widget-title -->
-                  
-                  <% if(category.length > 0) { %>
-
-                      <% category.forEach((cat, index) => { %>
-
+                    <% if(category.length > 0) { %>
                         <div class="widget-body">
-                          <div class="filter-items">
-                            <div class="filter-item">
-                              <div class="custom-control custom-radio">
-                                <input
-                                  type="radio"
-                                  class="custom-control-input"
-                                  id="category-<%= index %>"
-                                  name="category"
-                                  onclick="selectCategory('<%= cat._id %>')"
-                                  value="<%= cat._id %>"
-                                  <% if (cat._id === selectedCategoryId) { %>
-                                    checked
-                                    <% } %> <!-- Check if category is selected -->
-                                 
-                                
-                                <label class="custom-control-label" for="category-<%= index %>"><%= cat.name %></label>
-                              </div>
-                              <!-- End .custom-checkbox -->
+                            <div class="filter-items">
+                                <div class="filter-item">
+                                    <div class="custom-control custom-radio">
+                                        <input
+                                            type="radio"
+                                            class="custom-control-input"
+                                            id="category-all"
+                                            name="category"
+                                            onclick="selectCategory('all')"
+                                            value="all"
+                                            <% if (!selectedCategoryId) { %>
+                                                checked
+                                            <% } %> <!-- Check if category is selected -->
+                                        
+                                        <label class="custom-control-label" for="category-all">All</label>
+                                    </div>
+                                    <!-- End .custom-checkbox -->
+                                </div>
+                                <!-- End .filter-item -->
+                                <% category.forEach((cat, index) => { %>
+                                    <div class="filter-item">
+                                        <div class="custom-control custom-radio">
+                                            <input
+                                                type="radio"
+                                                class="custom-control-input"
+                                                id="category-<%= index %>"
+                                                name="category"
+                                                onclick="selectCategory('<%= cat._id %>')"
+                                                value="<%= cat._id %>"
+                                                <% if (cat._id === selectedCategoryId) { %>
+                                                    checked
+                                                <% } %> <!-- Check if category is selected -->
+                                            
+                                            <label class="custom-control-label" for="category-<%= index %>"><%= cat.name %></label>
+                                        </div>
+                                        <!-- End .custom-checkbox -->
+                                    </div>
+                                    <!-- End .filter-item -->
+                                <% }); %>
                             </div>
-                            <!-- End .filter-item -->
-                          </div>
-                          <!-- End .filter-items -->
+                            <!-- End .filter-items -->
                         </div>
                         <!-- End .widget-body -->
-                      <% }); %>
                     <% } else { %>
-                      <tr>
-                        <td colspan="2">category not found</td>
-                      </tr>
+                        <tr>
+                            <td colspan="2">category not found</td>
+                        </tr>
                     <% } %>
-                  </div>
+                </div>
+                
                   
               
                  
@@ -557,19 +584,77 @@
         <!-- End .page-content -->
 
 
-        <script>
-          function selectCategory(categoryId) {
-            window.location.href = `/shop?category=${categoryId}`;
-          }
-        
-          // Set the selected category as checked when the page loads
-          document.addEventListener("DOMContentLoaded", function() {
-            const selectedCategoryId = '<%= selectedCategoryId %>'; // Get selected category ID from EJS
-            const radioButton = document.querySelector(`input[value="${selectedCategoryId}"]`);
-            if (radioButton) {
-              radioButton.checked = true;
+
+
+
+ <script>
+
+          //category selection based on filtarion
+
+         
+    document.addEventListener("DOMContentLoaded", function() {
+        const selectedCategoryId = '<%= selectedCategoryId %>'; // Get selected category ID from EJS
+        const radioButton = document.querySelector(`input[value="${selectedCategoryId}"]`);
+        if (!selectedCategoryId) {
+            const allRadioButton = document.querySelector('input[name="category"][value="all"]');
+            if (allRadioButton) {
+                allRadioButton.checked = true;
             }
-          });
+        } else if (radioButton) {
+            radioButton.checked = true;
+        }
+    });
+
+    function selectCategory(categoryId) {
+        if (categoryId === 'all') {
+            window.location.href = '/shop'; // Redirect to shop page without specifying a category
+        } else {
+            window.location.href = `/shop?category=${categoryId}`;
+        }
+    }
+
+
+
+
+          //search query at input search 
+
+    
+
+    function searchUsers() {
+    // Get the value of the search input
+    const searchQuery = document
+      .getElementById("searchInput")
+      .value.toLowerCase();
+
+    // Get all card elements with class 'tablet'
+    const cards = document.querySelectorAll(".tablet");
+
+    // Loop through each card and filter based on the search query
+    cards.forEach((card) => {
+      // Extract the category name from the card
+      const categoryName = card
+        .querySelector(".product-title")
+        .textContent.toLowerCase();
+
+      // Check if the category name contains the search query
+      if (categoryName.includes(searchQuery)) {
+        // If the category name contains the search query, display the card
+        card.style.display = "block"; // Assuming it's initially set to 'none'
+      } else {
+        // If not, hide the card
+        card.style.display = "none";
+      }
+    });
+  }
+
+
+
+
+
+
+
+
+
         </script>
 
 
