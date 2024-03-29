@@ -7,7 +7,7 @@ const wishlist = mongoose.Schema({
         ref: 'User',
         required: true
     },
-    Products:[{
+    products:[{
         product:{
             type : mongoose.Schema.Types.ObjectId,
             ref:'Product',
@@ -20,6 +20,14 @@ const wishlist = mongoose.Schema({
         
         name:{
             type:String,
+            required:true
+        },
+        image:{
+            type:[String],
+            required:true
+        },
+        quantity:{
+            type:Number,
             required:true
         }
     }],

@@ -32,7 +32,7 @@ const loadIndex = async (req, res) => {
   try {
     let user = req.session.userData;
     let userNameforProfile = await User.findById(user);
-    console.log('usrmammrm',userNameforProfile);
+    
     let category = await Category.find({ status: "active" });
 
     let product = [];
@@ -52,9 +52,9 @@ const loadIndex = async (req, res) => {
     });
 
    
-    console.log('user data at loadIndex',user);
+ 
 
-    res.render("home", { userNameforProfile, category, product });
+    res.render("home", { userNameforProfile,user,category, product });
   } catch (error) {
     console.log("Error happens in userController loadIndex function:", error);
   }
@@ -406,6 +406,7 @@ const signout = async (req, res) => {
 let shopPage = async (req, res) => {
   try {
     let user = req.session.userData;
+    let userNameforProfile = await User.findById(user);
     const category = await Category.find({ status: "active" });
     let categoryName = "All"; // Default category name
 
@@ -445,8 +446,9 @@ let shopPage = async (req, res) => {
 // console.log('to check whether user is passed to the shop page',user);
     res.render("shopPage", {
       product,
-      category,
       user,
+      category,
+      userNameforProfile,
       selectedCategoryId: req.query.category || "",
       categoryName,
     });
@@ -461,7 +463,8 @@ let shopPage = async (req, res) => {
 
 const aProductPage = async (req, res) => {
   try {
-      let user = req.session.userData;
+    let user = req.session.userData;
+    let userNameforProfile = await User.findById(user);
 
 
       let queriedProduct = req.query.id;
@@ -478,8 +481,9 @@ const aProductPage = async (req, res) => {
 
       res.render("aProductPage", {
           user,
-          category,
+          userNameforProfile,
           product,
+          category,
           relatedProd,
           aProductFoundFromDb,
       });
@@ -543,23 +547,26 @@ const aProductPage = async (req, res) => {
 //   }
 // };
 
+
+
+
 //============== wish list page ===================
 const wishList = async (req, res) => {
   try {
-    let user  = req.session.userData;
+    let user = req.session.userData;
+    let userNameforProfile = await User.findById(user);
+
     let category = await Category.find({ status: "active" });
-      
-      let product = await Product.find({ status: "active" }).populate("category").exec();
+      let wishlist = await Wishlist.findOne({user:user})
+      // let product = await Product.find({ status: "active" }).populate("category").exec();
 
-
-   res.render('wishlist',{user,category,product})
+// console.log('wishlist at wishlist controller: ',wishlist);
+   res.render('wishlist',{userNameforProfile,user,category,wishlist})
   } catch (error) {
     console.error("Error during wishlist:", error);
     res.redirect("/error");
   }
 };
-
-
 
 
 
@@ -569,17 +576,19 @@ const wishList = async (req, res) => {
 //add products to wishlist
 const addProductToWishList = async (req, res) => {
   try {
-    let user = req.query.userId;
+    let user = req.session.userData;
+    // let userNameforProfile = await User.findById(user);
+
     const product = await Product.findById(req.query.productId);
 
     // Check if the user already has a wishlist document
     const wishFind = await Wishlist.findOne({ user: user });
 
-    console.log('this is wiishFind at wish controller', wishFind);
+    // console.log('this is wiishFind at wish controller', wishFind);
 
     if (wishFind) {
       // User already has a wishlist document
-      const existingProduct = wishFind.Products.find(
+      const existingProduct = wishFind.products.find(
         (prod) => prod.name === product.name
       );
 
@@ -587,10 +596,12 @@ const addProductToWishList = async (req, res) => {
         res.json({ success: false, message: 'Already added' });
       } else {
         // Product is not in the wishlist, add it
-        wishFind.Products.push({
+        wishFind.products.push({
           product: product._id,
           price: product.price,
-          name: product.name
+          name: product.name,
+          image:product.images,
+          quantity: product.quantity,
         });
 
         await wishFind.save();
@@ -600,11 +611,13 @@ const addProductToWishList = async (req, res) => {
       // User does not have a wishlist document, create a new one
       const wishAdd = new Wishlist({
         user: user,
-        Products: [
+        products: [
           {
             product: product._id,
             price: product.price,
-            name: product.name
+            name: product.name,
+            image:product.images,
+            quantity: product.quantity,
           }
         ]
       });
@@ -618,9 +631,33 @@ const addProductToWishList = async (req, res) => {
   }
 };
 
+//==========remove a product from wishlist======================
 
-
-
+const productremovefromwish = async (req, res) => {
+  try {
+     const product = await Product.findById(req.query.productId);
+     console.log('this is the wishfound from remove wish:', product);
+ 
+     const currentUser = await User.findById(req.query.userId);
+ 
+     // Ensure productId is included in the request query parameters
+     if (!req.query.productId) {
+       return res.status(400).json({ success: false, message: 'Product ID is required.' });
+     }
+ 
+     // Correctly use the productId in the $pull operation
+     await Wishlist.updateOne(
+       { user: currentUser._id },
+       { $pull: { 'products': { 'product': product.id } } }
+     );
+ 
+     res.json({ success: true });
+  } catch (error) {
+     console.error('Error removing product from wishlist:', error);
+     res.json({ success: false });
+  }
+ };
+ 
 
 
 
@@ -645,4 +682,10 @@ module.exports = {
   aProductPage,
   wishList,
   addProductToWishList,
+  productremovefromwish,
 };
+
+
+
+
+

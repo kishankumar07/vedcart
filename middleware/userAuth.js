@@ -66,7 +66,7 @@ const isBlocked = async (req,res,next)=>{
             req.session.destroy(err => {
                 if (err) throw err;
                 const userSession = req.session;
-                res.render('signin',{message:"your account has been blocked by administrator",userSession})
+                res.render('userSignin',{message:"your account has been blocked by administrator",userSession})
               });
 
             }

@@ -35,9 +35,14 @@ router.get("/shop", userController.shopPage);
 router.get("/productPage", userController.aProductPage);
 
 
-router.get("/wishlist", userController.wishList);
+
+//----------  w i s h l i s t --------------------------------
+router.get("/wishlist", userAuth.isBlocked,userAuth.isLoggedIn, userController.wishList);
 
 router.post('/productaddtowishlist',userController.addProductToWishList)
+
+router.post('/productremovefromwishlist',userController.productremovefromwish)
+
 
 
 

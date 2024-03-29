@@ -113,7 +113,7 @@
                 </div>
                 
                 <!-- End .toolbox -->
-                <% console.log('this is the user at shop page.ejs:',user)%>
+             
                 <div class="products mb-3 tablet">
                   <div class="row">
 
@@ -136,7 +136,7 @@
                             <% if (user) { %>
                               <a
                                   href="#"
-                                  onclick="wishList('<%= product[i]._id %>','<%= user %>')"
+                                  onclick="wishList(event,'<%= product[i]._id %>','<%= user %>')"
                                   class="btn-product-icon btn-wishlist btn-expandable"
                               >
                                   <span>add to wishlist</span>
@@ -670,7 +670,8 @@
 
 //===========wishlisting a product==============================
 
-  function wishList(productId,userId){
+  function wishList(event,productId,userId){
+    event.preventDefault();
   // console.log('this is the user id at wishlist addition :',userId);
   // console.log('this is the product id at wishlist add : ',productId);
 

@@ -10,7 +10,7 @@
                 <div class="container">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-                        <li class="breadcrumb-item"><a href="#">Shop</a></li>
+                        <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Wishlist</li>
                     </ol>
                 </div><!-- End .container -->
@@ -28,24 +28,49 @@
 								<th></th>
 							</tr>
 						</thead>
-
+                    <% console.log('wisgosd',wishlist) %>
+                    <% if(wishlist) {%>
+                        <% for(let i=0;i< wishlist.products.length;i++) {%>    
 						<tbody>
 							<tr>
 								<td class="product-col">
 									<div class="product">
 										<figure class="product-media">
 											<a href="#">
-												<img src="/userAssets/home/assets/images/products/table/product-1.jpg" alt="Product image">
+												<img src="/adminAssets/imgs/category/<%= wishlist.products[i].image[0] %>" alt="Product image">
 											</a>
 										</figure>
 
 										<h3 class="product-title">
-											<a href="#">Beige knitted elastic runner shoes</a>
+											<a href="#"><%= wishlist.products[i].name %></a>
 										</h3><!-- End .product-title -->
 									</div><!-- End .product -->
 								</td>
-								<td class="price-col">$84.00</td>
-								<td class="stock-col"><span class="in-stock">In stock</span></td>
+								<td class="price-col">Rs. <%= wishlist.products[i].price %></td>
+
+
+
+
+
+                                <% if (wishlist.products[i].quantity === 0) { %>
+
+                                    <td class="stock-col"><span class="in-stock" style="color: red;">Out of stock</span></td>
+
+                                    <% } else if(wishlist.products[i].quantity <= 3) { %>
+
+                                        <td class="stock-col"><span style="color: green;" class="in-stock">Only <%= wishlist.products[i].quantity %> left</span></td>
+
+                                        <% } else if(wishlist.products[i].quantity <=6) { %>
+
+                                            <td class="stock-col"><span style="color: green;" class="in-stock"> <%= wishlist.products[i].quantity %> left</span></td>
+
+                                            <% }else{ %>
+                                                <td class="stock-col"><span class="in-stock" ">In stock</span></td>
+                                                <% } %>
+                                
+
+
+
 								<td class="action-col">
                                     <div class="dropdown">
 									<button class="btn btn-block btn-outline-primary-2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -53,16 +78,28 @@
                                     </button>
 
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="#">First option</a>
-                                        <a class="dropdown-item" href="#">Another option</a>
-                                        <a class="dropdown-item" href="#">The best option</a>
+                                        <a class="dropdown-item" style="background-color: rgb(109, 200, 35);" href="#">Add to cart</a>
+
+
+                                        <a class="dropdown-item"
+                                        style="background-color: rgb(93, 203, 59);"  onclick="removeWishItem(event,'<%= wishlist.products[i].product %>','<%= user %>')"  href="#">Delete the wishlist item</a>
+                                        
+                                        
+                                        
+                                       
                                       </div>
                                     </div>
 								</td>
-								<td class="remove-col"><button class="btn-remove"><i class="icon-close"></i></button></td>
+								
 							</tr>
 						
 						</tbody>
+
+                        <% } %> <% } else { %>
+                            <tr>
+                              <td colspan="2">Your wishlist is empty</td>
+                            </tr>
+                            <% } %>
 					</table><!-- End .table table-wishlist -->
 	            	<div class="wishlist-share">
 	            		<div class="social-icons social-icons-sm mb-2">
@@ -312,5 +349,35 @@
             </div><!-- End .social-icons -->
         </div><!-- End .mobile-menu-wrapper -->
     </div><!-- End .mobile-menu-container -->
+
+
+<script>
+//to remove wishlist item
+function removeWishItem(event, productId, userId) {
+  event.preventDefault();
+
+
+
+  fetch(`/productremovefromwishlist?productId=${productId}&userId=${userId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }).then((response) => {
+    return response.json();
+  }).then((data) => {
+    if (data.success === true) {
+      window.location.href = '/wishlist';
+    }
+  }).catch((error) => {
+    console.error('Error removing wish item:', error);
+  });
+}
+
+
+
+</script>
+
+
 
     <%- include('./layouts/footer')%>
