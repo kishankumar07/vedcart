@@ -79,7 +79,7 @@
                     
                             
 
-                            <% if(!user) {%>
+                            <% if(!userNameforProfile) {%>
                                
                             <div class="dropdown compare-dropdown">
                                 
@@ -107,7 +107,7 @@
                                 
                                     <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static" title="Compare Products" aria-label="Compare Products">
                                         <i class="icon-user"></i>
-                                        <span class="compare-txt">Account</span>
+                                        <span class="compare-txt">Hello   <%=userNameforProfile.name%></span>
                                     </a>
     
                                     <div class="dropdown-menu dropdown-menu-right" style="padding: 0;width: 111px;">
@@ -128,8 +128,8 @@
                                 <% } %>
 
 
-                                <% if(user) {%>
-                            <a  ref="wishlist.html" class="wishlist-link">
+                                <% if(userNameforProfile) {%>
+                            <a  href="/wishlist" class="wishlist-link">
                                 <i class="icon-heart-o"></i>
                                 <span class="wishlist-count">3</span>
                                 <span class="wishlist-txt">Wishlist</span>

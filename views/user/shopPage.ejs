@@ -113,7 +113,7 @@
                 </div>
                 
                 <!-- End .toolbox -->
-
+                <% console.log('this is the user at shop page.ejs:',user)%>
                 <div class="products mb-3 tablet">
                   <div class="row">
 
@@ -128,13 +128,34 @@
                             <img class="default-img product-image" src="/adminAssets/imgs/category/<%= product[i].images[0] %>" alt="Product image">
                             <img class="hover-img product-image" src="/adminAssets/imgs/category/<%= product[i].images[1] %>" alt="Product image">
                         </a>
-
+                          
                           <div class="product-action-vertical">
-                            <a
-                              href="#"
-                              class="btn-product-icon btn-wishlist btn-expandable"
-                              ><span>add to wishlist</span></a
-                            >
+
+
+
+                            <% if (user) { %>
+                              <a
+                                  href="#"
+                                  onclick="wishList('<%= product[i]._id %>','<%= user %>')"
+                                  class="btn-product-icon btn-wishlist btn-expandable"
+                              >
+                                  <span>add to wishlist</span>
+                              </a>
+                          <% } else { %>
+                              <a
+                                  href="#"
+                                  onclick="wishList('<%= product[i]._id %>','')"
+                                  class="btn-product-icon btn-wishlist btn-expandable"
+                              >
+                                  <span>add to wishlist</span>
+                              </a>
+                          <% } %>
+                          
+                          
+
+
+
+
                             <a
                               href="#"
                               class="btn-product-icon btn-compare"
@@ -585,7 +606,7 @@
 
 
 
-
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
  <script>
 
@@ -647,15 +668,85 @@
     });
   }
 
+//===========wishlisting a product==============================
+
+  function wishList(productId,userId){
+  // console.log('this is the user id at wishlist addition :',userId);
+  // console.log('this is the product id at wishlist add : ',productId);
+
+  //case if the usr is not logged in
+  if(!userId){
+    Swal.fire({
+        title: 'Login to Purchase',
+        text: 'To make a purchase, please log in.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Login'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            window.location.href = '/signin';
+        }
+    });
+  }
+
+else{
+  //if the user is already logged-----------
+  fetch(`/productaddtowishlist?productId=${productId}&userId=${userId}`, {
+            method: 'POST', // Use POST or PATCH for updating data
+            headers: {
+            'Content-Type': 'application/json',
+             },
+        
+    }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+           
+            return response.json();
+        })
+        .then(data => {
+            
+            if(data.success===true)
+            {
+              
+              Swal.fire({
+          title: "Added to Wishlist",
+          // text: "OTP Successfully sent to <%= locals.email%>",
+          icon: "success",
+          timer: 2500,
+          showConfirmButton: false, // This removes the button
+        });
+            
+            }
+        
+            else{
+              Swal.fire({
+          title: "Already added to wishlist",
+          // text: "OTP Successfully sent to <%= locals.email%>",
+          icon: "warning",
+          timer: 2500,
+          showConfirmButton: false, // This removes the button
+        });
+
+              
+            }})
+                   
+           
+        
+        
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+}
+
+}
 
 
-
-
-
-
-
-
-        </script>
+  </script>
 
 
 <%- include('./layouts/footer.ejs') %>

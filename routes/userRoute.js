@@ -35,9 +35,9 @@ router.get("/shop", userController.shopPage);
 router.get("/productPage", userController.aProductPage);
 
 
+router.get("/wishlist", userController.wishList);
 
-
-
+router.post('/productaddtowishlist',userController.addProductToWishList)
 
 
 

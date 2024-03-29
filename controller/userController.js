@@ -6,6 +6,7 @@ const speakeasy = require("speakeasy");
 const OTP = require("../model/otpModel");
 let Category = require("../model/categoryModel");
 let Product = require("../model/productModel");
+let Wishlist = require('../model/wishListModel')
 
 //===========error- 500=======================
 
@@ -29,6 +30,9 @@ const securePassword = async (password) => {
 //load index-----------------------------------------------
 const loadIndex = async (req, res) => {
   try {
+    let user = req.session.userData;
+    let userNameforProfile = await User.findById(user);
+    console.log('usrmammrm',userNameforProfile);
     let category = await Category.find({ status: "active" });
 
     let product = [];
@@ -47,10 +51,10 @@ const loadIndex = async (req, res) => {
       }
     });
 
-    let user = req.session.userData;
-    // console.log('user data at loadIndex',user);
+   
+    console.log('user data at loadIndex',user);
 
-    res.render("home", { user, category, product });
+    res.render("home", { userNameforProfile, category, product });
   } catch (error) {
     console.log("Error happens in userController loadIndex function:", error);
   }
@@ -417,7 +421,7 @@ let shopPage = async (req, res) => {
     let product = [];
 
     if (req.query.category) {
-      console.log("reached shopPage 3");
+      // console.log("reached shopPage whre a particular category was selected");
       // Filter products based on the selected category
       product = await Product.find({
         status: "active",
@@ -430,7 +434,7 @@ let shopPage = async (req, res) => {
         .exec();
     } else {
       // Fetch all products if no category is selected
-      console.log("reached shopPage 4");
+      // console.log("reached shopPage where no specific category is selcted");
       product = await Product.find({ status: "active" })
         .populate({
           path: "category",
@@ -438,7 +442,7 @@ let shopPage = async (req, res) => {
         })
         .exec();
     }
-
+// console.log('to check whether user is passed to the shop page',user);
     res.render("shopPage", {
       product,
       category,
@@ -458,10 +462,16 @@ let shopPage = async (req, res) => {
 const aProductPage = async (req, res) => {
   try {
       let user = req.session.userData;
+
+
       let queriedProduct = req.query.id;
+
       const aProductFoundFromDb = await Product.findById(queriedProduct).populate("category").exec();
+
       let relatedProductCat = aProductFoundFromDb.category;
+
       let category = await Category.find({ status: "active" });
+
       let product = await Product.find({ status: "active" }).populate("category").exec();
       
       let relatedProd = product.filter(product => product.category._id.toString() === relatedProductCat._id.toString());
@@ -478,21 +488,6 @@ const aProductPage = async (req, res) => {
       res.redirect("/error");
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // const aProductPage = async (req, res) => {
 //   try {
@@ -548,6 +543,94 @@ const aProductPage = async (req, res) => {
 //   }
 // };
 
+//============== wish list page ===================
+const wishList = async (req, res) => {
+  try {
+    let user  = req.session.userData;
+    let category = await Category.find({ status: "active" });
+      
+      let product = await Product.find({ status: "active" }).populate("category").exec();
+
+
+   res.render('wishlist',{user,category,product})
+  } catch (error) {
+    console.error("Error during wishlist:", error);
+    res.redirect("/error");
+  }
+};
+
+
+
+
+
+//==========add to wishlist list page====================
+
+
+//add products to wishlist
+const addProductToWishList = async (req, res) => {
+  try {
+    let user = req.query.userId;
+    const product = await Product.findById(req.query.productId);
+
+    // Check if the user already has a wishlist document
+    const wishFind = await Wishlist.findOne({ user: user });
+
+    console.log('this is wiishFind at wish controller', wishFind);
+
+    if (wishFind) {
+      // User already has a wishlist document
+      const existingProduct = wishFind.Products.find(
+        (prod) => prod.name === product.name
+      );
+
+      if (existingProduct) {
+        res.json({ success: false, message: 'Already added' });
+      } else {
+        // Product is not in the wishlist, add it
+        wishFind.Products.push({
+          product: product._id,
+          price: product.price,
+          name: product.name
+        });
+
+        await wishFind.save();
+        res.json({ success: true, message: 'Added' });
+      }
+    } else {
+      // User does not have a wishlist document, create a new one
+      const wishAdd = new Wishlist({
+        user: user,
+        Products: [
+          {
+            product: product._id,
+            price: product.price,
+            name: product.name
+          }
+        ]
+      });
+
+      await wishAdd.save();
+      res.json({ success: true, message: 'Added' });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports = {
   loadIndex,
   verifyUser,
@@ -560,4 +643,6 @@ module.exports = {
   signout,
   shopPage,
   aProductPage,
+  wishList,
+  addProductToWishList,
 };

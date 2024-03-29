@@ -144,8 +144,11 @@
                 </div>
                 <!-- End .details-action-col -->
 
+              
+
+
                 <div class="details-action-wrapper">
-                  <a href="#" title="Wishlist"><span>Add to Wishlist</span></a>
+                  <a onclick="wishList('<%= aProductFoundFromDb._id %>','<%=  user%>')" href="#" title="Wishlist"><span>Add to Wishlist</span></a>
                 </div>
                 <!-- End .details-action-wrapper -->
               </div>
@@ -457,10 +460,10 @@
                     }
                 }'
       >
-     
+   
          <% for(let i=0;i< relatedProd.length;i++) { %>
                
-            <% console.log('related Peo=-=-=-=-=-=-=-=-=-=-=-=-=-= : ',relatedProd[i].images[0]) %>
+           
         <div class="product product-7 text-center">
           <figure class="product-media">
             <a href="product.html">
@@ -507,6 +510,21 @@
             <!-- End .product-title -->
             <div class="product-price">Rs. <%=relatedProd[i].price %></div>
             <!-- End .product-price -->
+
+ <!-- stock part -->
+ <% if (relatedProd[i].quantity === 0) { %>
+    <h5 style="color: red;">OUT OF STOCK!</h5>
+    <% } else if(relatedProd[i].quantity ===1) { %>
+        <span style="color: #4eb44e;">Only <%=relatedProd.quantity%> left!</span>
+        <% } else if(relatedProd.quantity <=15) { %>
+            <span style="color: #40a240;"> Hurry Only <%=relatedProd.quantity%> items left!</span>
+            <% } %>
+
+          <!-- stock part ends -->
+
+
+
+
             <div class="ratings-container">
               <div class="ratings">
                 <div class="ratings-val" style="width: 0%"></div>
@@ -531,6 +549,10 @@
 </main>
 <!-- End .main -->
 
+
+
+<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
 
@@ -565,6 +587,97 @@
     // Add glow class to the clicked box
     element.classList.add("glow");
   }
+
+
+//wishlist part 
+ 
+      
+function wishList(productId,userId){
+  console.log('this is the user id at wishlist addition :',userId);
+  console.log('this is the product id at wishlist add : ',productId);
+
+  //case if the usr is not logged in
+  if(!userId){
+    Swal.fire({
+        title: 'Login to Purchase',
+        text: 'To make a purchase, please log in.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Login'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            window.location.href = '/signin';
+        }
+    });
+  }
+
+
+
+  //if the user is already logged-----------
+
+        fetch(`/productaddtowishlist?productId=${productId}&userId=${userId}`, {
+            method: 'POST', // Use POST or PATCH for updating data
+            headers: {
+            'Content-Type': 'application/json',
+             },
+        
+    }).then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+           
+            return response.json();
+        })
+        .then(data => {
+            
+            if(data.success===true)
+            {
+               
+              Swal.fire({
+          title: "Added to Wishlist",
+          // text: "OTP Successfully sent to <%= locals.email%>",
+          icon: "success",
+          timer: 2500,
+          showConfirmButton: false, // This removes the button
+        });
+            }
+
+            else{
+              
+              Swal.fire({
+          title: "Already added to wishlist",
+          // text: "OTP Successfully sent to <%= locals.email%>",
+          icon: "warning",
+          timer: 2500,
+          showConfirmButton: false, // This removes the button
+        });
+            }
+           
+            
+            
+           
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+
+
+
+
+}
+
+        
+
+  
+
+
+
+
+
+
 </script>
 
 <%- include('./layouts/footer') %>
