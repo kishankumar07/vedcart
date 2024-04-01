@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 // Define GoogleSignIn schema
 const GoogleSignInSchema = new mongoose.Schema({
   googleId: {
-    type: String,
+    type:String,
     required: true
   },
-  displayName: {
+  name: {
     type: String,
     required: true
   },
@@ -18,3 +18,16 @@ const GoogleSignInSchema = new mongoose.Schema({
 
 // Create and export GoogleSignIn model
 module.exports = mongoose.model('GoogleSignin', GoogleSignInSchema);
+
+
+
+
+
+
+
+
+
+
+
+
+

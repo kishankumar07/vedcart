@@ -8,6 +8,7 @@ let userRoute = require('./routes/userRoute');
 let adminRoute = require('./routes/adminRoute')
 let dbConnect=require('./config/dbConnect');
 let flash = require('connect-flash');
+let User = require("./model/userModel");
 let session =require('express-session')
 const GoogleSignIn = require('./model/googleModel');
 
@@ -16,6 +17,7 @@ app.use(express.static(path.join(__dirname,'public')));
 
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
+
 app.use(flash())
 app.use(session({
     secret:process.env.SESSION_SECRET_KEY,
@@ -43,31 +45,40 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    passReqToCallback: true // Add this option to enable accessing req in the callback
-},
-    async function (req,accessToken, refreshToken, profile, cb) {
-        try {
-            // Search for the user in the database based on Google profile ID
-            let user = await GoogleSignIn.findOne({ googleId: profile.id });
-            if (!user) {
-                // Create a new user if not found in the database
-                user = new GoogleSignIn({
-                    googleId: profile.id,
-                    displayName: profile.displayName,
-                    email: profile.emails[0].value
-                });
-                await user.save();
-            
-                
-            }
-            return cb(null, user);
-        } catch (error) {
-            return cb(error);
+    passReqToCallback: true
+}, async function (req, accessToken, refreshToken, profile, cb) {
+    try {
+        // Search for the user in the database based on Google profile ID
+        let googleUser = await GoogleSignIn.findOne({ googleId: profile.id });
+        if (!googleUser) {
+            // If Google user doesn't exist, create a new user in GoogleSignIn model
+            const newGoogleUser = new GoogleSignIn({
+                googleId: profile.id,
+                name: profile.displayName,
+                email: profile.emails[0].value
+            });
+            await newGoogleUser.save();
         }
-    }
-));
 
-// Serialize and deserialize user functions
+        // Check if the user already exists in the User model
+        let user = await User.findOne({ email: profile.emails[0].value });
+        if (!user) {
+            // If the user doesn't exist, create a new user in the User model
+            user = new User({
+                name: profile.displayName,
+                email: profile.emails[0].value,
+                googleUser: profile.id // Reference the Google user ID
+            });
+            await user.save();
+        }
+
+        // Return the user
+        return cb(null, user);
+    } catch (error) {
+        return cb(error);
+    }
+}));
+
 passport.serializeUser(function (user, done) {
     done(null, user);
 });
@@ -90,4 +101,17 @@ app.listen(3000, () => {
 
 app.use('/',userRoute)
 app.use('/admin',adminRoute)
+
+
+
+
+
+
+
+
+
+
+
+
+
 

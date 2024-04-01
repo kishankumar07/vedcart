@@ -61,7 +61,13 @@
                 <label class="form-label">Description</label>
                 <textarea id="description" placeholder="Type here" class="form-control" name="description"></textarea>
                 
-                <div class="error-message alert text-danger" id="description-error"></div>
+                <div class="error-message alert text-danger" id="description-error">
+
+                  <% if(errMess) {%>
+                    <%= errMess %>
+                    <% } %>
+
+                </div>
             </div>
             
             <div class="d-grid">

@@ -5,11 +5,11 @@ let Category = require('../model/categoryModel');
 const allCategory=async(req,res)=>{
     try {
         //category is set at session
-      
+      let errMess = req.flash('message');
         const category=await Category.find()
        
         req.session.category=category
-        res.render('category',{category})
+        res.render('category',{category,errMess})
     } catch (error) {
         console.log('This is all category error',error);
         
@@ -24,9 +24,12 @@ const addCategory=async(req,res)=>{
         
         const categoryExist=await Category.findOne({name})
 
-        console.log('category got from db is : ',categoryExist);
+        console.log('category from db at addCategory is : ',categoryExist);
         if(categoryExist){
-           
+           console.log('duplicate cat found while cat creation , redirected back to category of admin');
+
+           req.flash('message','Category already exists')
+
             res.redirect('/admin/category')
         }else{
             const caseInsenstiveCategoryExist= await Category.findOne({

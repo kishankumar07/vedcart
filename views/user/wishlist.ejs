@@ -28,7 +28,7 @@
 								<th></th>
 							</tr>
 						</thead>
-                    <% console.log('wisgosd',wishlist) %>
+                    
                     <% if(wishlist) {%>
                         <% for(let i=0;i< wishlist.products.length;i++) {%>    
 						<tbody>
@@ -77,8 +77,13 @@
                                         <i class="icon-list-alt"></i>Select Options
                                     </button>
 
+                                  
+
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" style="background-color: rgb(109, 200, 35);" href="#">Add to cart</a>
+                                        <!-- Pass the product ID as an argument to the addToCart function -->
+                                        <a class="dropdown-item" style="background-color: rgb(109, 200, 35);" href="#" onclick="addToCart(event,'<%= wishlist.products[i].product %>','<%= user %>')">Add to cart</a>
+                                    </div>
+                                    
 
 
                                         <a class="dropdown-item"
@@ -352,7 +357,9 @@
 
 
 <script>
-//to remove wishlist item
+
+
+//to remove wishlist item===================================
 function removeWishItem(event, productId, userId) {
   event.preventDefault();
 
@@ -373,6 +380,33 @@ function removeWishItem(event, productId, userId) {
     console.error('Error removing wish item:', error);
   });
 }
+
+//=============   adding the product to cart ======================
+
+
+    async function addToCart(productId) {
+        try {
+            const response = await fetch(`/addToCart?id=${productId}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show success message using SweetAlert or any other method
+                alert('Product added to cart successfully!');
+            } else {
+                // Handle error
+                console.error('Error:', data.message);
+                alert('Failed to add product to cart');
+            }
+        } catch (error) {
+            console.error('Error occurred:', error);
+            alert('Failed to add product to cart');
+        }
+    }
+
+
+
+
+
 
 
 

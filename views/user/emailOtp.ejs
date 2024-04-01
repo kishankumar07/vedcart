@@ -222,17 +222,41 @@
             console.log("data : ", data);
             
                 
-              if (data.otp == "lessNum") {
+              if (data.otp == "invalidOtp") {
               otpErrorElement.textContent = data.message;
             } else if (data.otp == "noRecord") {
               otpErrorElement.textContent = data.message;
             }else if (data.otp == "inValid") {
               otpErrorElement.textContent = data.message;
+            }else if (data.otp == "lessNum") {
+              otpErrorElement.textContent = data.message;
             }
 
-             else if (data.otp == true) {
+            else if (data.otp == true) {
+        // Check if linkGoogle flag is present
+        if (data.linkGoogle) {
+          // Display SweetAlert asking user to link Google account
+          Swal.fire({
+            title: 'Link Google Account',
+            text: 'Would you like to link your Google account?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No',
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // If user confirms, redirect to Google authentication page
+              window.location.href = `/google`; // Change this to your actual route for Google authentication
+            } else {
+              // If user cancels, redirect to home page
               window.location.href = "/";
             }
+          });
+        } else {
+          // Redirect to home page if linkGoogle flag is not present
+          window.location.href = "/";
+        }
+      }
           })
           .catch((error) => {
             // Handle errors
@@ -285,7 +309,7 @@ function resendOTP(email) {
           title: "Resend OTP",
           text: "OTP Successfully sent to <%= locals.email%>",
           icon: "success",
-          timer: 3000,
+          timer: 2000,
           showConfirmButton: false, // This removes the button
         });
       } else {

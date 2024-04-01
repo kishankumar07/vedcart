@@ -16,8 +16,8 @@ router.get('/login',adminAuth.isLoggedOut,adminController.adminLogin);
 router.post('/login',adminController.verifyAdminLogin);
 router.get('/dashboard',adminAuth.isLoggedIn,adminController.adminDashboard);
 router.get('/logout',adminController.logout);
-router.get('/users',adminController.userField)
-router.post('/toggleBlock',adminController.toggleBlockStatus)
+router.get('/users',adminAuth.isLoggedIn,adminController.userField)
+router.post('/toggleBlock',adminAuth.isLoggedIn,adminController.toggleBlockStatus)
 
 
 

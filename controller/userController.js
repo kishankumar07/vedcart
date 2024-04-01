@@ -4,9 +4,10 @@ const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
 const speakeasy = require("speakeasy");
 const OTP = require("../model/otpModel");
+
 let Category = require("../model/categoryModel");
 let Product = require("../model/productModel");
-let Wishlist = require('../model/wishListModel')
+let Wishlist = require("../model/wishListModel");
 
 //===========error- 500=======================
 
@@ -32,7 +33,7 @@ const loadIndex = async (req, res) => {
   try {
     let user = req.session.userData;
     let userNameforProfile = await User.findById(user);
-    
+
     let category = await Category.find({ status: "active" });
 
     let product = [];
@@ -51,10 +52,7 @@ const loadIndex = async (req, res) => {
       }
     });
 
-   
- 
-
-    res.render("home", { userNameforProfile,user,category, product });
+    res.render("home", { userNameforProfile, user, category, product });
   } catch (error) {
     console.log("Error happens in userController loadIndex function:", error);
   }
@@ -152,28 +150,28 @@ function generateotp() {
   return otp;
 }
 
-async function otpGenerationAndMailSent(email) {
-  const otp = generateotp();
-  console.log("--------------------------------------", otp);
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    port: 587,
-    secure: false,
-    requireTLS: true,
-    auth: {
-      user: process.env.AUTH_MAIL,
-      pass: process.env.AUTH_PASS,
-    },
-  });
-  const info = await transporter.sendMail({
-    from: process.env.AUTH_MAIL,
-    to: email,
-    subject: "Verify Your Account",
-    text: `your OTP is :${otp}`,
-    html: `<b> <h4> Your OTP ${otp}</h4> `,
-  });
-  return { info, otp };
-}
+// async function otpGenerationAndMailSent(email) {
+//   const otp = generateotp();
+//   console.log("--------------------------------------", otp);
+//   const transporter = nodemailer.createTransport({
+//     service: "gmail",
+//     port: 587,
+//     secure: false,
+//     requireTLS: true,
+//     auth: {
+//       user: process.env.AUTH_MAIL,
+//       pass: process.env.AUTH_PASS,
+//     },
+//   });
+//   const info = await transporter.sendMail({
+//     from: process.env.AUTH_MAIL,
+//     to: email,
+//     subject: "Verify Your Account",
+//     text: `your OTP is :${otp}`,
+//     html: `<b> <h4> Your OTP ${otp}</h4> `,
+//   });
+//   return { info, otp };
+// }
 
 //========otp sending after saving to db=====
 
@@ -293,16 +291,22 @@ const createUser = async (req, res) => {
 let verifyOTP = async (req, res) => {
   try {
     let otp = req.body.otp;
-    console.log("otp type from fetch is :", typeof otp);
+
+    // console.log("otp type from fetch is :", typeof otp);
     console.log("otp sent by fetch is ", otp);
+
     if (!otp) {
       res.json({ otp: "noRecord", message: "Field should not be blank" });
+
+
     } else if (otp.length !== 6) {
       console.log("otp length in otp.length is ", otp.length);
       res.json({
         otp: "lessNum",
         message: `Please enter all the 6 digits sent to Email`,
       });
+
+      
     } else {
       let userId = req.session.userData._id;
 
@@ -313,11 +317,14 @@ let verifyOTP = async (req, res) => {
       let otpFromdb = otpFromDatabase.otp;
 
       if (otp !== otpFromdb) {
+        //if user entered otp is different from the otp present in the database.
         res.json({
-          otp: "lessNum",
+          otp: "invalidOtp",
           message: `invalid otp...`,
         });
       } else {
+        //case where user enterd data is correct and going to save data into the database that user is verified
+
         let userverified = await User.findByIdAndUpdate(
           userId,
           { isVerified: "true" },
@@ -329,7 +336,7 @@ let verifyOTP = async (req, res) => {
         );
 
         if (userverified) {
-          res.json({ otp: true });
+          res.json({ otp: true, linkGoogle: true }); // Adding linkGoogle flag
         }
       }
     }
@@ -337,6 +344,7 @@ let verifyOTP = async (req, res) => {
     console.log(`Here is the error ${err.message}`);
   }
 };
+
 //==================RESEND OTP======================================
 const resendOTP = async (req, res) => {
   try {
@@ -405,91 +413,93 @@ const signout = async (req, res) => {
 //=============shop list page======================
 let shopPage = async (req, res) => {
   try {
-    let user = req.session.userData;
-    let userNameforProfile = await User.findById(user);
+    const user = req.session.userData;
+    const userNameforProfile = await User.findById(user);
     const category = await Category.find({ status: "active" });
     let categoryName = "All"; // Default category name
+    let selectedCategoryId = req.query.category || "";
 
-    if (req.query.category) {
-      const selectedCategory = await Category.findOne({
-        _id: req.query.category,
-      });
+    let filters = { status: "active" };
+
+    if (selectedCategoryId && selectedCategoryId !== "all") {
+      // Only apply category filter if a valid category is selected
+      const selectedCategory = await Category.findById(selectedCategoryId);
       if (selectedCategory) {
         categoryName = selectedCategory.name;
+        filters.category = selectedCategoryId;
+      } else {
+        // If the selected category is invalid, reset it to "all"
+        selectedCategoryId = "all";
       }
     }
 
-    let product = [];
-
-    if (req.query.category) {
-      // console.log("reached shopPage whre a particular category was selected");
-      // Filter products based on the selected category
-      product = await Product.find({
-        status: "active",
-        category: req.query.category,
+    let product = await Product.find(filters)
+      .populate({
+        path: "category",
+        model: "Category",
       })
-        .populate({
-          path: "category",
-          model: "Category",
-        })
-        .exec();
-    } else {
-      // Fetch all products if no category is selected
-      // console.log("reached shopPage where no specific category is selcted");
-      product = await Product.find({ status: "active" })
-        .populate({
-          path: "category",
-          model: "Category",
-        })
-        .exec();
+      .exec();
+
+    // Apply price sorting based on the selected filter
+    const selectedFilter = req.query.filter || "lowToHigh";
+    if (selectedFilter === "lowToHigh") {
+      product.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+    } else if (selectedFilter === "highToLow") {
+      product.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
     }
-// console.log('to check whether user is passed to the shop page',user);
+
     res.render("shopPage", {
       product,
       user,
       category,
       userNameforProfile,
-      selectedCategoryId: req.query.category || "",
+      selectedCategoryId,
       categoryName,
+      selectedFilter,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).render("/error");
+    res.status(500).render("error");
   }
 };
 
 //============== a product page selected====================
-
 
 const aProductPage = async (req, res) => {
   try {
     let user = req.session.userData;
     let userNameforProfile = await User.findById(user);
 
+    let queriedProduct = req.query.id;
 
-      let queriedProduct = req.query.id;
+    const aProductFoundFromDb = await Product.findById(queriedProduct)
+      .populate("category")
+      .exec();
 
-      const aProductFoundFromDb = await Product.findById(queriedProduct).populate("category").exec();
+    let relatedProductCat = aProductFoundFromDb.category;
 
-      let relatedProductCat = aProductFoundFromDb.category;
+    let category = await Category.find({ status: "active" });
 
-      let category = await Category.find({ status: "active" });
+    let product = await Product.find({ status: "active" })
+      .populate("category")
+      .exec();
 
-      let product = await Product.find({ status: "active" }).populate("category").exec();
-      
-      let relatedProd = product.filter(product => product.category._id.toString() === relatedProductCat._id.toString());
+    let relatedProd = product.filter(
+      (product) =>
+        product.category._id.toString() === relatedProductCat._id.toString()
+    );
 
-      res.render("aProductPage", {
-          user,
-          userNameforProfile,
-          product,
-          category,
-          relatedProd,
-          aProductFoundFromDb,
-      });
+    res.render("aProductPage", {
+      user,
+      userNameforProfile,
+      product,
+      category,
+      relatedProd,
+      aProductFoundFromDb,
+    });
   } catch (error) {
-      console.error("Error during aProductPage:", error);
-      res.redirect("/error");
+    console.error("Error during aProductPage:", error);
+    res.redirect("/error");
   }
 };
 
@@ -498,7 +508,7 @@ const aProductPage = async (req, res) => {
 //     let user = req.session.userData;
 //     let queriedProduct = req.query.id;
 //     let relatedProd = [];
-   
+
 //     const aProductFoundFromDb = await Product.findById(queriedProduct)
 //       .populate({
 //         path: "category",
@@ -517,8 +527,6 @@ const aProductPage = async (req, res) => {
 //       })
 //       .exec();
 
-   
-
 //     pro.forEach((e) => {
 //       if (e.category.status == "active") {
 //         product.push(e);
@@ -530,7 +538,7 @@ const aProductPage = async (req, res) => {
 //         product[i].category._id.toString() === relatedProductCat._id.toString()
 //       ) {
 //         relatedProd.push(product[i]);
-        
+
 //       }
 //     }
 
@@ -547,9 +555,6 @@ const aProductPage = async (req, res) => {
 //   }
 // };
 
-
-
-
 //============== wish list page ===================
 const wishList = async (req, res) => {
   try {
@@ -557,21 +562,18 @@ const wishList = async (req, res) => {
     let userNameforProfile = await User.findById(user);
 
     let category = await Category.find({ status: "active" });
-      let wishlist = await Wishlist.findOne({user:user})
-      // let product = await Product.find({ status: "active" }).populate("category").exec();
+    let wishlist = await Wishlist.findOne({ user: user });
+    // let product = await Product.find({ status: "active" }).populate("category").exec();
 
-// console.log('wishlist at wishlist controller: ',wishlist);
-   res.render('wishlist',{userNameforProfile,user,category,wishlist})
+    // console.log('wishlist at wishlist controller: ',wishlist);
+    res.render("wishlist", { userNameforProfile, user, category, wishlist });
   } catch (error) {
     console.error("Error during wishlist:", error);
     res.redirect("/error");
   }
 };
 
-
-
 //==========add to wishlist list page====================
-
 
 //add products to wishlist
 const addProductToWishList = async (req, res) => {
@@ -593,19 +595,19 @@ const addProductToWishList = async (req, res) => {
       );
 
       if (existingProduct) {
-        res.json({ success: false, message: 'Already added' });
+        res.json({ success: false, message: "Already added" });
       } else {
         // Product is not in the wishlist, add it
         wishFind.products.push({
           product: product._id,
           price: product.price,
           name: product.name,
-          image:product.images,
+          image: product.images,
           quantity: product.quantity,
         });
 
         await wishFind.save();
-        res.json({ success: true, message: 'Added' });
+        res.json({ success: true, message: "Added" });
       }
     } else {
       // User does not have a wishlist document, create a new one
@@ -616,18 +618,18 @@ const addProductToWishList = async (req, res) => {
             product: product._id,
             price: product.price,
             name: product.name,
-            image:product.images,
+            image: product.images,
             quantity: product.quantity,
-          }
-        ]
+          },
+        ],
       });
 
       await wishAdd.save();
-      res.json({ success: true, message: 'Added' });
+      res.json({ success: true, message: "Added" });
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -635,38 +637,30 @@ const addProductToWishList = async (req, res) => {
 
 const productremovefromwish = async (req, res) => {
   try {
-     const product = await Product.findById(req.query.productId);
-     console.log('this is the wishfound from remove wish:', product);
- 
-     const currentUser = await User.findById(req.query.userId);
- 
-     // Ensure productId is included in the request query parameters
-     if (!req.query.productId) {
-       return res.status(400).json({ success: false, message: 'Product ID is required.' });
-     }
- 
-     // Correctly use the productId in the $pull operation
-     await Wishlist.updateOne(
-       { user: currentUser._id },
-       { $pull: { 'products': { 'product': product.id } } }
-     );
- 
-     res.json({ success: true });
+    const product = await Product.findById(req.query.productId);
+    console.log("this is the wishfound from remove wish:", product);
+
+    const currentUser = await User.findById(req.query.userId);
+
+    // Ensure productId is included in the request query parameters
+    if (!req.query.productId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Product ID is required." });
+    }
+
+    // Correctly use the productId in the $pull operation
+    await Wishlist.updateOne(
+      { user: currentUser._id },
+      { $pull: { products: { product: product.id } } }
+    );
+
+    res.json({ success: true });
   } catch (error) {
-     console.error('Error removing product from wishlist:', error);
-     res.json({ success: false });
+    console.error("Error removing product from wishlist:", error);
+    res.json({ success: false });
   }
- };
- 
-
-
-
-
-
-
-
-
-
+};
 
 module.exports = {
   loadIndex,
@@ -684,8 +678,3 @@ module.exports = {
   addProductToWishList,
   productremovefromwish,
 };
-
-
-
-
-

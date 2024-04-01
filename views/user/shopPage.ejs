@@ -144,7 +144,7 @@
                           <% } else { %>
                               <a
                                   href="#"
-                                  onclick="wishList('<%= product[i]._id %>','')"
+                                  onclick="wishList(event,'<%= product[i]._id %>','')"
                                   class="btn-product-icon btn-wishlist btn-expandable"
                               >
                                   <span>add to wishlist</span>
@@ -173,9 +173,10 @@
 
                           <div class="product-action">
                             <a
-                              href="#"
+                              href="#" 
                               class="btn-product btn-cart"
                               title="Add to cart"
+                              onclick="addToCart('<%= product[i].id %>')"
                               ><span>add to cart</span></a
                             >
                           </div>
@@ -354,93 +355,38 @@
                   <div class="widget">
                     <h3 class="widget-title">Price</h3>
                     <!-- End .widget-title -->
-
+                
                     <div class="widget-body">
-                      <div class="filter-items">
-                        <div class="filter-item">
-                          <div class="custom-control custom-radio">
-                            <input
-                              type="radio"
-                              class="custom-control-input"
-                              id="price-1"
-                              name="filter-price"
-                            />
-                            <label class="custom-control-label" for="price-1"
-                              >Under $25</label
-                            >
-                          </div>
-                          <!-- End .custom-checkbox -->
+                        <div class="filter-items">
+                            <div class="filter-item">
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" class="custom-control-input" id="price-1" name="filter-price" value="lowToHigh" onchange="filterProducts(this)" <% if(selectedFilter === 'lowToHigh') { %>checked<% } %> />
+                                    <label class="custom-control-label" for="price-1">Low to High</label>
+                                </div>
+                                <!-- End .custom-checkbox -->
+                            </div>
+                            <!-- End .filter-item -->
+                
+                            <div class="filter-item">
+                                <div class="custom-control custom-radio">
+                                    <input type="radio" class="custom-control-input" id="price-2" name="filter-price" value="highToLow" onchange="filterProducts(this)" <% if(selectedFilter === 'highToLow') { %>checked<% } %> />
+                                    <label class="custom-control-label" for="price-2">High to Low</label>
+                                </div>
+                                <!-- End .custom-checkbox -->
+                            </div>
+                            <!-- End .filter-item -->
                         </div>
-                        <!-- End .filter-item -->
-
-                        <div class="filter-item">
-                          <div class="custom-control custom-radio">
-                            <input
-                              type="radio"
-                              class="custom-control-input"
-                              id="price-2"
-                              name="filter-price"
-                            />
-                            <label class="custom-control-label" for="price-2"
-                              >$25 to $50</label
-                            >
-                          </div>
-                          <!-- End .custom-checkbox -->
-                        </div>
-                        <!-- End .filter-item -->
-
-                        <div class="filter-item">
-                          <div class="custom-control custom-radio">
-                            <input
-                              type="radio"
-                              class="custom-control-input"
-                              id="price-3"
-                              name="filter-price"
-                            />
-                            <label class="custom-control-label" for="price-3"
-                              >$50 to $100</label
-                            >
-                          </div>
-                          <!-- End .custom-checkbox -->
-                        </div>
-                        <!-- End .filter-item -->
-
-                        <div class="filter-item">
-                          <div class="custom-control custom-radio">
-                            <input
-                              type="radio"
-                              class="custom-control-input"
-                              id="price-4"
-                              name="filter-price"
-                            />
-                            <label class="custom-control-label" for="price-4"
-                              >$100 to $200</label
-                            >
-                          </div>
-                          <!-- End .custom-checkbox -->
-                        </div>
-                        <!-- End .filter-item -->
-
-                        <div class="filter-item">
-                          <div class="custom-control custom-radio">
-                            <input
-                              type="radio"
-                              class="custom-control-input"
-                              id="price-5"
-                              name="filter-price"
-                            />
-                            <label class="custom-control-label" for="price-5"
-                              >$200 & Above</label
-                            >
-                          </div>
-                          <!-- End .custom-checkbox -->
-                        </div>
-                        <!-- End .filter-item -->
-                      </div>
-                      <!-- End .filter-items -->
+                        <!-- End .filter-items -->
                     </div>
                     <!-- End .widget-body -->
-                  </div>
+                </div>
+                <script>
+                  function filterProducts(input) {
+    const filterValue = input.value;
+    window.location.href = `/shop?filter=${filterValue}`;
+}
+
+                </script>
                   <!-- End .widget -->
 
                   <div class="widget">
@@ -612,27 +558,48 @@
 
           //category selection based on filtarion
 
-         
-    document.addEventListener("DOMContentLoaded", function() {
-        const selectedCategoryId = '<%= selectedCategoryId %>'; // Get selected category ID from EJS
-        const radioButton = document.querySelector(`input[value="${selectedCategoryId}"]`);
-        if (!selectedCategoryId) {
-            const allRadioButton = document.querySelector('input[name="category"][value="all"]');
-            if (allRadioButton) {
-                allRadioButton.checked = true;
-            }
-        } else if (radioButton) {
-            radioButton.checked = true;
-        }
-    });
+          let selectedCategoryId = '<%= selectedCategoryId %>'; // Variable to store the selected category ID
+let selectedFilter = ''; // Variable to store the selected filter value
 
-    function selectCategory(categoryId) {
-        if (categoryId === 'all') {
-            window.location.href = '/shop'; // Redirect to shop page without specifying a category
-        } else {
-            window.location.href = `/shop?category=${categoryId}`;
+document.addEventListener("DOMContentLoaded", function() {
+    const radioButton = document.querySelector(`input[value="${selectedCategoryId}"]`);
+    if (radioButton) {
+        radioButton.checked = true; // Check the radio button for the selected category
+    } else {
+        const allRadioButton = document.querySelector('input[name="category"][value="all"]');
+        if (allRadioButton) {
+            allRadioButton.checked = true; // Check the "All" radio button if no specific category is selected
         }
     }
+    const filterRadios = document.querySelectorAll('input[name="filter-price"]');
+    filterRadios.forEach(radio => {
+        if (radio.checked) {
+            selectedFilter = radio.value; // Set the selected filter value
+        }
+        radio.addEventListener('change', function() {
+            selectedFilter = this.value; // Update the selected filter value when changed
+            updateURL(); // Update the URL when the filter is changed
+        });
+    });
+});
+
+function selectCategory(categoryId) {
+    selectedCategoryId = categoryId; // Update the selected category ID
+    updateURL(); // Update the URL when the category is changed
+}
+
+function updateURL() {
+    if (selectedCategoryId === 'all') {
+        window.location.href = `/shop?filter=${selectedFilter}`; // Redirect to shop page with the selected filter and no specific category
+    } else {
+        window.location.href = `/shop?category=${selectedCategoryId}&filter=${selectedFilter}`; // Redirect to shop page with both the selected category and filter
+    }
+}
+
+
+
+
+
 
 
 
@@ -745,9 +712,55 @@ else{
 }
 
 }
+//=========================  a d d  t o   c a r t ====================
+function addToCart(id) {
+// console.log('id at browser console',id);
+let cartCountValue = parseInt($("#cart-Count").text());
+cartCountValue += 1;
+
+// Set the incremented value back to the span
+$("#cart-Count").text(cartCountValue);
+
+
+$.ajax({
+    url: `/addToCart?id=${id}`,
+    method: "post",
+    success: (response) => {
+
+        if (response.status) {
+            Swal.fire({
+                title: 'ADD TO CART',
+                text: 'Product Added to cart',
+                icon: 'success',
+                timer: 1000,
+                showConfirmButton: false, // This removes the button
+            });
+
+        } else {
+            alert('error')
+        }
+
+    }
+})
+
+}
+
+
+
+
+
+
 
 
   </script>
 
 
 <%- include('./layouts/footer.ejs') %>
+
+
+
+
+
+
+
+

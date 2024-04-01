@@ -138,12 +138,13 @@
                   </div>
                   <!-- End .product-details-quantity -->
 
-                  <a href="#" class="btn-product btn-cart"
+                  <a href="#" class="btn-product btn-cart" onclick="addToCart('<%= aProductFoundFromDb.id %>')"
                     ><span>add to cart</span></a
                   >
                 </div>
                 <!-- End .details-action-col -->
 
+             
               
 
 
@@ -552,7 +553,9 @@
 
 
 <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
 
@@ -665,11 +668,41 @@ function wishList(productId,userId){
         });
 
 
-
-
 }
 
-        
+        //===========add to cart------------------------
+
+        function addToCart(id) {
+
+let cartCountValue = parseInt($("#cart-Count").text());
+cartCountValue += 1;
+
+// Set the incremented value back to the span
+$("#cart-Count").text(cartCountValue);
+
+
+$.ajax({
+    url: `/addToCart?id=${id}`,
+    method: "get",
+    success: (response) => {
+
+        if (response.status) {
+            Swal.fire({
+                title: 'ADD TO CART',
+                text: 'Product Added to cart',
+                icon: 'success',
+                timer: 1000,
+                showConfirmButton: false, // This removes the button
+            });
+
+        } else {
+            alert('error')
+        }
+
+    }
+})
+
+}
 
   
 
