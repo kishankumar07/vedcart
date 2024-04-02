@@ -181,3 +181,37 @@ const createUser = async (name, email, mobile, password, googleId) => {
   }
   return user;
 };
+
+
+
+// for adding products to the cart a sample code
+
+// <!DOCTYPE html>
+// <html lang="en">
+// <head>
+//   <meta charset="UTF-8">
+//   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+//   <title>Add to Cart</title>
+// </head>
+// <body>
+//   <button onclick="addToCart()">Add to Cart</button>
+
+//   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+//   <script>
+//     function addToCart() {
+//       const productId = 'product_id_here'; // Replace with actual product ID
+//       const quantity = 1; // Replace with desired quantity
+
+//       axios.post('/api/cart/add', { productId, quantity })
+//         .then(response => {
+//           console.log('Product added to cart:', response.data.cart);
+//           // Display success message to the user
+//         })
+//         .catch(error => {
+//           console.error('Error adding product to cart:', error.response.data.message);
+//           // Display error message to the user
+//         });
+//     }
+//   </script>
+// </body>
+// </html>

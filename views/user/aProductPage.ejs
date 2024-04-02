@@ -138,7 +138,7 @@
                   </div>
                   <!-- End .product-details-quantity -->
 
-                  <a href="#" class="btn-product btn-cart" onclick="addToCart('<%= aProductFoundFromDb.id %>')"
+                  <a href="#" class="btn-product btn-cart" onclick="addToCart('<%= aProductFoundFromDb.id %>');return false;"
                     ><span>add to cart</span></a
                   >
                 </div>
@@ -554,11 +554,13 @@
 
 <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
   $(document).ready(function () {
     // Function to initialize Elevate Zoom
@@ -670,41 +672,60 @@ function wishList(productId,userId){
 
 }
 
-        //===========add to cart------------------------
+   
 
-        function addToCart(id) {
-
-let cartCountValue = parseInt($("#cart-Count").text());
-cartCountValue += 1;
-
-// Set the incremented value back to the span
-$("#cart-Count").text(cartCountValue);
-
-
-$.ajax({
-    url: `/addToCart?id=${id}`,
-    method: "get",
-    success: (response) => {
-
-        if (response.status) {
-            Swal.fire({
-                title: 'ADD TO CART',
-                text: 'Product Added to cart',
-                icon: 'success',
-                timer: 1000,
-                showConfirmButton: false, // This removes the button
-            });
-
-        } else {
-            alert('error')
-        }
-
-    }
-})
-
-}
-
+    
+//======add this particular product to cart=================
   
+function addToCart(productId) {
+        // event.preventDefault();
+  const quantity = 1; // Replace with desired quantity
+  
+  axios.post('/addToCart', { productId, quantity })
+    .then(response => {
+    //   console.log('Response from server at home cart addition:', response.data);
+
+
+      if (response.data.data === 'noUser') {
+        // User not logged in
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'You need to sign in to add products to your cart.',
+        });
+      } else if (response.data.data === 'notFound') {
+        // Product not found
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Product not found.',
+        });
+      } else if (response.data.data === 'stockOut') {
+        // Insufficient stock
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Insufficient stock.',
+        });
+      } else if (response.data.data === true) {
+        // Product added successfully
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Product added to cart successfully!',
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Error adding product to cart:', error);
+      // Display generic error message for other errors
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Failed to add product to cart.',
+      });
+    });
+}
 
 
 

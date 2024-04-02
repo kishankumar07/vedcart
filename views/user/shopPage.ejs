@@ -176,7 +176,7 @@
                               href="#" 
                               class="btn-product btn-cart"
                               title="Add to cart"
-                              onclick="addToCart('<%= product[i].id %>')"
+                              onclick="addToCart('<%= user %>','<%= product[i].id %>');return false;"
                               ><span>add to cart</span></a
                             >
                           </div>
@@ -551,7 +551,7 @@
         <!-- End .page-content -->
 
 
-
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
  <script>
@@ -713,37 +713,83 @@ else{
 
 }
 //=========================  a d d  t o   c a r t ====================
-function addToCart(id) {
-// console.log('id at browser console',id);
-let cartCountValue = parseInt($("#cart-Count").text());
-cartCountValue += 1;
-
-// Set the incremented value back to the span
-$("#cart-Count").text(cartCountValue);
 
 
-$.ajax({
-    url: `/addToCart?id=${id}`,
-    method: "post",
-    success: (response) => {
+function addToCart(user,productId) {
 
-        if (response.status) {
-            Swal.fire({
-                title: 'ADD TO CART',
-                text: 'Product Added to cart',
-                icon: 'success',
-                timer: 1000,
-                showConfirmButton: false, // This removes the button
-            });
-
-        } else {
-            alert('error')
+  if(!user){
+    Swal.fire({
+        title: 'Login to Purchase',
+        text: 'To make a purchase, please log in.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Login'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            window.location.href = '/signin';
         }
+    });
+  }
+else{
 
-    }
-})
+   // event.preventDefault();
+   const quantity = 1; // Replace with desired quantity
+  
+  axios.post('/addToCart', { productId, quantity })
+    .then(response => {
+    //   console.log('Response from server at home cart addition:', response.data);
+
+
+      if (response.data.data === 'noUser') {
+        // User not logged in
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'You need to sign in to add products to your cart.',
+        });
+      } else if (response.data.data === 'notFound') {
+        // Product not found
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Product not found.',
+        });
+      } else if (response.data.data === 'stockOut') {
+        // Insufficient stock
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'Insufficient stock.',
+        });
+      } else if (response.data.data === true) {
+        // Product added successfully
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: 'Product added to cart successfully!',
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Error adding product to cart:', error);
+      // Display generic error message for other errors
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: 'Failed to add product to cart.',
+      });
+    });
+}
+
+
+
+
 
 }
+
 
 
 

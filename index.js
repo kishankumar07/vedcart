@@ -46,6 +46,9 @@ passport.use(new GoogleStrategy({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL,
     passReqToCallback: true
+
+
+    
 }, async function (req, accessToken, refreshToken, profile, cb) {
     try {
         // Search for the user in the database based on Google profile ID

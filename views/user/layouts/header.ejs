@@ -36,7 +36,7 @@
     <link rel="stylesheet" href="/userAssets/home/assets/css/style.css">
     <link rel="stylesheet" href="/userAssets/home/assets/css/skins/skin-demo-13.css">
     <link rel="stylesheet" href="/userAssets/home/assets/css/demos/demo-13.css">
-
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
    
 
 </head>
@@ -85,7 +85,14 @@
                                 
                                 
                                 <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static" title="Compare Products" aria-label="Compare Products">
-                                    <i class="icon-user"></i>
+                                  
+                                    <lord-icon
+                                    src="https://cdn.lordicon.com/cjhlqtae.json"
+                                    trigger="loop"
+                                    state="loop-roll"
+                                    style="width:40px;height:40px">
+                                </lord-icon>
+
                                     <span class="compare-txt">Login to explore more</span>
                                 </a>
 
@@ -106,7 +113,13 @@
                                 
                                 
                                     <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static" title="Compare Products" aria-label="Compare Products">
-                                        <i class="icon-user"></i>
+                                        <lord-icon
+                                        src="https://cdn.lordicon.com/lhwyshcs.json"
+                                        trigger="loop"
+                                        delay="2000"
+                                        state="hover-wave"
+                                        style="width:40px;height:40px">
+                                    </lord-icon>
                                         <span class="compare-txt">Hello   <%=userNameforProfile.name%></span>
                                     </a>
     
@@ -130,7 +143,12 @@
 
                                 <% if(userNameforProfile) {%>
                             <a  href="/wishlist" class="wishlist-link">
-                                <i class="icon-heart-o"></i>
+                                <lord-icon
+                                src="https://cdn.lordicon.com/etgnxeer.json"
+                                trigger="loop"
+                                delay="1500"
+                                style="width:40px;height:35px">
+                            </lord-icon>
                                 <!-- <span class="wishlist-count">3</span> -->
                                 <span class="wishlist-txt">Wishlist</span>
                             </a>
@@ -142,7 +160,12 @@
                             <div class="dropdown cart-dropdown">
                                 <% if(userNameforProfile) {%>
                                 <a href="/cart" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
-                                    <i  class="icon-shopping-cart"></i>
+                                    <lord-icon
+                                    src="https://cdn.lordicon.com/guothkao.json"
+                                    trigger="loop"
+                                    delay="2000"
+                                    style="width:40px;height:40px">
+                                </lord-icon>
                                     <!-- <span class="cart-count">2</span> -->
                                     <span class="cart-txt">Cart</span>
                                 </a>
