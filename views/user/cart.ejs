@@ -40,31 +40,34 @@
 				</thead>
 				<tbody>
 
-					<!-- <% console.log('allProducts:', allProducts); %> -->
+					
 
-					<% if (allProducts && allProducts.length > 0) { %> 
+					
 
-						 <% for(let i=0;i< allProducts.length;i++) { %>
-						<tr>
+
+					<% if(cart && cart.Products.length > 0) { %>
+							<% cart.Products.forEach(item => { %>
+                
+						<tr data-product-id="<%= item._id %>">
 						  <td class="product-col">
 							<div class="product">
 							  <figure class="product-media">
 								<a href="#">
 								  <img
-									src="adminAssets/imgs/category/<%=allProducts[i].images[0] %>"
+									src="adminAssets/imgs/category/<%=item.images[0] %>"
 									alt="Product image"
 								  />
 								</a>
 							  </figure>
 		
 							  <h3 class="product-title">
-								<a href="#"><%=allProducts[i].name %></a>
+								<a href="#"><%=item.name %></a>
 							  </h3>
 							  <!-- End .product-title -->
 							</div>
 							<!-- End .product -->
 						  </td>
-						  <td class="price-col">Rs.  <%=allProducts[i].price %></td>
+						  <td class="price-col">Rs.  <%=item.price %></td>
 						  <td class="quantity-col">
 							<div class="cart-product-quantity">
 							  <input
@@ -80,32 +83,41 @@
 							</div>
 							<!-- End .cart-product-quantity -->
 						  </td>
-						  <td class="total-col">Rs.  <%= allProducts[i].subTotal %></td>
+						  <td class="total-col">Rs.  <%= item.subTotal %></td>
+
 						  <td class="remove-col">
-							<button class="btn-remove">
+							<!-- Add button to move product to save for later -->
+							<button class="btn-remove" onclick="moveToSaveForLater('<%= item._id %>');return false;">Save for Later</button>
+						</td>
+
+
+						  <td class="remove-col">
+							<button class="btn-remove" onclick="deleteCartItem('<%= item._id %>')">
 							  <i class="icon-close"></i>
 							</button>
 						  </td>
 						</tr>
-		
-							<% } %>
-						<% } else { %>
-						<tr>
-							<td colspan="5">
-								<div class="col-6 col-sm-4 col-lg-2">
-									<a href="category.html" class="cat-block">
-										<figure>
-											<span>
-												<img src="/userAssets/home/assets/images/cart_animation.gif" alt="Category image" />
-											</span>
-										</figure>
-										<h3 class="cat-block-title">Looks like your cart is empty</h3>
-									</a>
-								</div>
-							</td>
-						</tr>
-					<% } %>
-					<tr>
+
+
+             
+						<% }); %>
+							<% }else{ %>
+								  <!-- Table row for empty cart -->
+								  <tr>
+                                    <!-- Table columns for empty cart message and animation -->
+                                    <td colspan="6">
+                                        <a href="category.html" class="cat-block">
+                                            <figure>
+                                                <span>
+                                                    <img src="/userAssets/home/assets/images/cart_animation.gif" alt="Category image">
+                                                </span>
+                                            </figure>
+                                            <h3 class="cat-block-title">Oops...Looks like your cart is empty</h3>
+                                            <!-- End .cat-block-title -->
+                                        </a>
+                                    </td>
+                                </tr>
+								<% } %>
 						<td colspan="6" class="text-end">
 							<a href="/deleteCart" class="text-muted">
 								<i class="fi-rs-cross-small"></i> Clear Cart
@@ -260,36 +272,11 @@
           <!-- End .col-lg-3 -->
 		  <!-- Existing HTML code for cart page -->
 
-<!-- Add Save for Later section -->
-<div class="save-for-later">
-	<h2>Save for Later</h2>
-	<table class="table table-cart table-mobile">
-	  <thead>
-		<tr>
-		  <th>Product</th>
-		  <th>Price</th>
-		  <th>Actions</th>
-		</tr>
-	  </thead>
-	  <tbody>
-		<% if (savedItems && savedItems.length > 0) { %>
-		  <% savedItems.forEach(item => { %>
-			<tr>
-			  <td><%= item.name %></td>
-			  <td>Rs. <%= item.price %></td>
-			  <td>
-				<button onclick="moveToCart('<%= item._id %>')">Move to Cart</button>
-			  </td>
-			</tr>
-		  <% }) %>
-		<% } else { %>
-		  <tr>
-			<td colspan="3">No items saved for later</td>
-		  </tr>
-		<% } %>
-	  </tbody>
-	</table>
-  </div>
+
+
+
+
+
   
         </div>
         <!-- End .row -->
@@ -301,5 +288,71 @@
   <!-- End .page-content -->
 </main>
 <!-- End .main -->
+
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+<script>
+  // Function to delete a cart item
+ // Function to delete a cart item
+async function deleteCartItem(productId) {
+  try {
+    // Send a DELETE request to the server to delete the item
+    const response = await axios.delete('/deleteCartItem', { data: { productId } });
+    if (response.status === 200) {
+      // Remove the deleted product from the DOM
+      const rowToRemove = document.querySelector(`tr[data-product-id="${productId}"]`);
+      rowToRemove.remove();
+      // Check if the cart is empty after deletion
+      if (response.data.cartEmpty) {
+        // If cart is empty, show the empty cart message
+        showEmptyCartMessage();
+      }
+    } else {
+      console.error('Failed to delete product from cart');
+    }
+  } catch (error) {
+    console.error('Error deleting product from cart:', error);
+  }
+}
+
+// Function to display the empty cart message
+function showEmptyCartMessage() {
+  const emptyCartRow = `
+    <tr>
+      <td colspan="6">
+        <a href="category.html" class="cat-block">
+          <figure>
+            <span>
+              <img src="/userAssets/home/assets/images/cart_animation.gif" alt="Empty cart image">
+            </span>
+          </figure>
+          <h3 class="cat-block-title">Oops...Looks like your cart is empty</h3>
+        </a>
+      </td>
+    </tr>
+  `;
+  const tbody = document.querySelector('.table-cart tbody');
+  tbody.innerHTML = emptyCartRow;
+}
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <%- include('./layouts/footer') %>

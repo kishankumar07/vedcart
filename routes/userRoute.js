@@ -41,8 +41,10 @@ router.get("/productPage", userController.aProductPage);
 
 router.get("/cart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.cartLoad);
 router.post("/addToCart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.addToCart);
+router.delete("/deleteCartItem", userAuth.isBlocked, userAuth.isLoggedIn, cartController.deleteCartItem);
 
 
+// router.post("/moveToSaveForLater",userAuth.isBlocked,userAuth.isLoggedIn,cartController.moveToSaveForLater);
 
 
 

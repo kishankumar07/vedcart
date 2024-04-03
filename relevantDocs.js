@@ -215,3 +215,105 @@ const createUser = async (name, email, mobile, password, googleId) => {
 //   </script>
 // </body>
 // </html>
+
+
+//code for save for later at cart page 
+
+/* <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+async function moveToSaveForLater(productId) {
+  try {
+    const response = await axios.post('/moveToSaveForLater', { productId });
+    if (response.status === 200) {
+      const { removedProduct } = response.data;
+      // Remove the respective row from the cart table
+      const rowToRemove = document.querySelector(`tr[data-product-id="${removedProduct._id}"]`);
+      rowToRemove.remove();
+
+      // Add the removed product to the "Save for Later" section
+      const savedForLaterTable = document.querySelector('#savedForLaterTable tbody');
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td>${removedProduct.name}</td>
+        <td>Rs. ${removedProduct.price}</td>
+        <td>
+          <button onclick="moveToCart('${removedProduct._id}')">Move to Cart</button>
+        </td>
+      `;
+      savedForLaterTable.appendChild(newRow);
+
+      // Check if the cart is empty and display message dynamically
+      const cartTableBody = document.querySelector('.table-cart tbody');
+      if (!cartTableBody.querySelector('tr')) {
+        // Cart is empty, show the empty cart message
+        const emptyCartRow = `
+          <tr>
+            <td colspan="6">
+              <a href="category.html" class="cat-block">
+                <figure>
+                  <span>
+                    <img src="/userAssets/home/assets/images/cart_animation.gif" alt="Category image">
+                  </span>
+                </figure>
+                <h3 class="cat-block-title">Oops...Looks like your cart is empty</h3>
+                <!-- End .cat-block-title -->
+              </a>
+            </td>
+          </tr>
+        `;
+        cartTableBody.innerHTML = emptyCartRow;
+      }
+    } else {
+      console.error('Failed to move product to save for later');
+    }
+  } catch (error) {
+    console.error('Error moving product to save for later:', error);
+  }
+} */
+
+
+//save for later in the cart page
+
+// Define the controller function
+// const moveToSaveForLater = async (req, res) => {
+//     try {
+//       // Extract productId from the request body
+//       const { productId } = req.body;
+//       console.log('this is the product id ::',productId);
+//       // Find the cart associated with the user
+//       const cart = await Cart.findOne({ userId: req.session.userData });
+  
+//       // Find the index of the product to be moved in the Products array
+//       const index = cart.Products.findIndex(
+//         (item) => item.id === productId
+//       );
+  
+//       // If the product is found in the cart, remove it from Products array
+//       if (index !== -1) {
+//         const [product] = cart.Products.splice(index, 1);
+//         // Push the product to the savedForLater array
+//         cart.savedForLater.push(product);
+  
+//         console.log('this is what in save for later array',cart.savedForLater);
+  
+//         try {
+//           // Save the updated cart
+//           await cart.save();
+//           // Send the removed product as a response
+//           res.status(200).send({ message: "Product moved to save for later successfully", removedProduct: product });
+//         } catch (error) {
+//           console.error("Error saving cart:", error);
+//           res.status(500).send({ error: "Error saving cart" });
+//         }
+//       } else {
+//         console.log("reached else");
+//         // If the product is not found in the cart, send a failure response
+//         res.status(404).send({ error: "Product not found in the cart" });
+//       }
+//     } catch (error) {
+//       // If an error occurs, send an error response
+//       console.error("Error moving product to save for later:", error);
+//       res.status(500).send({ error: "Internal server error" });
+//     }
+//   };
+  

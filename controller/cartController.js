@@ -15,28 +15,47 @@ let Category = require("../model/categoryModel");
 //===========  Loading the cart page========================
 
 const cartLoad = async (req, res) => {
-    try {
-      let user = req.session.userData;
-      let userNameforProfile = await User.findById(user);
-      let category = await Category.find({});
-      
-//this is the  crucial part to be considered when you needa cart of that specific user
-      let carts = await Cart.find({ userId: user }).populate('Products.product');
+  try {
+    let user = req.session.userData;
+    let userNameforProfile = await User.findById(user);
+    let category = await Category.find({});
+
+    let carts = await Cart.findOne({ userId: user })
+      .populate("Products.product")
+     
+    // console.log('this is the cart page: ',carts);
+    res.render("cart", { user, category, cart: carts, userNameforProfile });
+  } catch (error) {
+    console.error("Error loading cart:", error);
+    res.redirect("/error");
+  }
+};
 
 
-    // let carts = await Cart.find({})
-      let allProducts = carts.reduce((acc, cart) => {
-        acc.push(...cart.Products);
-        return acc;
-      }, []);
-  
-      res.render('cart', { user, category, allProducts, userNameforProfile });
-    } catch (error) {
-      console.error('Error loading cart:', error);
-      res.redirect('/error');
-    }
-  };
 
+
+
+// const cartLoad = async (req, res) => {
+//     try {
+//       let user = req.session.userData;
+//       let userNameforProfile = await User.findById(user);
+//       let category = await Category.find({});
+
+// //this is the  crucial part to be considered when you needa cart of that specific user
+//       let carts = await Cart.find({ userId: user }).populate('Products.product');
+
+//     // let carts = await Cart.find({})
+//       let allProducts = carts.reduce((acc, cart) => {
+//         acc.push(...cart.Products);
+//         return acc;
+//       }, []);
+
+//       res.render('cart', { user, category, allProducts, userNameforProfile });
+//     } catch (error) {
+//       console.error('Error loading cart:', error);
+//       res.redirect('/error');
+//     }
+//   };
 
 //==========================    add to cart   ==========================
 
@@ -115,7 +134,52 @@ const addToCart = async (req, res) => {
   }
 };
 
+
+
+
+// Controller function to delete a subproduct from the cart
+let deleteCartItem = async (req, res) => {
+  try {
+    const { productId } = req.body;
+    // console.log('thsi is the product id::',typeof productId);
+    // Assuming userId is available in req.user, you might need to adjust this based on your authentication logic
+    const userId = req.user._id;
+
+    // Find the cart for the user
+    const cart = await Cart.findOne({ userId });
+
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found' });
+    }
+
+    // Remove the subproduct from the cart
+    cart.Products = cart.Products.filter(item => item._id.toString() !== productId);
+
+
+
+    // Save the updated cart
+    await cart.save();
+
+ // Check if the cart is empty
+ const cartEmpty = cart.Products.length === 0;
+
+ res.status(200).json({ message: 'Subproduct deleted successfully', cartEmpty });
+
+  } catch (error) {
+    console.error('Error deleting subproduct from cart:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+
+
+
+
+
+
 module.exports = {
   addToCart,
   cartLoad,
+  deleteCartItem,
 };
