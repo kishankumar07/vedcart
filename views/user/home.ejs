@@ -838,20 +838,23 @@ else{
     //   console.log('Response from server at home cart addition:', response.data);
 
 
-      if (response.data.data === 'noUser') {
-        // User not logged in
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'You need to sign in to add products to your cart.',
-        });
-      } else if (response.data.data === 'notFound') {
+      
+      if (response.data.data === 'notFound') {
         // Product not found
         Swal.fire({
           icon: 'error',
           title: 'Error!',
           text: 'Product not found.',
         });
+    }
+        else if (response.data.data === 'noUser') {
+        // Product not found
+        Swal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: 'User not logged in.',
+        });
+
       } else if (response.data.data === 'stockOut') {
         // Insufficient stock
         Swal.fire({

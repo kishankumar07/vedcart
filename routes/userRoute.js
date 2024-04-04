@@ -40,8 +40,13 @@ router.get("/productPage", userController.aProductPage);
 //  -- -- -- -- -- -- -- c a r t -- -- -- -- -- -- -- - - - - - - -- --
 
 router.get("/cart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.cartLoad);
+
 router.post("/addToCart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.addToCart);
+
 router.delete("/deleteCartItem", userAuth.isBlocked, userAuth.isLoggedIn, cartController.deleteCartItem);
+
+router.post("/updateCartItem",userAuth.isBlocked,userAuth.isLoggedIn,cartController.updateCartItem);
+
 
 
 // router.post("/moveToSaveForLater",userAuth.isBlocked,userAuth.isLoggedIn,cartController.moveToSaveForLater);
@@ -55,7 +60,10 @@ router.delete("/deleteCartItem", userAuth.isBlocked, userAuth.isLoggedIn, cartCo
 
 
 
+  
 
+
+  
 
 
 

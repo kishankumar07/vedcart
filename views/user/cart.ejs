@@ -1,5 +1,30 @@
 <%- include('./layouts/header') %>
 
+<style>
+  /* CSS for table alignment */
+  .table-cart td {
+    vertical-align: middle; /* Align content vertically in the middle */
+  }
+
+  .table-cart .product-title {
+    margin-bottom: 0; /* Remove bottom margin from product title */
+  }
+
+  .table-cart .btn-remove {
+    margin-left: 10px; /* Add margin to the remove button for spacing */
+  }
+
+  /* Ensure all cells in the table have equal width */
+  .table-cart td {
+    width: 20%;
+  }
+
+  /* Adjust quantity input width */
+  .quantity-col input {
+    width: 50px; /* Adjust width as needed */
+  }
+</style>
+
 <main class="main">
   <div
     class="page-header text-center"
@@ -28,105 +53,111 @@
       <div class="container">
         <div class="row">
           <div class="col-lg-9">
-			<table class="table table-cart table-mobile">
-				<thead>
-					<tr>
-						<th>Product</th>
-						<th>Price</th>
-						<th>Quantity</th>
-						<th>Subtotal</th>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-
-					
-
-					
+            <!-- HTML Cart Page -->
+            <table class="table table-cart table-mobile">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th style="padding-left: 5%">Price</th>
+                  <th>Quantity</th>
+                  <th>Subtotal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
 
 
-					<% if(cart && cart.Products.length > 0) { %>
-							<% cart.Products.forEach(item => { %>
+                <% if(cart && cart.Products.length > 0) { %> <%
+
+                cart.Products.forEach(item => { %>
+
+                <tr data-product-id="<%= item._id %>">
+                  <td class="product-col">
+                    <div class="product">
+                      <figure class="product-media">
+                        <a href="#">
+                          <img
+                            src="adminAssets/imgs/category/<%=item.images[0] %>"
+                            alt="Product image"
+                          />
+                        </a>
+                      </figure>
+                      <h3 class="product-title">
+                        <a href="#"><%=item.name %></a>
+                      </h3>
+                    </div>
+                  </td>
+                  <td style="padding-left: 5%" class="price-col">
+                    Rs. <%=item.price %>
+                  </td>
+
+                  <td class="quantity-col">
+                    <div class="cart-product-quantity">
+                      <input
+                      type="number"
+                      class="form-control"
+                      id="quantity"
+                      value="<%= item.quantity %>"
+                      min="1"
+                      max="<%= item.pr %>"
+                      step="1"
+                      data-decimals="0"
+                      onchange="updateCartItem('<%= item._id %>',this.value)"
+                      required
+                  />
+                  
+                    </div>
+                </td>
                 
-						<tr data-product-id="<%= item._id %>">
-						  <td class="product-col">
-							<div class="product">
-							  <figure class="product-media">
-								<a href="#">
-								  <img
-									src="adminAssets/imgs/category/<%=item.images[0] %>"
-									alt="Product image"
-								  />
-								</a>
-							  </figure>
-		
-							  <h3 class="product-title">
-								<a href="#"><%=item.name %></a>
-							  </h3>
-							  <!-- End .product-title -->
-							</div>
-							<!-- End .product -->
-						  </td>
-						  <td class="price-col">Rs.  <%=item.price %></td>
-						  <td class="quantity-col">
-							<div class="cart-product-quantity">
-							  <input
-								type="number"
-								class="form-control"
-								value="1"
-								min="1"
-								max="10"
-								step="1"
-								data-decimals="0"
-								required
-							  />
-							</div>
-							<!-- End .cart-product-quantity -->
-						  </td>
-						  <td class="total-col">Rs.  <%= item.subTotal %></td>
 
-						  <td class="remove-col">
-							<!-- Add button to move product to save for later -->
-							<button class="btn-remove" onclick="moveToSaveForLater('<%= item._id %>');return false;">Save for Later</button>
-						</td>
+                <td class="total-col">Rs. <span id="subtotal<%= item._id %>"><%= item.subTotal %></span></td>
 
+                  <td class="remove-col">
+                    <button
+                      class="btn-remove"
+                      onclick="moveToSaveForLater('<%= item._id %>');return false;"
+                    >
+                      Save for Later
+                    </button>
+                  </td>
 
-						  <td class="remove-col">
-							<button class="btn-remove" onclick="deleteCartItem('<%= item._id %>')">
-							  <i class="icon-close"></i>
-							</button>
-						  </td>
-						</tr>
-
-
-             
-						<% }); %>
-							<% }else{ %>
-								  <!-- Table row for empty cart -->
-								  <tr>
-                                    <!-- Table columns for empty cart message and animation -->
-                                    <td colspan="6">
-                                        <a href="category.html" class="cat-block">
-                                            <figure>
-                                                <span>
-                                                    <img src="/userAssets/home/assets/images/cart_animation.gif" alt="Category image">
-                                                </span>
-                                            </figure>
-                                            <h3 class="cat-block-title">Oops...Looks like your cart is empty</h3>
-                                            <!-- End .cat-block-title -->
-                                        </a>
-                                    </td>
-                                </tr>
-								<% } %>
-						<td colspan="6" class="text-end">
-							<a href="/deleteCart" class="text-muted">
-								<i class="fi-rs-cross-small"></i> Clear Cart
-							</a>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-			
+                  <td class="remove-col">
+                    <button
+                      class="btn-remove"
+                      onclick="deleteCartItem('<%= item._id %>')"
+                    >
+                      <i class="icon-close"></i>
+                    </button>
+                  </td>
+                </tr>
+                <% }); %> <% } else { %>
+                <!-- Table row for empty cart -->
+                <tr>
+                  <!-- Table columns for empty cart message and animation -->
+                  <td colspan="6">
+                    <a href="category.html" class="cat-block">
+                      <figure>
+                        <span>
+                          <img
+                            src="/userAssets/home/assets/images/cart_animation.gif"
+                            alt="Category image"
+                          />
+                        </span>
+                      </figure>
+                      <h3 class="cat-block-title">
+                        Oops...Looks like your cart is empty
+                      </h3>
+                    </a>
+                  </td>
+                </tr>
+                <% } %>
+                <td colspan="6" class="text-end">
+                  <a href="/deleteCart" class="text-muted">
+                    <i class="fi-rs-cross-small"></i> Clear Cart
+                  </a>
+                </td>
+              </tbody>
+            </table>
 
             <!-- End .table table-wishlist -->
 
@@ -163,6 +194,11 @@
             <div class="summary summary-cart">
               <h3 class="summary-title">Cart Total</h3>
               <!-- End .summary-title -->
+              <% if(typeof calculateCartQuantity === 'function') { %>
+              <div>
+                Cart Quantity: <span id="cartQuantity"><%= calculateCartQuantity(cart.Products) %></span>
+              </div>
+              <% } %>
 
               <table class="table table-summary">
                 <tbody>
@@ -270,14 +306,7 @@
             ></a>
           </aside>
           <!-- End .col-lg-3 -->
-		  <!-- Existing HTML code for cart page -->
-
-
-
-
-
-
-  
+          <!-- Existing HTML code for cart page -->
         </div>
         <!-- End .row -->
       </div>
@@ -289,37 +318,50 @@
 </main>
 <!-- End .main -->
 
-
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  // Function to delete a cart item
- // Function to delete a cart item
-async function deleteCartItem(productId) {
-  try {
-    // Send a DELETE request to the server to delete the item
-    const response = await axios.delete('/deleteCartItem', { data: { productId } });
-    if (response.status === 200) {
-      // Remove the deleted product from the DOM
-      const rowToRemove = document.querySelector(`tr[data-product-id="${productId}"]`);
-      rowToRemove.remove();
-      // Check if the cart is empty after deletion
-      if (response.data.cartEmpty) {
-        // If cart is empty, show the empty cart message
-        showEmptyCartMessage();
-      }
-    } else {
-      console.error('Failed to delete product from cart');
-    }
-  } catch (error) {
-    console.error('Error deleting product from cart:', error);
+  function moveToSaveForLater(productId) {
+    Swal.fire({
+      title: "Feature under construction",
+      text: "This feature is under progress and will be released soon..!",
+      icon: "warning",
+      timer: 2000,
+      showConfirmButton: false, // This removes the button
+    });
   }
-}
 
-// Function to display the empty cart message
-function showEmptyCartMessage() {
-  const emptyCartRow = `
+  // Function to delete a cart item
+  // Function to delete a cart item
+  async function deleteCartItem(productId) {
+    try {
+      // Send a DELETE request to the server to delete the item
+      const response = await axios.delete("/deleteCartItem", {
+        data: { productId },
+      });
+      if (response.status === 200) {
+        // Remove the deleted product from the DOM
+        const rowToRemove = document.querySelector(
+          `tr[data-product-id="${productId}"]`
+        );
+        rowToRemove.remove();
+        // Check if the cart is empty after deletion
+        if (response.data.cartEmpty) {
+          // If cart is empty, show the empty cart message
+          showEmptyCartMessage();
+        }
+      } else {
+        console.error("Failed to delete product from cart");
+      }
+    } catch (error) {
+      console.error("Error deleting product from cart:", error);
+    }
+  }
+
+  // Function to display the empty cart message
+  function showEmptyCartMessage() {
+    const emptyCartRow = `
     <tr>
       <td colspan="6">
         <a href="category.html" class="cat-block">
@@ -333,26 +375,43 @@ function showEmptyCartMessage() {
       </td>
     </tr>
   `;
-  const tbody = document.querySelector('.table-cart tbody');
-  tbody.innerHTML = emptyCartRow;
+    const tbody = document.querySelector(".table-cart tbody");
+    tbody.innerHTML = emptyCartRow;
+  }
+
+
+
+ //update the cart item=================================
+
+  async function updateCartItem(productId, newQuantity) {
+    try {
+      console.log('this is the product id :',productId);
+      console.log('and its type is ',typeof productId);
+      console.log('this is the newQuantity ',newQuantity);
+        const response = await axios.post("/updateCartItem", {
+            productId: productId,
+            newQuantity: newQuantity
+        });
+        
+        if (response.data.success) {
+            // Update subtotal
+            const subtotalElement = document.getElementById(`subtotal${productId}`);
+            subtotalElement.textContent = response.data.subTotal;
+            
+            console.log('this is cartQuantity',response.data.cartQuantity);
+            // Update cart quantity
+            const cartQuantityElement = document.getElementById('cartQuantity');
+            cartQuantityElement.textContent = response.data.cartQuantity;
+        }
+    } catch (error) {
+        console.error('Error updating cart item:', error);
+    }
 }
 
+
+
+ 
+
 </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <%- include('./layouts/footer') %>
