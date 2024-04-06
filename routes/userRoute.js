@@ -50,7 +50,7 @@ router.delete("/deleteCartItem", userAuth.isBlocked, userAuth.isLoggedIn, cartCo
 
 router.post("/updatequantity",userAuth.isBlocked,userAuth.isLoggedIn,cartController.updateCartItemCount);
 
-
+router.get('/checkout',userAuth.isBlocked,userAuth.isLoggedIn,cartController.loadCheckout)
 
 // router.post("/moveToSaveForLater",userAuth.isBlocked,userAuth.isLoggedIn,cartController.moveToSaveForLater);
 

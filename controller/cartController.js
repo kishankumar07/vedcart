@@ -490,11 +490,56 @@ let updatedGrandTotal = updatedShippingCharges ==='free delivery' ? totalOfSubTo
 }
 };
 
+
+
+
+const loadCheckout = async (req, res) => {
+  try {
+      const userId = req.session.userData;
+      let userNameforProfile = await User.findById(userId);
+    let category = await Category.find({'status': 'active'})
+
+      if (!userId) {
+          res.redirect("/");
+      } else {
+          const userDetail = await User.findById(userId);
+          const cartData = await Cart.findOne({ userId }).populate({
+              path: "products.productId",
+              model: "Product",
+          });
+
+          res.render("checkout", { userDetail, cartData,userNameforProfile,category });
+      }
+  } catch (error) {
+    console.log('error occured at load checkout page : ',error);
+     res.redirect("/error");
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports = {
   addToCart,
   loadCart,
   deleteCartItem,
   updateCartItemCount,
+  loadCheckout,
 };
 
 
