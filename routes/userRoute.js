@@ -39,13 +39,16 @@ router.get("/productPage", userController.aProductPage);
 
 //  -- -- -- -- -- -- -- c a r t -- -- -- -- -- -- -- - - - - - - -- --
 
-router.get("/cart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.cartLoad);
+router.get("/cart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.loadCart);
 
 router.post("/addToCart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.addToCart);
 
+router.post("/addToCart/:productId/:quantity/:userId?",cartController.addToCart)
+
+
 router.delete("/deleteCartItem", userAuth.isBlocked, userAuth.isLoggedIn, cartController.deleteCartItem);
 
-router.post("/updateCartItem",userAuth.isBlocked,userAuth.isLoggedIn,cartController.updateCartItem);
+router.post("/updatequantity",userAuth.isBlocked,userAuth.isLoggedIn,cartController.updateCartItemCount);
 
 
 
@@ -61,6 +64,7 @@ router.post("/updateCartItem",userAuth.isBlocked,userAuth.isLoggedIn,cartControl
 
 
   
+
 
 
   
@@ -119,7 +123,11 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
       
       // Set user data in session
       req.session.userData = user;
-      
+
+
+      console.log('user successfully logged at google auth and this is present in the session',req.session.user);
+
+
       // Redirect to home page
       res.redirect('/');
   } catch (error) {

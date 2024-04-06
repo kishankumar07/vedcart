@@ -248,7 +248,7 @@
                                             </div><!-- End .product-action-vertical -->
                 
                                             <div class="product-action">
-                                                <a href="#" onclick="addToCart('<%= user %>','<%= product[i].id %>');return false"; class="btn-product btn-cart" title="Add to cart"><span>add to cart</span></a>
+                                                <a href="#"    onclick="addtoCart('<%=product[i].id%>', '<%=locals.user%>');return false"; class="btn-product btn-cart" title="Add to cart"><span>add to cart</span></a>
                                             </div><!-- End .product-action -->
                                         </figure><!-- End .product-media -->
                 
@@ -802,7 +802,7 @@
 
 
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script> -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
@@ -811,9 +811,15 @@
 
    <script>
 
-    function addToCart(user,productId) {
+   
 
-if(!user){
+
+
+// = = = = = = = add product to cart = = = = = = = = = = = = = = =
+
+function addtoCart(productId, userId) {
+
+    if(!userId){
     Swal.fire({
         title: 'Login to Purchase',
         text: 'To make a purchase, please log in.',
@@ -830,64 +836,50 @@ if(!user){
     });
   }
 else{
-  // event.preventDefault();
-  const quantity = 1; // Replace with desired quantity
-  
-  axios.post('/addToCart', { productId, quantity })
-    .then(response => {
-    //   console.log('Response from server at home cart addition:', response.data);
+
+    const quantity = 1; // Replace with desired quantity
+                        // Make an AJAX request to the backend
 
 
-      
-      if (response.data.data === 'notFound') {
-        // Product not found
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'Product not found.',
-        });
-    }
-        else if (response.data.data === 'noUser') {
-        // Product not found
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'User not logged in.',
-        });
+                        fetch(`/addTocart/${productId}/${quantity}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                quantity: quantity,
+                            }),
+                        })
+                        .then((response) => {
+                            if (response.status === 401) {
+                                throw new Error('User not authenticated. Please login first.');
+                            }
+                            return response.json();
+                        })
+                        
+                        .then((data) => {
+                            console.log('Response from the backend while product added to cart:', data);
+                
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Product added to cart!',
+                                showConfirmButton: false,
+                                timer: 500, 
 
-      } else if (response.data.data === 'stockOut') {
-        // Insufficient stock
-        Swal.fire({
-          icon: 'error',
-          title: 'Error!',
-          text: 'Insufficient stock.',
-        });
-      } else if (response.data.data === true) {
-        // Product added successfully
-        Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: 'Product added to cart successfully!',
-        });
-      }
-    })
-    .catch(error => {
-      console.error('Error adding product to cart:', error);
-      // Display generic error message for other errors
-      Swal.fire({
-        icon: 'error',
-        title: 'Error!',
-        text: 'Failed to add product to cart.',
-      });
-    });
-}
-}
+                            })})
+                           
 
+                        .catch((error) => {
+                            console.error('Error at product addition to the cart :', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error adding to cart',
+                                text: error.message || 'An error occurred while adding the product to the cart.',
+                            });
+                        });
+                 }
 
-
-      
-
-
+     }
 
 
 

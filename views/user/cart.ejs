@@ -23,7 +23,19 @@
   .quantity-col input {
     width: 50px; /* Adjust width as needed */
   }
+
+  
+
+
 </style>
+
+
+
+
+
+
+
+
 
 <main class="main">
   <div
@@ -39,7 +51,7 @@
   <nav aria-label="breadcrumb" class="breadcrumb-nav">
     <div class="container">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
         <li class="breadcrumb-item"><a href="/shop">Shop</a></li>
         <li class="breadcrumb-item active" aria-current="page">Cart</li>
       </ol>
@@ -64,100 +76,99 @@
                   <th></th>
                 </tr>
               </thead>
+
+          
+
+
+
+            
               <tbody>
+                <% if(locals.cartData) { %>
+
+                  <% if(cartData.products && cartData.products.length > 0) { %>
+
+                    <% cartData.products.forEach(product => { %>
+
+                    <tr data-product-id="<%= product.productId._id %>">
+
+                    <td class="product-col">
+                        <div class="product">
+                          <figure class="product-media">
+                            <a href="#">
+                              <img src="/adminAssets/imgs/category/<%= product.productId.images[0] %>" alt="Product image" />
+                            </a>
+                          </figure>
+                          <h3 class="product-title">
+                            <a href="#"><%= product.productId.name %></a>
+                          </h3>
+                        </div>
+                      </td>
+                      <td style="padding-left: 5%;" class="price-col">₹ <%= product.productPrice %></td>
 
 
-                <% if(cart && cart.Products.length > 0) { %> <%
-
-                cart.Products.forEach(item => { %>
-
-                <tr data-product-id="<%= item._id %>">
-                  <td class="product-col">
-                    <div class="product">
-                      <figure class="product-media">
-                        <a href="#">
-                          <img
-                            src="adminAssets/imgs/category/<%=item.images[0] %>"
-                            alt="Product image"
+                      <td class="quantity-col">
+                        <div class="cart-product-quantity">
+                          <input
+                            type="number"
+                            class="form-control"
+                            id="<%= product.productId._id %>"
+                            value="<%= product.quantity %>"
+                            min="1"
+                            max="<%= product.productId.quantity %>"
+                            step="1"
+                            data-decimals="0"
+                            onchange="updateQuantity('<%= cartData.id %>', '<%= product.productId._id %>')"
+                            required
                           />
-                        </a>
-                      </figure>
-                      <h3 class="product-title">
-                        <a href="#"><%=item.name %></a>
-                      </h3>
-                    </div>
-                  </td>
-                  <td style="padding-left: 5%" class="price-col">
-                    Rs. <%=item.price %>
-                  </td>
+                        </div>
+                      </td>
 
-                  <td class="quantity-col">
-                    <div class="cart-product-quantity">
-                      <input
-                      type="number"
-                      class="form-control"
-                      id="quantity"
-                      value="<%= item.quantity %>"
-                      min="1"
-                      max="<%= item.pr %>"
-                      step="1"
-                      data-decimals="0"
-                      onchange="updateCartItem('<%= item._id %>',this.value)"
-                      required
-                  />
-                  
-                    </div>
-                </td>
-                
 
-                <td class="total-col">Rs. <span id="subtotal<%= item._id %>"><%= item.subTotal %></span></td>
+                      <td class="total-col" id="subtotal-<%= product.productId.id %>">₹<%= product.totalPrice %></td>
 
-                  <td class="remove-col">
-                    <button
-                      class="btn-remove"
-                      onclick="moveToSaveForLater('<%= item._id %>');return false;"
-                    >
-                      Save for Later
-                    </button>
-                  </td>
 
-                  <td class="remove-col">
-                    <button
-                      class="btn-remove"
-                      onclick="deleteCartItem('<%= item._id %>')"
-                    >
-                      <i class="icon-close"></i>
-                    </button>
-                  </td>
-                </tr>
-                <% }); %> <% } else { %>
-                <!-- Table row for empty cart -->
+
+                      <td class="remove-col">
+                        <button class="btn-remove" onclick="moveToSaveForLater('<%= product._id %>');return false;">Save for Later</button>
+                      </td>
+
+                      <td class="remove-col">
+                        <button class="btn-remove"  onclick="removeFromCart('<%= product.productId._id %>','<%= locals.userId %>')">
+                          <i class="icon-close"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    
+                    <% }) %>
+                    <% }else{ %>
+
+                  <!-- Table row for empty cart -->
+                  <tr>
+                    <!-- Table columns for empty cart message and animation -->
+                    <td colspan="6">
+                      <a href="category.html" class="cat-block">
+                        <figure>
+                          <span>
+                            <img src="/userAssets/home/assets/images/cart_animation.gif" alt="Category image" />
+                          </span>
+                        </figure>
+                        <h3 class="cat-block-title">Oops...Looks like your cart is empty</h3>
+                      </a>
+                    </td>
+                  </tr>
+
+                <% } %>
+
                 <tr>
-                  <!-- Table columns for empty cart message and animation -->
-                  <td colspan="6">
-                    <a href="category.html" class="cat-block">
-                      <figure>
-                        <span>
-                          <img
-                            src="/userAssets/home/assets/images/cart_animation.gif"
-                            alt="Category image"
-                          />
-                        </span>
-                      </figure>
-                      <h3 class="cat-block-title">
-                        Oops...Looks like your cart is empty
-                      </h3>
+                  <td colspan="6" class="text-end">
+                    <a href="/deleteCart" class="text-muted">
+                      <i class="fi-rs-cross-small"></i> Clear Cart
                     </a>
                   </td>
                 </tr>
-                <% } %>
-                <td colspan="6" class="text-end">
-                  <a href="/deleteCart" class="text-muted">
-                    <i class="fi-rs-cross-small"></i> Clear Cart
-                  </a>
-                </td>
               </tbody>
             </table>
+            
 
             <!-- End .table table-wishlist -->
 
@@ -194,18 +205,19 @@
             <div class="summary summary-cart">
               <h3 class="summary-title">Cart Total</h3>
               <!-- End .summary-title -->
-              <% if(typeof calculateCartQuantity === 'function') { %>
-              <div>
-                Cart Quantity: <span id="cartQuantity"><%= calculateCartQuantity(cart.Products) %></span>
-              </div>
-              <% } %>
+             
 
               <table class="table table-summary">
                 <tbody>
+                 
                   <tr class="summary-subtotal">
                     <td>Subtotal:</td>
-                    <td>$160.00</td>
+                    <td id="totalOfSubtotal">₹ <%= locals.subtotalWithNoShippingCharge %>.00</td>
                   </tr>
+                
+
+
+
                   <!-- End .summary-subtotal -->
                   <tr class="summary-shipping">
                     <td>Shipping:</td>
@@ -215,76 +227,29 @@
                   <tr class="summary-shipping-row">
                     <td>
                       <div class="custom-control custom-radio">
-                        <input
-                          type="radio"
-                          id="free-shipping"
-                          name="shipping"
-                          class="custom-control-input"
-                        />
+                       <% if( locals.shippingCharges) { %>
+
                         <label class="custom-control-label" for="free-shipping"
-                          >Free Shipping</label
+                          >Delivery charge</label
                         >
+                        <td id="shipping-cost"> <%= locals.shippingCharges %></td>
+                        <% } %>
                       </div>
                       <!-- End .custom-control -->
                     </td>
-                    <td>$0.00</td>
+                  
                   </tr>
                   <!-- End .summary-shipping-row -->
 
-                  <tr class="summary-shipping-row">
-                    <td>
-                      <div class="custom-control custom-radio">
-                        <input
-                          type="radio"
-                          id="standart-shipping"
-                          name="shipping"
-                          class="custom-control-input"
-                        />
-                        <label
-                          class="custom-control-label"
-                          for="standart-shipping"
-                          >Standart:</label
-                        >
-                      </div>
-                      <!-- End .custom-control -->
-                    </td>
-                    <td>$10.00</td>
-                  </tr>
+                 
                   <!-- End .summary-shipping-row -->
 
-                  <tr class="summary-shipping-row">
-                    <td>
-                      <div class="custom-control custom-radio">
-                        <input
-                          type="radio"
-                          id="express-shipping"
-                          name="shipping"
-                          class="custom-control-input"
-                        />
-                        <label
-                          class="custom-control-label"
-                          for="express-shipping"
-                          >Express:</label
-                        >
-                      </div>
-                      <!-- End .custom-control -->
-                    </td>
-                    <td>$20.00</td>
-                  </tr>
-                  <!-- End .summary-shipping-row -->
-
-                  <tr class="summary-shipping-estimate">
-                    <td>
-                      Estimate for Your Country<br />
-                      <a href="dashboard.html">Change address</a>
-                    </td>
-                    <td>&nbsp;</td>
-                  </tr>
+                  
                   <!-- End .summary-shipping-estimate -->
 
                   <tr class="summary-total">
                     <td>Total:</td>
-                    <td>$160.00</td>
+                    <td id="total">₹<%= locals.grandTotalForCheckOut %>.00</td>
                   </tr>
                   <!-- End .summary-total -->
                 </tbody>
@@ -318,6 +283,8 @@
 </main>
 <!-- End .main -->
 
+<% } %>
+
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -332,81 +299,186 @@
     });
   }
 
+ 
   // Function to delete a cart item
-  // Function to delete a cart item
-  async function deleteCartItem(productId) {
+  async function removeFromCart(productId,userId) {
     try {
+
+      if(!userId){
+    Swal.fire({
+        title: 'Login to Purchase',
+        text: 'To make a purchase, please log in.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Login'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            
+            window.location.href = '/signin';
+        }
+    });
+  }else{
+
+
+
       // Send a DELETE request to the server to delete the item
       const response = await axios.delete("/deleteCartItem", {
         data: { productId },
       });
       if (response.status === 200) {
+       
+    location.reload();
+ 
         // Remove the deleted product from the DOM
-        const rowToRemove = document.querySelector(
-          `tr[data-product-id="${productId}"]`
-        );
-        rowToRemove.remove();
-        // Check if the cart is empty after deletion
-        if (response.data.cartEmpty) {
-          // If cart is empty, show the empty cart message
-          showEmptyCartMessage();
-        }
+        // const rowToRemove = document.querySelector(
+        //   `tr[data-product-id="${productId}"]`
+        // );
+        // rowToRemove.remove();
+        // // Check if the cart is empty after deletion
+        // if (response.data.cartEmpty) {
+        //   // If cart is empty, show the empty cart message
+        //   showEmptyCartMessage();
+        // }
       } else {
         console.error("Failed to delete product from cart");
       }
+    }
     } catch (error) {
       console.error("Error deleting product from cart:", error);
     }
   }
 
   // Function to display the empty cart message
-  function showEmptyCartMessage() {
-    const emptyCartRow = `
-    <tr>
-      <td colspan="6">
-        <a href="category.html" class="cat-block">
-          <figure>
-            <span>
-              <img src="/userAssets/home/assets/images/cart_animation.gif" alt="Empty cart image">
-            </span>
-          </figure>
-          <h3 class="cat-block-title">Oops...Looks like your cart is empty</h3>
-        </a>
-      </td>
-    </tr>
-  `;
-    const tbody = document.querySelector(".table-cart tbody");
-    tbody.innerHTML = emptyCartRow;
-  }
+  // function showEmptyCartMessage() {
+  //   const emptyCartRow = `
+  //   <tr>
+  //     <td colspan="6">
+  //       <a href="category.html" class="cat-block">
+  //         <figure>
+  //           <span>
+  //             <img src="/userAssets/home/assets/images/cart_animation.gif" alt="Empty cart image">
+  //           </span>
+  //         </figure>
+  //         <h3 class="cat-block-title">Oops...Looks like your cart is empty</h3>
+  //       </a>
+  //     </td>
+  //   </tr>
+  // `;
+  //   const tbody = document.querySelector(".table-cart tbody");
+  //   tbody.innerHTML = emptyCartRow;
+  // }
 
 
 
- //update the cart item=================================
 
-  async function updateCartItem(productId, newQuantity) {
+
+
+//===================update cart quantity ===========
+
+// function updateQuantity(cartId, productId) {
+//             const updatedQuantity = document.getElementById(productId).value;
+
+//             fetch('/updatequantity', {
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json',
+//                 },
+//                 body: JSON.stringify({ cartId: cartId, productId: productId, quantity: updatedQuantity }),
+//             })
+//                 .then(response => response.json())
+//                 .then(data => {
+//                     // console.log('Quantity updated at cart page while inc/dec :', data);
+
+//                     if (data.success) {
+//                       location.reload();
+//                     } 
+//                 })
+//                 .catch(error => {
+//                     console.error('Error:', error);
+//                 });
+//         }
+
+
+
+
+
+//update cart quantity tester=======================
+
+// Function to update quantity and update UI
+async function updateQuantity(cartId, productId) {
+
+  // console.log('this is the cartId',cartId);
+  // console.log('this is the product id ',productId);
+    const updatedQuantity = document.getElementById(productId).value;
+
     try {
-      console.log('this is the product id :',productId);
-      console.log('and its type is ',typeof productId);
-      console.log('this is the newQuantity ',newQuantity);
-        const response = await axios.post("/updateCartItem", {
-            productId: productId,
-            newQuantity: newQuantity
+        const response = await fetch('/updatequantity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ cartId, productId, quantity: updatedQuantity }),
         });
-        
-        if (response.data.success) {
-            // Update subtotal
-            const subtotalElement = document.getElementById(`subtotal${productId}`);
-            subtotalElement.textContent = response.data.subTotal;
-            
-            console.log('this is cartQuantity',response.data.cartQuantity);
-            // Update cart quantity
-            const cartQuantityElement = document.getElementById('cartQuantity');
-            cartQuantityElement.textContent = response.data.cartQuantity;
+
+        if (!response.ok) {
+            throw new Error('Failed to update quantity');
         }
+
+        const data = await response.json();
+        
+        // Update UI based on response data
+        updateUI(data, productId);
     } catch (error) {
-        console.error('Error updating cart item:', error);
+        console.error('Error updating quantity:', error);
     }
 }
+
+// Function to update UI based on server response
+function updateUI(data, productId) {
+  // console.log('this is the data response',data);
+    // Update subtotal, product total, and shipping charges based on data from server
+    const subtotalElement = document.getElementById(`subtotal-${productId}`);
+
+// console.log('subtotal element ::',subtotalElement);
+
+    const shippingCostElement = document.getElementById('shipping-cost');
+    const totalElement = document.getElementById('total');
+
+    let totalOfSubtotals = document.getElementById('totalOfSubtotal');
+
+
+    if (data.success) {
+        // Update subtotal
+        subtotalElement.textContent = '₹' + data.subtotal;
+
+        // Update shipping charges
+        
+        
+
+        totalOfSubtotals.textContent = data. totalOfSubTotals;
+
+       
+      // Calculate total including subtotal and shipping charges
+      shippingCostElement.textContent = data. shippingCharges;
+
+      // Update total
+      totalElement.textContent = '₹' + data.grandTotalForCheckOut;
+    } else {
+        // Handle error
+        console.error('Failed to update quantity:', data.message);
+    }
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -415,3 +487,11 @@
 </script>
 
 <%- include('./layouts/footer') %>
+
+
+
+
+
+
+
+

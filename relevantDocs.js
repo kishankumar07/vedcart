@@ -317,3 +317,83 @@ async function moveToSaveForLater(productId) {
 //     }
 //   };
   
+
+
+
+// to add product to cart===================
+// function addtocart(user,productId) {
+
+//   if(!user){
+//       Swal.fire({
+//           title: 'Login to Purchase',
+//           text: 'To make a purchase, please log in.',
+//           icon: 'info',
+//           showCancelButton: true,
+//           confirmButtonColor: '#3085d6',
+//           cancelButtonColor: '#d33',
+//           confirmButtonText: 'Login'
+//       }).then((result) => {
+//           if (result.isConfirmed) {
+              
+//               window.location.href = '/signin';
+//           }
+//       });
+//     }
+//   else{
+//     // event.preventDefault();
+//     const quantity = 1; // Replace with desired quantity
+    
+//     axios.post('/addToCart', {
+//       productId: productId,
+//       quantity: quantity,
+//       cart: 'yes'
+//   })
+  
+//       .then(response => {
+//       //   console.log('Response from server at home cart addition:', response.data);
+  
+  
+        
+//         if (response.data.data === 'notFound') {
+//           // Product not found
+//           Swal.fire({
+//             icon: 'error',
+//             title: 'Error!',
+//             text: 'Product not found.',
+//           });
+//       }
+//           else if (response.data.data === 'noUser') {
+//           // Product not found
+//           Swal.fire({
+//             icon: 'error',
+//             title: 'Error!',
+//             text: 'User not logged in.',
+//           });
+  
+//         } else if (response.data.data === 'stockOut') {
+//           // Insufficient stock
+//           Swal.fire({
+//             icon: 'error',
+//             title: 'Error!',
+//             text: 'Insufficient stock.',
+//           });
+//         } else if (response.data.data === true) {
+//           // Product added successfully
+//           Swal.fire({
+//             icon: 'success',
+//             title: 'Success!',
+//             text: 'Product added to cart successfully!',
+//           });
+//         }
+//       })
+//       .catch(error => {
+//         console.error('Error adding product to cart:', error);
+//         // Display generic error message for other errors
+//         Swal.fire({
+//           icon: 'error',
+//           title: 'Error!',
+//           text: 'Failed to add product to cart.',
+//         });
+//       });
+//   }
+//   }

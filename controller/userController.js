@@ -37,7 +37,10 @@ const loadIndex = async (req, res) => {
     let category = await Category.find({ status: "active" });
 
     let product = [];
-    const pro = await Product.find({ status: "active" })
+    const pro = await Product.find({
+      status: { $ne: "blocked" },
+      quantity: { $ne: 0 }
+      })
       .populate({
         path: "category",
         model: "Category",
@@ -420,6 +423,8 @@ let shopPage = async (req, res) => {
     let selectedCategoryId = req.query.category || "";
 
     let filters = { status: "active" };
+
+    
 
     if (selectedCategoryId && selectedCategoryId !== "all") {
       // Only apply category filter if a valid category is selected
