@@ -397,3 +397,104 @@ async function moveToSaveForLater(productId) {
 //       });
 //   }
 //   }
+
+
+//Toast alert
+
+<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="errorToast">
+  <div class="toast-header">
+    <strong class="mr-auto">Error</strong>
+    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="toast-body">
+    Error message will appear here.
+  </div>
+</div>
+
+
+// css for it
+// .toast {
+//   position: fixed;
+//   top: 10px;
+//   right: 10px;
+//   z-index: 1000;
+// }
+
+//Js to handle the formm validation
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.querySelector('#signin-modal'); // Replace 'yourFormId' with the actual ID of your form
+  const errorToast = document.querySelector('#errorToast');
+
+  form.addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent form submission for now
+
+    // Perform form field validation
+    const name = document.querySelector('#name').value.trim();
+    const mobile = document.querySelector('#mobile').value.trim();
+    const pin = document.querySelector('#pincode').value.trim();
+    const addressDetails = document.querySelector('#addressDetails').value.trim();
+    const city = document.querySelector('#city').value.trim();
+    const state = document.querySelector('#state').value.trim();
+
+
+
+
+    if (name === '') {
+      showErrorToast('Name is required.');
+      return;
+    }
+
+
+    if (addressDetails === '') {
+      showErrorToast('Address field is required.');
+      return;
+    }
+
+    if (city === '') {
+      showErrorToast('City is required.');
+      return;
+    }
+
+
+ // Validate mobile
+ if (mobile === '') {
+  showErrorToast('Mobile number is required.');
+  return;
+
+} else if (!validateMobile(mobile)) {
+  showErrorToast('Invalid mobile number.');
+  return;
+}
+function validateMobile(mobile) {
+  // Simple mobile number validation regex (10 digits)
+  var mobileRegex = /^\d{10}$/;
+  return mobileRegex.test(mobile);
+}
+
+
+
+    // If all validations pass, you can proceed with form submission
+    // form.submit();
+  });
+
+  function showErrorToast(message) {
+    const toastBody = errorToast.querySelector('.toast-body');
+    toastBody.textContent = message;
+    $(errorToast).toast('show'); // Bootstrap 5 jQuery method to show the toast
+  }
+
+ 
+});
+
+
+
+
+
+
+
+
+
+
+

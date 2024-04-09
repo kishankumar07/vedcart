@@ -5,6 +5,7 @@ let adminController = require('../controller/adminController')
 let adminAuth = require('../middleware/adminAuth');
 let productController = require('../controller/productController');
 let categoryController = require('../controller/categoryController');
+let orderController = require('../controller/orderController');
 let {upload} = require('../multer/multer');
 
 router.set('view engine','ejs');
@@ -47,7 +48,7 @@ router.get('/listProduct',adminAuth.isLoggedIn,productController.listProduct);
 
 router.get('/deleteProduct',adminAuth.isLoggedIn,productController.deleteProduct);
 
-
+// router.get('/deleteimage',adminAuth.isLoggedIn, productController.deleteimage)
 
 
 
@@ -72,4 +73,20 @@ router.get('/categoryUnlist',adminAuth.isLoggedIn,categoryController.categoryUnl
 
 router.get('/categoryList',adminAuth.isLoggedIn,categoryController.categoryList)
 
+
+
+
+//order part====================================
+router.get("/orders",adminAuth.isLoggedIn,orderController.loadOrder)
+
+
+
+
 module.exports = router
+
+
+
+
+
+
+

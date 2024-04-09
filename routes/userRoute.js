@@ -6,6 +6,7 @@ const passport = require('passport');
 let userController = require("../controller/userController");
 let userAuth = require("../middleware/userAuth");
 let cartController  = require('../controller/cartController')
+let orderController  = require('../controller/orderController')
 const {aProductPage,shopProduct}=require('../controller/productController');
 // const GoogleSignIn = require('../model/googleModel');
 const googleModel = require("../model/googleModel");
@@ -25,7 +26,7 @@ router.get("/error", userController.errorPage);
 
 router.get("/", userController.loadIndex);
 router.get("/signin",userAuth.isLoggedOut, userController.signinUser); // If no session it will render login page
-router.post("/signin", userController.verifyUser);
+router.post("/signin", userController.verifyLogin);
 router.get("/signup", userController.signUpUser);
 router.post("/signup", userController.createUser);
 router.post("/verifyOTP", userController.verifyOTP);
@@ -52,18 +53,35 @@ router.post("/updatequantity",userAuth.isBlocked,userAuth.isLoggedIn,cartControl
 
 router.get('/checkout',userAuth.isBlocked,userAuth.isLoggedIn,cartController.loadCheckout)
 
+router.post("/addAddressAtCheckout",userAuth.isBlocked,userAuth.isLoggedIn,cartController.addAddressAtCheckout);
+
+
+router.post('/placeorder',userAuth.isBlocked,userAuth.isLoggedIn,orderController.placeTheOrder)
+
+router.get('/ordersuccess',userAuth.isBlocked,userAuth.isLoggedIn,orderController.orderSuccess)
+
 // router.post("/moveToSaveForLater",userAuth.isBlocked,userAuth.isLoggedIn,cartController.moveToSaveForLater);
 
 
 
 
+//================= user profile page --------------------------
+
+router.get('/userProfile',userAuth.isBlocked,userAuth.isLoggedIn,userAuth.isVerified,userController.loadUserProfile)
+
+router.post('/editProfile',userController.editProfile)
   
+router.post('/changePassword',userController.changePassword)
 
+router.post("/addAddressatProfile",userAuth.isBlocked,userAuth.isLoggedIn,userController.addAddressatProfile);
 
+router.post('/updateaddress/:id',userController.editAddress)
 
+router.delete('/removeaddress/:id', userController.removeAddress);
 
-
+router.get("/orderdetails",orderController.loadOrderDetailsPage)
   
+router.post('/cancelOrder', orderController.cancelOrPlacedOrder);
 
 
 
@@ -155,6 +173,7 @@ module.exports = router;
 
 
 
+  
 
 
 

@@ -199,6 +199,15 @@ const productEdited = async (req, res) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
 module.exports = {
   allProducts,
   addProduct,
@@ -209,4 +218,6 @@ module.exports = {
   deleteProduct,
   editProduct,
   productEdited,
+  // deleteimage
+  
 };

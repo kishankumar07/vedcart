@@ -35,7 +35,8 @@ const isLoggedIn = async(req, res, next) => {
 
 
 const isLoggedOut = (req, res, next) => {
-    if (req.session.userData) {
+    if (req.session.userData && req.session.userData.isVerified) {
+        
         res.redirect('/')
     } else {
         next();
@@ -78,10 +79,31 @@ console.log("is Blocked error")
 }
 
 
+let isVerified = async(req,res,next) =>{
+    try{
+        let userId = req.session.userData;
+        let user = await User.findById(userId)
+
+        if(user.isVerified){
+            next();
+        }else{
+            res.redirect('/')
+        }
+
+    }catch(err){
+    console.log('error at the isVerified part',err)
+    }
+}
+
+
+
+
+
 
 module.exports = {
     isLoggedIn,
     isLoggedOut,
-    isBlocked
+    isBlocked,
+    isVerified
 }
 

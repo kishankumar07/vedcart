@@ -24,12 +24,31 @@
     width: 50px; /* Adjust width as needed */
   }
 
+  /* Custom CSS to increase font size of the toast text */
+
+
+
   
-
-
 </style>
 
+<!-- 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script> -->
+
+
+<!-- Toastify CSS -->
+<!-- <link href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" rel="stylesheet"> -->
+
+<!-- Toastify JavaScript -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script> -->
+
+
+<!-- Izitoast CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
+
+<!-- Izitoast JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
 
 
 
@@ -40,10 +59,10 @@
 <main class="main">
   <div
     class="page-header text-center"
-    style="background-image: url('userAssets/home/assets/images//page-header-bg.jpg')"
+    style="background-image: url('userAssets/home/assets/images/checkoutPage.jpg')"
   >
     <div class="container">
-      <h1 class="page-title">Shopping Cart<span>Shop</span></h1>
+      <h1 style="color: azure;" class="page-title">Shopping Cart<span>Shop</span></h1>
     </div>
     <!-- End .container -->
   </div>
@@ -103,7 +122,7 @@
                           </h3>
                         </div>
                       </td>
-                      <td style="padding-left: 5%;" class="price-col">₹ <%= product.productPrice %></td>
+                      <td style="padding-left: 5%;" class="price-col">₹ <%= product.productPrice %>.00</td>
 
 
                       <td class="quantity-col">
@@ -124,7 +143,7 @@
                       </td>
 
 
-                      <td class="total-col" id="subtotal-<%= product.productId.id %>">₹<%= product.totalPrice %></td>
+                      <td class="total-col" id="subtotal-<%= product.productId.id %>">₹<%= product.totalPrice %>.00</td>
 
 
 
@@ -211,7 +230,7 @@
                 <tbody>
                  
                   <tr class="summary-subtotal">
-                    <td>Subtotal:</td>
+                    <td>Total:</td>
                     <td id="totalOfSubtotal">₹ <%= locals.subtotalWithNoShippingCharge %>.00</td>
                   </tr>
                 
@@ -248,7 +267,7 @@
                   <!-- End .summary-shipping-estimate -->
 
                   <tr class="summary-total">
-                    <td>Total:</td>
+                    <td>Grand Total:</td>
                     <td id="total">₹<%= locals.grandTotalForCheckOut %>.00</td>
                   </tr>
                   <!-- End .summary-total -->
@@ -257,12 +276,20 @@
               <!-- End .table table-summary -->
 
               <a
-                href="/checkout"
-                class="btn btn-outline-primary-2 btn-order btn-block"
-                >PROCEED TO CHECKOUT</a
-              >
+    href="#"
+    onclick="proceedToCheckout('<%= locals.cartData.products.length %>');return false"
+    class="btn btn-outline-primary-2 btn-order btn-block"
+>PROCEED TO CHECKOUT</a>
             </div>
             <!-- End .summary -->
+
+
+
+
+
+
+
+
 
             <a
               href="category.html"
@@ -301,54 +328,44 @@
 
  
   // Function to delete a cart item
-  async function removeFromCart(productId,userId) {
+  async function removeFromCart(productId, userId) {
     try {
+        const confirmed = await showConfirmationDialog();
+        
+        if (confirmed) {
+            // Send a DELETE request to the server to delete the item
+            const response = await axios.delete("/deleteCartItem", {
+                data: { productId },
+            });
 
-      if(!userId){
-    Swal.fire({
-        title: 'Login to Purchase',
-        text: 'To make a purchase, please log in.',
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Login'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            
-            window.location.href = '/signin';
+            if (response.status === 200) {
+                location.reload();
+            } else {
+                console.error("Failed to delete product from cart");
+            }
         }
-    });
-  }else{
-
-
-
-      // Send a DELETE request to the server to delete the item
-      const response = await axios.delete("/deleteCartItem", {
-        data: { productId },
-      });
-      if (response.status === 200) {
-       
-    location.reload();
- 
-        // Remove the deleted product from the DOM
-        // const rowToRemove = document.querySelector(
-        //   `tr[data-product-id="${productId}"]`
-        // );
-        // rowToRemove.remove();
-        // // Check if the cart is empty after deletion
-        // if (response.data.cartEmpty) {
-        //   // If cart is empty, show the empty cart message
-        //   showEmptyCartMessage();
-        // }
-      } else {
-        console.error("Failed to delete product from cart");
-      }
-    }
     } catch (error) {
-      console.error("Error deleting product from cart:", error);
+        console.error("Error deleting product from cart:", error);
     }
-  }
+}
+
+function showConfirmationDialog() {
+    return new Promise((resolve) => {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You are about to delete this item from your cart.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '##70abe3',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            resolve(result.isConfirmed);
+        });
+    });
+}
+
+
 
   // Function to display the empty cart message
   // function showEmptyCartMessage() {
@@ -451,20 +468,20 @@ function updateUI(data, productId) {
 
     if (data.success) {
         // Update subtotal
-        subtotalElement.textContent = '₹' + data.subtotal;
+        subtotalElement.textContent = '₹' + data.subtotal + '.00';
 
         // Update shipping charges
         
         
 
-        totalOfSubtotals.textContent = data. totalOfSubTotals;
+        totalOfSubtotals.textContent = data. totalOfSubTotals + '.00';
 
        
       // Calculate total including subtotal and shipping charges
       shippingCostElement.textContent = data. shippingCharges;
 
       // Update total
-      totalElement.textContent = '₹' + data.grandTotalForCheckOut;
+      totalElement.textContent = '₹' + data.grandTotalForCheckOut + '.00';
     } else {
         // Handle error
         console.error('Failed to update quantity:', data.message);
@@ -474,9 +491,30 @@ function updateUI(data, productId) {
 
 
 
+function proceedToCheckout(cartLength) {
+  // console.log('this is the cart length',cartLength);
 
 
+    if (cartLength < 1) {
+      iziToast.error({
+    title: '',
+    message: 'Please add at least one product to proceed..',
+    position: 'bottomRight',
+    timeout: 3500,
+    backgroundColor: '#f0f0f0', // Change color to grey
+    icon: 'bi bi-exclamation-triangle-fill', // Set warning symbol
+    close: true,
+    drag: true,
+    pauseOnHover: true,
+    resetOnHover: false
+});
 
+
+    } else {
+      // Cart is not empty, proceed to the checkout page
+      window.location.href = "/checkout";
+    }
+  }
 
 
 

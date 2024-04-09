@@ -17,7 +17,7 @@ let Category = require("../model/categoryModel");
 const loadCart = async (req, res) => {
   try {
       const userId = req.session.userData;
-
+    let message = req.flash('message');
       let userNameforProfile = await User.findById(userId);
 
       let category = await Category.find({ status: "active" });
@@ -55,7 +55,7 @@ let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoS
 
 // console.log('this is the grandTotal for checkout ::',grandTotalForCheckOut);
 
-          res.render("cart", { userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge });
+          res.render("cart", { userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message });
 
       } else {
           res.render("cart", { cartData,userNameforProfile,category });
@@ -378,6 +378,9 @@ const addCart = async (req, res) => {
   }
 };
 
+
+
+
 // Controller function to delete a subproduct from the cart
 let deleteCartItem = async (req, res) => {
   try {
@@ -406,7 +409,7 @@ let deleteCartItem = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Subproduct deleted successfully", cartEmpty });
+      .json({ message: "Product deleted from cart successfully", cartEmpty });
   } catch (error) {
     console.error("Error deleting subproduct from cart:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -497,18 +500,54 @@ const loadCheckout = async (req, res) => {
   try {
       const userId = req.session.userData;
       let userNameforProfile = await User.findById(userId);
-    let category = await Category.find({'status': 'active'})
 
+      // console.log('this is the user value at loadCheckout :',userNameforProfile);
+
+    let category = await Category.find({'status': 'active'})
+    let cartFound = await Cart.findOne({userId})
+
+    let states = [
+      'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 
+      'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 
+      'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 
+      'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 
+      'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+    ];
+
+
+// console.log('this the founded cart ::',cartFound);
       if (!userId) {
           res.redirect("/");
-      } else {
-          const userDetail = await User.findById(userId);
+
+
+      } else if (cartFound && cartFound.products.length === 0){
+
+     
+        res.redirect('/cart')
+
+      }
+      
+      else {
+
+        
+          // const userDetail = await User.findById(userId);
           const cartData = await Cart.findOne({ userId }).populate({
               path: "products.productId",
               model: "Product",
           });
 
-          res.render("checkout", { userDetail, cartData,userNameforProfile,category });
+let totalOfSubTotals = cartData.products.reduce((total,product)=>{
+  return total + product.totalPrice;
+},0)
+
+let shippingCharges = totalOfSubTotals >500 ? 'Free shipping' : '₹40.00'
+
+
+let grandTotal = shippingCharges === 'Free shipping' ? totalOfSubTotals : totalOfSubTotals + 40;
+
+
+
+          res.render("checkout", { totalOfSubTotals,shippingCharges,grandTotal,cartData,userNameforProfile,category,states });
       }
   } catch (error) {
     console.log('error occured at load checkout page : ',error);
@@ -519,13 +558,45 @@ const loadCheckout = async (req, res) => {
 
 
 
+//Add address in checkoutPage
+const addAddressAtCheckout = async (req, res) => {
+  try {
+      const userId = req.session.userData;
+
+      // console.log('this is the user id at add addres ::',userId);
+
+      const { name, mobile, pincode, addressDetails, city, state } = req.body;
+
+
+      const user = await User.findById(userId);
 
 
 
+// console.log('this is the user value at addAddress :',user);
 
 
+      if (!user) {
+          return res.status(404).send('User not found');
+      }
 
+      user.addressField.push({
+          name,
+          mobile,
+          pincode,
+          addressDetails,
+          city,
+          state
+      });
 
+      const updatedUser = await user.save();
+      // console.log('this is the value stored at addAddress : ',updatedUser);
+      res.redirect("/checkout");
+  } catch (error) {
+    console.log('error at the checkout address addition',error)
+     res.redirect("/error")
+      
+  }
+};
 
 
 
@@ -540,6 +611,7 @@ module.exports = {
   deleteCartItem,
   updateCartItemCount,
   loadCheckout,
+  addAddressAtCheckout,
 };
 
 

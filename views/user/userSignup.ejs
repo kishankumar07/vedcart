@@ -15,7 +15,12 @@
     cursor: pointer;
 }
 
+
+
+
     </style>
+
+
 
     <!-- Font Icon -->
     <link rel="stylesheet" href="/userAssets/loginPage/fonts/material-icon/css/material-design-iconic-font.min.css">
@@ -58,10 +63,11 @@
 
                 <div class="form-group">
                     <label for="password"><i class="zmdi zmdi-lock"></i></label>
-                    <input type="password" name="password" id="password" placeholder="Password"/>
+                    <input type="password" name="password" id="password" placeholder="Password" oncopy="return false;" />
                     <span toggle="#password" class="zmdi zmdi-eye field-icon toggle-password"></span>
                     <p id="passwordErr" class="error-message" style="color: red;"></p>
                 </div>
+                
                 <div class="form-group">
                     <label for="re-pass"><i class="zmdi zmdi-lock-outline"></i></label>
                     <input type="password" name="conPassword" id="conPassword" placeholder="Repeat your password"/>
@@ -144,10 +150,11 @@
 }
 
 function validateEmail(email) {
-    // Simple email validation regex
-    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Case-insensitive email validation regex
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
     return emailRegex.test(email);
 }
+
 
 function validateMobile(mobile) {
     // Simple mobile number validation regex (10 digits)

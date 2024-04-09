@@ -1,5 +1,5 @@
 let User = require("../model/userModel");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 
 const nodemailer = require("nodemailer");
 const speakeasy = require("speakeasy");
@@ -8,6 +8,7 @@ const OTP = require("../model/otpModel");
 let Category = require("../model/categoryModel");
 let Product = require("../model/productModel");
 let Wishlist = require("../model/wishListModel");
+const Orders = require("../model/orderModel");
 
 //===========error- 500=======================
 
@@ -21,17 +22,20 @@ let errorPage = async (req, res) => {
 
 //====================Hashing the password=======================================
 const securePassword = async (password) => {
-  console.log("password received here at securePassword", password);
-  const saltRounds = 10; // Number of salt rounds
-  const salt = await bcrypt.genSalt(saltRounds);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  return hashedPassword;
-};
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    return passwordHash;
+  } catch (error) {
+   res.redirect("/500")
+  }
+}
 
 //load index-----------------------------------------------
 const loadIndex = async (req, res) => {
   try {
     let user = req.session.userData;
+    // console.log('this is present in the user: ',user);
+   
     let userNameforProfile = await User.findById(user);
 
     let category = await Category.find({ status: "active" });
@@ -82,30 +86,59 @@ const signUpUser = async (req, res) => {
 };
 
 //=====================Login page=============================
-const verifyUser = async (req, res) => {
+
+
+
+const verifyLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const findUser = await User.findOne({ email });
-    if (!findUser) {
-      res.render("userSignin", { message: "user does not exists" });
-    } else if (findUser.isBlocked) {
-      res.render("userSignin", { message: "Your Account has been Blocked" });
-    } else if (findUser) {
-      req.session.userData = findUser._id;
-      console.log(
-        "Successful login and in the session this is :",
-        req.session.userData
-      );
-      res.redirect("/");
+    let {email,password} = req.body;
+    const userData = await User.findOne({ email: email });
+
+// console.log('this is the user data',userData);
+
+    if (userData) {
+      const passwordMatch = await bcrypt.compare(password, userData.password);
+
+      if (passwordMatch) {
+        if (userData.isBlocked === false && userData.isVerified == true) {
+
+          if (req.session) {
+            req.session.userData = userData._id;
+
+
+console.log('user successfully logged at verify user : sessin :',req.session.userData);
+
+            return res.redirect('/');
+
+
+          } else {
+            console.error('req.session is undefined');
+            return res.status(500).send('Internal Server Error');
+          }
+        } else {
+          req.flash('er', ' Account blocked by the administrator or user not verified')
+          // User not found
+          return res.render('userSignin', { message: req.flash('er') });
+        }
+      } else {
+        req.flash('er', 'Incorrect username and password')
+        // User not found
+        return res.render('userSignin', { message: req.flash('er') });
+      }
     } else {
-      //req.flash("error", "Incorrect email or password"); // Flash an error message
-      console.log("Error in login user");
-      res.render("userSignin", { message: "Invalid email or password" });
+      req.flash('er', 'No user found')
+      // User not found
+      return res.render('userSignin', { message: req.flash('er') });
     }
   } catch (error) {
-    console.log("Error happens in userController userLogin function:", error);
+    res.redirect("/error")
+    return res.status(500).send('Internal Server Error');
   }
 };
+
+
+
+
 
 const verifyuser = async (req, res) => {
   try {
@@ -251,11 +284,18 @@ let otpGenerationSavedAndMailSent = async (
 //==================registring part=======================
 const createUser = async (req, res) => {
   try {
-    // this will be there in the session after all the actions:  req.session.userData = user;
-    console.log("user enterd the createUser");
     let { name, email, mobile, password } = req.body;
+  
+    // Case-insensitive email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
-    const existingUser = await User.findOne({ email: email });
+    // Check if the email matches the regex pattern
+    if (!emailRegex.test(email)) {
+      req.flash("message", "Invalid email address");
+      return res.redirect("/signup");
+    }
+
+    const existingUser = await User.findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } });
     console.log(
       "existing user is found at the starting of db si :",
       existingUser
@@ -263,7 +303,7 @@ const createUser = async (req, res) => {
 
     if (existingUser && existingUser.isVerified === true) {
       //create a new user because it checked in database and found no matches
-      console.log("user already exists");
+      console.log("user already exists,if condition at createUser");
 
       req.flash("message", "User already registered");
       res.redirect("/signup");
@@ -422,9 +462,7 @@ let shopPage = async (req, res) => {
     let categoryName = "All"; // Default category name
     let selectedCategoryId = req.query.category || "";
 
-    let filters = { status: "active" };
-
-    
+    let filters = { status: "active", quantity: { $gt: 0 } }; // Add condition for quantity greater than 0
 
     if (selectedCategoryId && selectedCategoryId !== "all") {
       // Only apply category filter if a valid category is selected
@@ -467,6 +505,7 @@ let shopPage = async (req, res) => {
     res.status(500).render("error");
   }
 };
+
 
 //============== a product page selected====================
 
@@ -667,9 +706,245 @@ const productremovefromwish = async (req, res) => {
   }
 };
 
+
+
+
+
+//=============loading the user profile page =====================
+const loadUserProfile = async (req, res) => {
+  try {
+    const userId = req.session.userData;
+
+    if (!userId) {
+      res.redirect("/")
+    }
+
+    let category = await Category.find({ status: "active" });
+    const userNameforProfile  = await User.findById(userId);
+
+    
+
+    const orders = await Orders.find({ userId: userId })
+    const deletePending = await Orders.deleteMany({paymentStatus:"pending"})
+
+      .populate({
+        path: "Products.productId",
+        model: "Products",
+      })
+      .exec();
+
+
+      let states = [
+        'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 
+        'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 
+        'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 
+        'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 
+        'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
+      ];
+  
+
+
+    res.render("userProfile", { userNameforProfile , orders,category,states,orders });
+  } catch (error) {
+   res.redirect("/500")
+  }
+};
+
+
+
+//================== Edit profile========================================
+
+const editProfile = async (req, res) => {
+  try {
+    const userId = req.session.userData
+    const user = await User.findById(userId)
+
+    if (!user) {
+      return res.redirect('/')
+    }
+
+    user.name = req.body.name
+    user.mobile = req.body.mobile
+
+    await user.save()
+
+    return res.redirect('/userProfile')
+  } catch (error) {
+   res.redirect("/error")
+    console.log('error at edit profile of user',error);
+  }
+}
+
+
+
+
+//Change password
+
+const changePassword = async (req, res) => {
+  console.log('resaddsafdfasdfdfdfdsfdfdfdfdfdf');
+  const userId = req.session.userData;
+  const currentPassword = req.body.currentPassword
+  const newPassword = req.body.newPassword
+  const confirmNewPassword = req.body.confirmNewPassword
+
+  try {
+
+
+    const user = await User.findById(userId)
+
+
+    if (!user) {
+      console.log('user was not found');
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (currentPassword) {
+      const passwordMatch = await bcrypt.compare(currentPassword, user.password)
+      if (!passwordMatch) {
+        console.log(' current password was matched from db');
+        return res.json({ message: 'Current password is incorrect' });
+      }
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      console.log('new password and conf password is not correct');
+      return res.json({ message: 'New password and confirm password do not match' });
+    }
+
+
+    // Update the user's password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    user.password = hashedPassword;
+
+    await user.save()
+    // console.log('this is saved at database: ',user);
+
+    return res.status(200).json({ success: true, message: 'Password changed successfully' });
+  } catch (error) {
+   res.redirect("/error")
+    return res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+
+
+
+//============Add address in checkoutPage===========================
+const addAddressatProfile = async (req, res) => {
+  try {
+    console.log('rreadfsdaffdfddfdffdfd');
+      const userId = req.session.userData;
+
+      // console.log('this is the user id at add addres ::',userId);
+
+      const { name, mobile, pincode, addressDetails, city, state } = req.body;
+
+
+      const user = await User.findById(userId);
+
+
+
+// console.log('this is the user value at addAddress :',user);
+
+
+      if (!user) {
+          return res.status(404).send('User not found');
+      }
+
+      user.addressField.push({
+          name,
+          mobile,
+          pincode,
+          addressDetails,
+          city,
+          state
+      });
+
+      const updatedUser = await user.save();
+      // console.log('this is the value stored at addAddress : ',updatedUser);
+      res.redirect("/userProfile");
+  } catch (error) {
+    console.log('error at the profile page address addition',error)
+     res.redirect("/error")
+      
+  }
+};
+
+
+// Edit Address========================
+
+const editAddress = async (req, res) => {
+  try {
+    const userId = req.session.userData;
+    const { name, mobile, pincode, address, city, state } = req.body;
+
+
+
+    console.log('req.body',req.body);
+
+
+    const updatedUser = await User.findOneAndUpdate(
+      { _id: userId, 'addressField._id': req.params.id },
+      {
+        $set: {
+          'addressField.$.name': name,
+          'addressField.$.mobile': mobile,
+          'addressField.$.pincode': pincode,
+          'addressField.$.address': address,
+          'addressField.$.city': city,
+          'addressField.$.state': state,
+        },
+      },
+      { new: true }
+    );
+
+    console.log('thsi is hte upated user;',updatedUser);
+    if (updatedUser) {
+      console.log('Address updated successfully');
+      res.status(200).json({ success: true, message: 'Address updated successfully' });
+    } else {
+      console.log('User or address not found');
+      res.status(404).json({ success: false, message: 'User or address not found' });
+    }
+  } catch (error) {
+    res.redirect("/500")
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+};
+
+
+
+//Remove address==================================
+
+const removeAddress = async (req, res) => {
+  try {
+    const userId = req.session.userData;
+    const addressId = req.params.id;
+    const user = await User.findById(userId);
+
+    user.addressField.pull({ _id: addressId });
+    await user.save();
+
+
+    res.status(200).json({ message: 'Address removed successfully' });
+  } catch (error) {
+    res.redirect("/500")
+
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+
+
+
+
+
+
+
 module.exports = {
   loadIndex,
-  verifyUser,
+  verifyLogin,
   signinUser,
   signUpUser,
   errorPage,
@@ -682,6 +957,12 @@ module.exports = {
   wishList,
   addProductToWishList,
   productremovefromwish,
+  loadUserProfile,
+  editProfile,
+  changePassword,
+  addAddressatProfile,
+  editAddress,
+  removeAddress
 };
 
 

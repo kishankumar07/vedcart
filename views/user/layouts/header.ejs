@@ -79,36 +79,9 @@
                     
                             
 
-                            <% if(!userNameforProfile) { %>
+                            <% if(userNameforProfile && userNameforProfile.isVerified ) { %>
                                
-                            <div class="dropdown compare-dropdown">
-                                
-                                
-                                <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static" title="Compare Products" aria-label="Compare Products">
-                                  
-                                    <lord-icon
-                                    src="https://cdn.lordicon.com/cjhlqtae.json"
-                                    trigger="loop"
-                                    state="loop-roll"
-                                    style="width:40px;height:40px">
-                                </lord-icon>
 
-                                    <span class="compare-txt">Login to explore more</span>
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-right" style="padding: 0;width: 111px;">
-                                    
-
-                                    <div class="compare-actions">
-                                      
-                                        <a href="/signin" class="btn btn-outline-primary-2" ><span>Login</span><i class="icon-long-arrow-right"></i></a>
-                                    </div>
-                                </div><!-- End .dropdown-menu -->     
-                            </div><!-- End .compare-dropdown -->
-
-
-                            <% }else { %>
-                              
                                 <div class="dropdown compare-dropdown">
                                 
                                 
@@ -126,7 +99,7 @@
                                     <div class="dropdown-menu dropdown-menu-right" style="padding: 0;width: 111px;">
                                         <ul class="compare-products">
                                             <li class="compare-product">
-                                                <h4 class="compare-product-title"><a style="margin: 20%;" href="product.html">Profile</a></h4>
+                                                <h4 class="compare-product-title"><a style="margin: 20%;" href="/userProfile">Profile</a></h4>
                                             </li>
                                            
                                         </ul>
@@ -138,10 +111,39 @@
                                     </div><!-- End .dropdown-menu -->     
                                 </div><!-- End .compare-dropdown -->
 
+
+                        
+                            <% } else { %>
+                              
+                                <div class="dropdown compare-dropdown">
+                                
+                                
+                                    <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static" title="Compare Products" aria-label="Compare Products">
+                                      
+                                        <lord-icon
+                                        src="https://cdn.lordicon.com/cjhlqtae.json"
+                                        trigger="loop"
+                                        state="loop-roll"
+                                        style="width:40px;height:40px">
+                                    </lord-icon>
+    
+                                        <span class="compare-txt">Login to explore more</span>
+                                    </a>
+    
+                                    <div class="dropdown-menu dropdown-menu-right" style="padding: 0;width: 111px;">
+                                        
+    
+                                        <div class="compare-actions">
+                                          
+                                            <a href="/signin" class="btn btn-outline-primary-2" ><span>Login</span><i class="icon-long-arrow-right"></i></a>
+                                        </div>
+                                    </div><!-- End .dropdown-menu -->     
+                                </div><!-- End .compare-dropdown -->
+
                                 <% } %>
 
 
-                                <% if(userNameforProfile) {%>
+                                <% if(userNameforProfile && userNameforProfile.isVerified ) { %>
                             <a  href="/wishlist" class="wishlist-link">
                                 <lord-icon
                                 src="https://cdn.lordicon.com/etgnxeer.json"
@@ -158,7 +160,7 @@
 
                             
                             <div class="dropdown cart-dropdown">
-                                <% if(userNameforProfile) {%>
+                                <% if(userNameforProfile && userNameforProfile.isVerified ) { %>
                                 <a href="/cart" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
                                     <lord-icon
                                     src="https://cdn.lordicon.com/guothkao.json"

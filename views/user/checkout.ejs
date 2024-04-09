@@ -1,47 +1,137 @@
 <%- include('./layouts/header') %>
 
 
-<!-- Button trigger modal -->
-<button type="button" class="btn btn-primary" data-mdb-toggle="modal" data-mdb-target="#staticBackdrop2">
-    Launch modal register form
-</button>
 
-<!-- Modal -->
-<div class="modal fade" id="staticBackdrop2" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
-    <div class="modal-dialog d-flex justify-content-center">
-        <div class="modal-content w-75">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel2">Sign up</h5>
-                <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <form>
-                    <!-- Name input -->
-                    <div class="form-outline mb-4">
-                        <input type="text" id="name2" class="form-control" />
-                        <label class="form-label" for="name2">Name</label>
-                    </div>
 
-                    <!-- Email input -->
-                    <div class="form-outline mb-4">
-                        <input type="email" id="email2" class="form-control" />
-                        <label class="form-label" for="email2">Email address</label>
-                    </div>
+<!-- Izitoast CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
 
-                    <!-- password input -->
-                    <div class="form-outline mb-4">
-                        <input type="password" id="password2" class="form-control" />
-                        <label class="form-label" for="password2">Password</label>
-                    </div>
+<!-- Izitoast JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
 
-                    <!-- Submit button -->
-                    <button type="submit" class="btn btn-primary btn-block">Sign up</button>
-                </form>
-            </div>
-        </div>
+
+
+
+
+
+ <!-- Sign in / Register Modal -->
+ <div class="modal fade" id="addAddressModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true"><i class="icon-close"></i></span>
+                </button>
+
+                <div class="form-box">
+                    <div class="form-tab">
+                        <ul class="nav nav-pills nav-fill nav-border-anim" role="tablist">
+                           
+                            <li class="nav-item">
+                                <a class="nav-link" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="false">Add your address here</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" id="tab-content-5">
+                            <div class="tab-pane fade show active" id="signin" role="tabpanel" aria-labelledby="signin-tab">
+                                <form action="/addAddress" method="post" onsubmit="return addressValidation()">
+
+
+                                    <div class="form-group">
+                                        <label for="singin-email"> Full Name *</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+
+										<p id="nameErr" class="error-message" style="color: red;"></p>
+
+                                    </div><!-- End .form-group -->
+
+
+
+									<div class="row">
+										<div class="col-sm-6">
+										<div class="form-group">
+											<label>Mobile Number *</label>
+											<input type="tel" class="form-control" id="mobile" name="mobile" required>
+
+											<p id="mobileErr" class="error-message" style="color: red;"></p>
+
+										</div>
+										</div><!-- End .form-group -->
+
+										<div class="col-sm-6">
+										<div class="form-group">
+											<label>Pincode *</label>
+											<input type="text" class="form-control" id="pincode" name="pincode" required>
+
+											<p id="pincodeErr" class="error-message" style="color: red;"></p>
+
+										</div><!-- End .form-group -->
+									</div>
+									</div>
+
+
+
+									 <!-- Address -->
+    <div class="form-group m-5">
+        <label for="addressDetails">Address</label>
+        <textarea class="form-control" id="addressDetails" name="addressDetails" rows="3" required></textarea>
+
+		<p id="addressErr" class="error-message" style="color: red;"></p>
+
+        <!-- <div class="text-danger" id="errorDetails"></div> -->
     </div>
-</div>
-<!-- Modal -->
+
+
+
+
+	<div class="row">
+		<div class="col-sm-6">
+			<div class="form-group">
+				<label>City *</label>
+				<input type="text" class="form-control" id="city" name="city" required>
+
+				<p id="cityErr" class="error-message" style="color: red;"></p>
+
+			</div><!-- End .form-group -->
+		</div><!-- End .col-sm-6 -->
+
+		<div class="col-sm-6">
+			<div class="form-group">
+				<label>State *</label>
+
+
+				
+					<select class="form-control" id="state" name="state" required>
+						<option value="" selected disabled>Select your state</option>
+						<% states.forEach(state => { %>
+							<option value="<%= state %>"><%= state %></option>
+						<% }); %>
+					</select>
+				
+				
+			</div><!-- End .form-group -->
+		</div><!-- End .col-sm-6 -->
+	</div><!-- End .row -->
+
+                                    <div class="form-footer">
+                                        <button type="submit" class="btn btn-outline-primary-2">
+                                            <span>Save address</span>
+                                            <i class="icon-long-arrow-right"></i>
+                                        </button>
+
+                                                                       
+                                    </div><!-- End .form-footer -->
+                                </form>
+                             
+                            </div><!-- .End .tab-pane -->
+
+             
+                        </div><!-- End .tab-content -->
+                    </div><!-- End .form-tab -->
+                </div><!-- End .form-box -->
+            </div><!-- End .modal-body -->
+        </div><!-- End .modal-content -->
+    </div><!-- End .modal-dialog -->
+</div><!-- End .modal -->
 
 
 
@@ -72,76 +162,69 @@
             	<div class="checkout">
 	                <div class="container">
             			<div class="checkout-discount">
-            				<form action="#">
-        						<input type="text" class="form-control" required id="checkout-discount-input">
-            					<label for="checkout-discount-input" class="text-truncate">Have a coupon? <span>Click here to enter your code</span></label>
-            				</form>
+            				
             			</div><!-- End .checkout-discount -->
             			<form action="#">
 		                	<div class="row">
 		                		<div class="col-lg-9">
 		                			<h2 class="checkout-title">Billing Details</h2><!-- End .checkout-title -->
-		                				<div class="row">
-		                					<div class="col-sm-6">
-		                						<label>First Name *</label>
-		                						<input type="text" class="form-control" required>
-		                					</div><!-- End .col-sm-6 -->
 
-		                					<div class="col-sm-6">
-		                						<label>Last Name *</label>
-		                						<input type="text" class="form-control" required>
-		                					</div><!-- End .col-sm-6 -->
-		                				</div><!-- End .row -->
+									<select id="existingAddresses" name="existingAddress" class="form-control">
+										<option value="" selected>Select an address</option>
+										<% if (userNameforProfile.addressField.length > 0) { %>
+											<% userNameforProfile.addressField.forEach(address => { %>
+												<option value="<%= JSON.stringify(address) %>">
+													<%= `Name: ${address.name}, Mobile: ${address.mobile}, Address: ${address.addressDetails}, City: ${address.city}, State: ${address.state}` %>
+												</option>
+											<% }) %>
+										<% } %>
+									</select>
+									
+									
+									
+									
 
-	            						<label>Company Name (Optional)</label>
-	            						<input type="text" class="form-control">
+									<hr>
 
-	            						<label>Country *</label>
-	            						<input type="text" class="form-control" required>
 
-	            						<label>Street address *</label>
-	            						<input type="text" class="form-control" placeholder="House number and Street name" required>
-	            						<input type="text" class="form-control" placeholder="Appartments, suite, unit etc ..." required>
+									<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addAddressModal">
+										Add New Address
+									</button>
 
-	            						<div class="row">
-		                					<div class="col-sm-6">
-		                						<label>Town / City *</label>
-		                						<input type="text" class="form-control" required>
-		                					</div><!-- End .col-sm-6 -->
 
-		                					<div class="col-sm-6">
-		                						<label>State / County *</label>
-		                						<input type="text" class="form-control" required>
-		                					</div><!-- End .col-sm-6 -->
-		                				</div><!-- End .row -->
+<br><br>
 
-		                				<div class="row">
-		                					<div class="col-sm-6">
-		                						<label>Postcode / ZIP *</label>
-		                						<input type="text" class="form-control" required>
-		                					</div><!-- End .col-sm-6 -->
 
-		                					<div class="col-sm-6">
-		                						<label>Phone *</label>
-		                						<input type="tel" class="form-control" required>
-		                					</div><!-- End .col-sm-6 -->
-		                				</div><!-- End .row -->
+<!-- Add this code below the address field -->
+<div class="col-lg-9">
+    <!-- Other content -->
 
-	                					<label>Email address *</label>
-	        							<input type="email" class="form-control" required>
+    <!-- Table to display ordered products -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% cartData.products.forEach(product => { %>
+                <tr>
+                    <td><%= product.name %></td>
+                    <td>₹ <%= product.totalPrice %>.00</td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+</div><!-- End .col-lg-9 -->
 
-	        							<div class="custom-control custom-checkbox">
-											<input type="checkbox" class="custom-control-input" id="checkout-create-acc">
-											<label class="custom-control-label" for="checkout-create-acc">Create an account?</label>
-										</div><!-- End .custom-checkbox -->
 
-										<div class="custom-control custom-checkbox">
-											<input type="checkbox" class="custom-control-input" id="checkout-diff-address">
-											<label class="custom-control-label" for="checkout-diff-address">Ship to a different address?</label>
-										</div><!-- End .custom-checkbox -->
 
-	                					<label>Order notes (optional)</label>
-	        							<textarea class="form-control" cols="30" rows="4" placeholder="Notes about your order, e.g. special notes for delivery"></textarea>
+
+
+
+
+	            					
 		                		</div><!-- End .col-lg-9 -->
 		                		<aside class="col-lg-3">
 		                			<div class="summary">
@@ -156,108 +239,47 @@
 		                					</thead>
 
 		                					<tbody>
-		                						<tr>
-		                							<td><a href="#">Beige knitted elastic runner shoes</a></td>
-		                							<td>$84.00</td>
-		                						</tr>
 
+												<% cartData.products.forEach(cartData => { %>
+											
 		                						<tr>
-		                							<td><a href="#">Blue utility pinafore denimdress</a></td>
-		                							<td>$76,00</td>
+		                							<td><a href="#"><%= cartData.name %></a></td>
+		                							<td>₹ <%= cartData.totalPrice %>.00</td>
 		                						</tr>
+										<%	}) %>
+		                						
 		                						<tr class="summary-subtotal">
-		                							<td>Subtotal:</td>
-		                							<td>$160.00</td>
+		                							<td>Total:</td>
+		                							<td>₹ <%= locals.totalOfSubTotals %>.00</td>
 		                						</tr><!-- End .summary-subtotal -->
 		                						<tr>
 		                							<td>Shipping:</td>
-		                							<td>Free shipping</td>
+		                							<td><%= locals.shippingCharges %></td>
 		                						</tr>
 		                						<tr class="summary-total">
-		                							<td>Total:</td>
-		                							<td>$160.00</td>
+		                							<td>Grand Total:</td>
+		                							<td><%= locals.grandTotal %>.00</td>
 		                						</tr><!-- End .summary-total -->
 		                					</tbody>
 		                				</table><!-- End .table table-summary -->
 
+
+
+										
 		                				<div class="accordion-summary" id="accordion-payment">
-										    <div class="card">
-										        <div class="card-header" id="heading-1">
-										            <h2 class="card-title">
-										                <a role="button" data-toggle="collapse" href="#collapse-1" aria-expanded="true" aria-controls="collapse-1">
-										                    Direct bank transfer
-										                </a>
-										            </h2>
-										        </div><!-- End .card-header -->
-										        <div id="collapse-1" class="collapse show" aria-labelledby="heading-1" data-parent="#accordion-payment">
-										            <div class="card-body">
-										                Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order will not be shipped until the funds have cleared in our account.
-										            </div><!-- End .card-body -->
-										        </div><!-- End .collapse -->
-										    </div><!-- End .card -->
+											<div class="payment-method-dropdown">
+												<select name="paymentMethod" id="payment" class="payment-method-select">
+													<option value="Cash on delivery">Cash on delivery</option>
+													<option value="Razorpay">Razorpay</option>
+													<option value="wallet">Wallet</option>
+												</select>
+											</div>
+										</div>
+										
 
-										    <div class="card">
-										        <div class="card-header" id="heading-2">
-										            <h2 class="card-title">
-										                <a class="collapsed" role="button" data-toggle="collapse" href="#collapse-2" aria-expanded="false" aria-controls="collapse-2">
-										                    Check payments
-										                </a>
-										            </h2>
-										        </div><!-- End .card-header -->
-										        <div id="collapse-2" class="collapse" aria-labelledby="heading-2" data-parent="#accordion-payment">
-										            <div class="card-body">
-										                Ipsum dolor sit amet, consectetuer adipiscing elit. Donec odio. Quisque volutpat mattis eros. Nullam malesuada erat ut turpis. 
-										            </div><!-- End .card-body -->
-										        </div><!-- End .collapse -->
-										    </div><!-- End .card -->
-
-										    <div class="card">
-										        <div class="card-header" id="heading-3">
-										            <h2 class="card-title">
-										                <a class="collapsed" role="button" data-toggle="collapse" href="#collapse-3" aria-expanded="false" aria-controls="collapse-3">
-										                    Cash on delivery
-										                </a>
-										            </h2>
-										        </div><!-- End .card-header -->
-										        <div id="collapse-3" class="collapse" aria-labelledby="heading-3" data-parent="#accordion-payment">
-										            <div class="card-body">Quisque volutpat mattis eros. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec odio. Quisque volutpat mattis eros. 
-										            </div><!-- End .card-body -->
-										        </div><!-- End .collapse -->
-										    </div><!-- End .card -->
-
-										    <div class="card">
-										        <div class="card-header" id="heading-4">
-										            <h2 class="card-title">
-										                <a class="collapsed" role="button" data-toggle="collapse" href="#collapse-4" aria-expanded="false" aria-controls="collapse-4">
-										                    PayPal <small class="float-right paypal-link">What is PayPal?</small>
-										                </a>
-										            </h2>
-										        </div><!-- End .card-header -->
-										        <div id="collapse-4" class="collapse" aria-labelledby="heading-4" data-parent="#accordion-payment">
-										            <div class="card-body">
-										                Nullam malesuada erat ut turpis. Suspendisse urna nibh, viverra non, semper suscipit, posuere a, pede. Donec nec justo eget felis facilisis fermentum.
-										            </div><!-- End .card-body -->
-										        </div><!-- End .collapse -->
-										    </div><!-- End .card -->
-
-										    <div class="card">
-										        <div class="card-header" id="heading-5">
-										            <h2 class="card-title">
-										                <a class="collapsed" role="button" data-toggle="collapse" href="#collapse-5" aria-expanded="false" aria-controls="collapse-5">
-										                    Credit Card (Stripe)
-										                    <img src="/userAssets/home/assets/images/payments-summary.png" alt="payments cards">
-										                </a>
-										            </h2>
-										        </div><!-- End .card-header -->
-										        <div id="collapse-5" class="collapse" aria-labelledby="heading-5" data-parent="#accordion-payment">
-										            <div class="card-body"> Donec nec justo eget felis facilisis fermentum.Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec odio. Quisque volutpat mattis eros. Lorem ipsum dolor sit ame.
-										            </div><!-- End .card-body -->
-										        </div><!-- End .collapse -->
-										    </div><!-- End .card -->
-										</div><!-- End .accordion -->
-
-		                				<button type="submit" class="btn btn-outline-primary-2 btn-order btn-block">
+		                				<button onclick="sendSelection();return false" type="submit" class="btn btn-outline-primary-2 btn-order btn-block">
 		                					<span class="btn-text">Place Order</span>
+
 		                					<span class="btn-hover-text">Proceed to Checkout</span>
 		                				</button>
 		                			</div><!-- End .summary -->
@@ -345,5 +367,206 @@
         </footer><!-- End .footer -->
     </div><!-- End .page-wrapper -->
     <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+
+
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function addressValidation() {
+    var name = document.getElementById('name').value.trim();
+    var mobile = document.getElementById('mobile').value.trim();
+    var pincode = document.getElementById('pincode').value.trim();
+    var address = document.getElementById('addressDetails').value.trim();
+    var city = document.getElementById('city').value.trim();
+
+
+    // Reset error messages
+    document.getElementById('nameErr').innerText = '';
+   
+    document.getElementById('mobileErr').innerText = '';
+    document.getElementById('pincodeErr').innerText = '';
+    document.getElementById('addressErr').innerText = '';
+    document.getElementById('cityErr').innerText = '';
+
+    var isValid = true;
+
+     // Validate name
+	 if (name === '') {
+        document.getElementById('nameErr').innerText = 'Name is required';
+        isValid = false;
+    } else if (name.length < 2 || !isNaN(name.charAt(0)) ) {
+        document.getElementById('nameErr').innerText = 'Please enter a valid name';
+        isValid = false;
+    } 
+	// else if (!isNaN(name.charAt(0))) { // Check if the first character is a number
+    // //     document.getElementById('nameErr').innerText = '';
+    // //     isValid = false;
+    // // }
+
+  
+    // Validate mobile
+    if (mobile === '') {
+        document.getElementById('mobileErr').innerText = 'Mobile is required';
+        isValid = false;
+    } else if (!validateMobile(mobile)) {
+        document.getElementById('mobileErr').innerText = 'Invalid mobile number';
+        isValid = false;
+    }
+
+   
+     // Validate pincode
+	 if (pincode === '') {
+        document.getElementById('pincodeErr').innerText = 'Pincode is required';
+        isValid = false;
+    } else if (!/^\d{6}$/.test(pincode)) { // Check for 6 digits
+        document.getElementById('pincodeErr').innerText = 'Invalid pincode';
+        isValid = false;
+    }
+
+
+	//Validate address
+  if (address === '') {
+    document.getElementById('addressErr').innerText = 'Address is required';
+    isValid = false;
+}
+
+// Validate city
+if (city === '') {
+  document.getElementById('cityErr').innerText = 'City is required';
+  isValid = false;
+}
+
+    return isValid;
+}
+
+function validateMobile(mobile) {
+    // Simple mobile number validation regex (10 digits)
+    var mobileRegex = /^\d{10}$/;
+    return mobileRegex.test(mobile);
+}
+
+
+//For getting the address from the input field of the address
+let selectedAddress;
+const dropdown = document.getElementById('existingAddresses');
+
+dropdown.addEventListener('change', function() {
+     selectedAddress = this.value;
+    //   console.log('this is the selected address :',selectedAddress);
+
+})
+
+function sendSelection(){
+
+
+	const paymentMethod = document.getElementById("payment").value;
+// console.log('selected address is :',selectedAddress);
+
+
+if (selectedAddress === '' || selectedAddress === undefined) {
+                   // Show Izitoast toast with warning message
+iziToast.warning({
+    title: 'Please select an address',
+    // message: 'You must select an address before proceeding.',
+    position: 'topRight',
+    timeout: 2500 // Adjust the duration as needed
+});
+
+                    return;
+                }
+
+				const selectedValue = JSON.parse(selectedAddress);
+console.log('after parsiing : : ',selectedValue);
+
+
+fetch('/placeorder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+
+                        paymentMethod: paymentMethod,
+                        selectedValue: selectedValue,
+                       
+
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Backend response after order placed:', data);
+
+
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Order Placed Successfully!',
+                                icon: 'success',
+                                showConfirmButton: false,
+                                timer: 2000
+
+                            });
+
+                            setTimeout(() => {
+
+                                window.location.href = '/ordersuccess';
+                            }, 2000)
+                        } else if (data.message) {
+                            // Display SweetAlert error notification for product quantity check
+                            Swal.fire({
+                                title: 'Order Processing Failed',
+                                text: data.message,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    
+                    });
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+
+
+
+
+
+
 
   <%- include('./layouts/footer') %>

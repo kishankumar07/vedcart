@@ -1,5 +1,5 @@
 let mongoose = require("mongoose");
-let bcrypt = require("bcryptjs");
+
 
 let userSchema = new mongoose.Schema({
   name: {
@@ -27,6 +27,67 @@ googleUser: {
   type: String,
   ref: "GoogleSignin", // Reference to the Google user
 },
+addressField: [{
+  name: {
+      type: String,
+      required: true
+  },
+  mobile: {
+      type: Number,
+      required: true
+  },
+  
+  addressDetails: {
+      type: String,
+      required: true
+  },
+
+  city: {
+      type: String,
+      required: true
+  },
+  state: {
+      type: String,
+      required: true,
+      enum: [
+          'Andhra Pradesh',
+          'Arunachal Pradesh',
+          'Assam',
+          'Bihar',
+          'Chhattisgarh',
+          'Goa',
+          'Gujarat',
+          'Haryana',
+          'Himachal Pradesh',
+          'Jharkhand',
+          'Karnataka',
+          'Kerala',
+          'Madhya Pradesh',
+          'Maharashtra',
+          'Manipur',
+          'Meghalaya',
+          'Mizoram',
+          'Nagaland',
+          'Odisha',
+          'Punjab',
+          'Rajasthan',
+          'Sikkim',
+          'Tamil Nadu',
+          'Telangana',
+          'Tripura',
+          'Uttar Pradesh',
+          'Uttarakhand',
+          'West Bengal'
+        ]
+  },
+  
+  pincode: {
+      type: Number,
+      required: true
+  }
+}],
+
+
   isVerified: {
     type: Boolean,
     default: false,
@@ -42,26 +103,13 @@ googleUser: {
   },
  
 
-
-  
 });
+module.exports=mongoose.model('User',userSchema)
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
-});
-userSchema.methods.isPasswordMatched = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-module.exports = mongoose.model("User", userSchema);
 
 // In Mongoose, the model name is typically used to determine the collection name in MongoDB. By default, Mongoose will use the lowercase, pluralized version of the model name as the collection name.
 
 // In your case, the model name is "User," and Mongoose will automatically use the pluralized version "users" as the collection name. This behavior is part of Mongoose's conventions.
-
 
 
 

@@ -84,7 +84,7 @@
                     />
                   </div>
                   
-                    <div class="toolbox-info">10 products found</div>
+                    <!-- <div class="toolbox-info">10 products found</div> -->
                     <!-- End .toolbox-info -->
                 </div>
                 
@@ -172,14 +172,17 @@
                           <!-- End .product-action-vertical -->
 
                           <div class="product-action">
-                            <a
-                              href="#" 
-                              class="btn-product btn-cart"
-                              title="Add to cart"
-                              onclick="addToCart('<%= user %>','<%= product[i].id %>');return false;"
-                              ><span>add to cart</span></a
-                            >
+                            <a href="#" 
+                            class="btn-product btn-cart"
+                            title="Add to cart"
+                            onclick="addToCart('<%= user %>','<%= product[i].id %>');return false;"
+                            data-product-id="<%= product[i].id %>">
+                            <span>add to cart</span>
+                         </a>
                           </div>
+
+
+
                           <!-- End .product-action -->
                         </figure>
                         <!-- End .product-media -->
@@ -719,7 +722,10 @@ else{
 
      function addToCart(userId,productId) {
 
+      // let quantity = document.getElementById('qty').value;
+      // console.log('this is the quantity ::',quantity);
 
+      
 
 if(!userId){
 Swal.fire({
@@ -737,10 +743,14 @@ Swal.fire({
     }
 });
 }
-else{
-const quantity = 1; // Replace with desired quantity
-                    // Make an AJAX request to the backend
+// else if(quantity === '0'){
+//  console.log('else if is only working');
+//   addToCartButton.disabled = true;
 
+  
+// }
+else{
+  let quantity = 1;
 
                     fetch(`/addTocart/${productId}/${quantity}/${userId}`, {
                         method: 'POST',

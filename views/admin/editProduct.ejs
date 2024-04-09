@@ -70,16 +70,7 @@
                                 <% }) %>
                                 
                                
-                                
-
-
-
-
-
-
-
-                               
-                            </div>
+                         </div>
                         </div> <!-- col.// -->
                     </div> <!-- row.// -->
                     <hr class="mb-4 mt-0">
@@ -94,6 +85,25 @@
                                 <div class="error-message text-danger" id="image-error"></div>
                             </div>
                         </div> <!-- col.// -->
+
+
+
+                        <div class="mb-4">
+                            <label class="form-label">Images</label>
+                            <% product.images.forEach((image, index) => { %>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <img src="/adminAssets/imgs/category/<%= image %>" alt="Product Image" style="width: 30px; height: 30px; margin-right: 10px;">
+                                        <span><%= image %></span>
+                                    </div>
+                                    <a href="#" onclick="confirmDelete('<%= image %>', '<%= index %>', '<%= product._id %>')" class="btn btn-danger btn-sm">Delete</a>
+                                </div>
+                            <% }) %>
+                        </div>
+                        
+
+
+
                     </div> <!-- .row end// -->
                     <div>
                    
@@ -107,7 +117,7 @@
     </div>
 </section> <!-- content-main end// -->
 
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function validateForm() {
         // Reset any existing error messages
@@ -186,6 +196,27 @@
         const errorDiv = document.getElementById(errorId);
         errorDiv.innerText = message;
     }
+
+
+
+// delete image===============================
+function confirmDelete(image, index, productId) {
+
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'You are about to delete this image!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `/admin/deleteimage?image=${image}&index=${index}&id=${productId}`;
+        }
+    });
+}
+
 
 
     </script>
