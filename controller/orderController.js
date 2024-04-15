@@ -3,7 +3,7 @@ const Product = require("../model/productModel");
 const Cart = require("../model/cartModel");
 const Orders = require("../model/orderModel");
 let Category = require("../model/categoryModel");
-
+let { orderedDate,orderedTime} = require('../config/timeStamp');
 
 
 
@@ -78,25 +78,6 @@ const placeTheOrder = async (req, res) => {
         let grandTotal = shippingCharges === '₹40.00' ? totalOfSubTotals + 40 : totalOfSubTotals
 
 
-
-
-
-//for storing data and time in a standard format
-        const date = new Date(); // Assuming this is the date object you have
-
-        // Set the timezone to 'Asia/Kolkata' (Indian Standard Time)
-        process.env.TZ = 'Asia/Kolkata';
-        
-        // Format the time with options for local time
-        const orderedTime = date.toLocaleTimeString('en-US', {
-          hour12: false,
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        });
-        
-        // Manually construct the date string in 'day-month-year' order
-        const orderedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
         
         console.log('Time at which order was placed:', orderedTime);
         console.log('Date  at which order was placed:', orderedDate);

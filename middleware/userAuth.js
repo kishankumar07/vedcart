@@ -34,11 +34,15 @@ const isLoggedIn = async(req, res, next) => {
 };
 
 
-const isLoggedOut = (req, res, next) => {
-    if (req.session.userData && req.session.userData.isVerified) {
-        
+const isLoggedOut = async(req, res, next) => {
+
+let userLogged = await User.findById(req.session.userData);
+
+    if (userLogged && userLogged.isVerified) {
+    
         res.redirect('/')
     } else {
+
         next();
 
     }

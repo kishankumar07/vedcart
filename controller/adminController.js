@@ -109,7 +109,7 @@ const userField = async(req,res)=>{
 
 
  
-
+//======= Block or Unblock =======================
     const toggleBlockStatus = async (req, res) => {
       try {
         // Extract the user ID from the request parameters
@@ -141,14 +141,26 @@ const userField = async(req,res)=>{
       }
     }
 
-    module.exports = {
-      toggleBlockStatus,
-    };
+
+
+//========== Load the users =============================    
+    const loadSearchQuery = async (req, res) => {
+        try {
+          const searchQuery = req.query.search || '';
+          const users = await User.find({ name: { $regex: searchQuery, $options: 'i' } });
+          res.json({ users });
+        } catch (error) {
+          console.error('Error loading user listing:', error);
+          res.status(500).json({ error: 'Internal server error' });
+        }
+      };
+      
     
 
 
 module.exports = {
     adminLogin,
+    loadSearchQuery,
     verifyAdminLogin,
     adminDashboard,
     userField,

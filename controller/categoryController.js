@@ -57,6 +57,8 @@ const addCategory=async(req,res)=>{
 //==================Update category==========================
 const updateCategory=async(req,res)=>{
     try {
+
+        console.log('this is the update category page reached');
       const id=req.body.id
       const img=req.file?req.file.filename:null;
       if(img){
@@ -83,6 +85,7 @@ const updateCategory=async(req,res)=>{
 
 const editCategory=async(req,res)=>{
     try {
+        console.log('this is the editcategory page : reached');
         let id=req.query.id;
        let findCategory=await Category.findById(id)
        if(findCategory){

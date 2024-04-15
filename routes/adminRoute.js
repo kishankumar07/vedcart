@@ -3,6 +3,7 @@ const express= require("express");
 const router=express();
 let adminController = require('../controller/adminController')
 let adminAuth = require('../middleware/adminAuth');
+let {logRequest} = require('../middleware/loggingMiddleware');
 let productController = require('../controller/productController');
 let categoryController = require('../controller/categoryController');
 let orderController = require('../controller/orderController');
@@ -17,38 +18,36 @@ router.get('/login',adminAuth.isLoggedOut,adminController.adminLogin);
 router.post('/login',adminController.verifyAdminLogin);
 router.get('/dashboard',adminAuth.isLoggedIn,adminController.adminDashboard);
 router.get('/logout',adminController.logout);
-router.get('/users',adminAuth.isLoggedIn,adminController.userField)
+router.get('/users',adminAuth.isLoggedIn,adminController.userField);
+router.get('/searchUser', adminAuth.isLoggedIn, adminController.loadSearchQuery);
 router.post('/toggleBlock',adminAuth.isLoggedIn,adminController.toggleBlockStatus)
 
 
 
 //=========product part============================
-router.get('/product',adminAuth.isLoggedIn,productController.allProducts);
-
-router.get('/product?page',adminAuth.isLoggedIn,productController.allProducts);
 
 
-router.get('/addProduct',adminAuth.isLoggedIn,upload.array('images', 4),productController.addProduct);
+router.get('/product',productController.productListPage);
 
+router.get('/addProduct',adminAuth.isLoggedIn,productController.loadAddProduct)
 
-router.get('/editProduct',adminAuth.isLoggedIn,productController.editProduct);
+router.get('/searchProduct', productController.loadProductSearchQuery);
+
+router.get('/editProduct',productController.editProduct);
 
 
 router.post('/createProduct',adminAuth.isLoggedIn,upload.array('images', 4),productController.createProduct);
 
 
-router.post('/productEdited',adminAuth.isLoggedIn,upload.array('images', 4),productController.productEdited);
+router.post('/productEdited',upload.array('images', 4),productController.productEdited);
 
 
-router.get('/unlistProduct',adminAuth.isLoggedIn,productController.unlistProduct);
-
-
-router.get('/listProduct',adminAuth.isLoggedIn,productController.listProduct);
+router.post('/toggleBlockProduct',adminAuth.isLoggedIn,productController.toggleBlockStatusProduct)
 
 
 router.get('/deleteProduct',adminAuth.isLoggedIn,productController.deleteProduct);
 
-// router.get('/deleteimage',adminAuth.isLoggedIn, productController.deleteimage)
+router.get('/deleteimage', productController.deleteimage)
 
 
 

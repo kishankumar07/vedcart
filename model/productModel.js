@@ -22,7 +22,10 @@ let productSchema = new mongoose.Schema({
         type:Number,     
         default:0
     },
-    
+    date:{
+        type: Date,
+        required:true
+    },
     price:{
         type:String,
         min:0,

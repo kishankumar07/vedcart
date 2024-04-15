@@ -64,7 +64,7 @@
                             <div class="mb-4">
                                 <% category.forEach((categ) => { %>
                                     <label class="mb-2 form-check form-check-inline" style="width: 45%;">
-                                        <input class="form-check-input" name="category" type="radio" value="<%= categ.name %>" <%= product.category === categ.name ? 'checked' : '' %>>
+                                        <input class="form-check-input" name="category" type="radio" value="<%= categ.name %>" <%= product.category.name === categ.name ? 'checked' : '' %>>
                                         <span class="form-check-label"> <%= categ.name %> </span>
                                     </label>
                                 <% }) %>
@@ -80,8 +80,23 @@
                         </div>
                         <div class="col-md-9">
                             <div class="mb-4">
+                             
                                 <label class="form-label">Images</label>
-                                <input id="images" name="images" class="form-control" type="file" value="product.images[0]" multiple>
+                                <input id="images" name="images" class="form-control" type="file"  multiple>
+
+                                <% product.images.forEach((image, index) => { %>
+                                    <input id="hiddenImage" type="hidden" name="existingImages" value="<%= image %>">
+                                <% }) %>
+                                <!-- Display filenames -->
+                                <div>
+                                    <% product.images.forEach((image, index) => { %>
+                                        <span id="imageValidationTest"><%= image %></span>
+                                       
+                                       
+                                    <% }) %>
+                                </div>
+
+
                                 <div class="error-message text-danger" id="image-error"></div>
                             </div>
                         </div> <!-- col.// -->
@@ -90,13 +105,16 @@
 
                         <div class="mb-4">
                             <label class="form-label">Images</label>
+
+
                             <% product.images.forEach((image, index) => { %>
                                 <div class="d-flex align-items-center justify-content-between mb-2">
                                     <div class="d-flex align-items-center">
                                         <img src="/adminAssets/imgs/category/<%= image %>" alt="Product Image" style="width: 30px; height: 30px; margin-right: 10px;">
                                         <span><%= image %></span>
                                     </div>
-                                    <a href="#" onclick="confirmDelete('<%= image %>', '<%= index %>', '<%= product._id %>')" class="btn btn-danger btn-sm">Delete</a>
+                                    <a href="#" onclick="confirmDelete('<%= index %>', '<%= product._id %>', event)" class="btn btn-danger btn-sm">Delete</a>
+
                                 </div>
                             <% }) %>
                         </div>
@@ -119,6 +137,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+
+
+
+
     function validateForm() {
         // Reset any existing error messages
         clearErrorMessages();
@@ -128,8 +151,9 @@
         const brand = document.getElementById('brand').value;
         const quantity = document.getElementById('quantity').value;
         const price = document.getElementById('price').value;
-        const images = document.getElementById('images').files;
+        const images = document.getElementById('imageValidationTest').value;
 
+        
         let isValid = true;
 
         // General Info Validation
@@ -200,8 +224,8 @@
 
 
 // delete image===============================
-function confirmDelete(image, index, productId) {
-
+function confirmDelete(index, productId, event) {
+    event.preventDefault(); // Prevent the default action of the anchor tag
     Swal.fire({
         title: 'Are you sure?',
         text: 'You are about to delete this image!',
@@ -212,11 +236,10 @@ function confirmDelete(image, index, productId) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = `/admin/deleteimage?image=${image}&index=${index}&id=${productId}`;
+            window.location.href = `/admin/deleteimage?index=${index}&id=${productId}`;
         }
     });
 }
-
 
 
     </script>

@@ -44,7 +44,7 @@ router.get("/cart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.loadCar
 
 router.post("/addToCart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.addToCart);
 
-router.post("/addToCart/:productId/:quantity/:userId?",cartController.addToCart)
+router.post("/addToCart/:productId/:quantity/:userId?",userAuth.isLoggedIn,cartController.addToCart)
 
 
 router.delete("/deleteCartItem", userAuth.isBlocked, userAuth.isLoggedIn, cartController.deleteCartItem);
