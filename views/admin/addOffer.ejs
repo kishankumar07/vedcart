@@ -1,0 +1,203 @@
+<%-include('./layouts/header')%>
+
+<!-- iziToast CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+<!-- iziToast JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+
+            
+
+
+
+            <section class="content-main">
+                <div class="row">
+                    <div class="col-9">
+                        <div class="content-header">
+                            <h2 class="content-title">Add Offer</h2>
+                          
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            <div class="card-body">
+
+
+                                <form id="offerForm" action="#" method="post">
+                                    <div class="mb-4">
+                                        <label for="offerName" class="form-label">Offer Name</label>
+                                        <input type="text" placeholder="Type here" class="form-control" name="offerName" id="offerName" />
+                                        <p id="offerNameErr" class="error-message" style="color: red;"></p>
+                                    </div>
+                                    <div class="row gx-3">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="startDate" class="form-label">Starting Date</label>
+                                            <input name="startDate" type="date" placeholder="Type here" class="form-control" id="startDate" />
+                                            <p id="offerStartDateErr" class="error-message" style="color: red;"></p>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="endDate" class="form-label">Ending Date</label>
+                                            <input name="endDate" type="date" placeholder="Type here" class="form-control" id="endDate" />
+                                            <p id="offerEndDateErr" class="error-message" style="color: red;"></p>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="offerPercentage" class="form-label">Discount Percentage</label>
+                                        <input name="discountPercentage" type="text" placeholder="Type here" class="form-control" id="offerPercentage" />
+                                        <p id="offerDiscountPercentageErr" class="error-message" style="color: red;"></p>
+                                    </div>
+                                    <button type="submit" class="btn btn-md rounded font-sm hover-up">Publish</button>
+                                </form>
+                                
+                                                             
+                            </div>
+
+                        </div>
+                        <!-- card end// -->
+                      
+                       
+                    </div>
+                   
+                </div>
+            </section>
+         
+
+
+            <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  
+// Function to validate the offer form before submission
+function validateOfferForm() {
+    let offerName = document.getElementById('offerName').value.trim();
+    let startingDate = document.getElementById('startDate').value;
+    let endingDate = document.getElementById('endDate').value;
+    let discountPercentage = document.getElementById('offerPercentage').value;
+
+    let isValid = true;
+
+    // Offer Name Validation
+    if (offerName === '') {
+        document.getElementById('offerNameErr').innerText = 'Offer name cannot be empty';
+        isValid = false;
+    } else {
+        document.getElementById('offerNameErr').innerText = '';
+    }
+
+    // Starting Date Validation
+    if (startingDate === '') {
+        document.getElementById('offerStartDateErr').innerText = 'Starting date cannot be empty';
+        isValid = false;
+    } else {
+        document.getElementById('offerStartDateErr').innerText = '';
+    }
+
+    // Ending Date Validation
+    if (endingDate === '') {
+        document.getElementById('offerEndDateErr').innerText = 'Ending date cannot be empty';
+        isValid = false;
+    } else {
+        document.getElementById('offerEndDateErr').innerText = '';
+    }
+
+    // Discount Percentage Validation
+    if (discountPercentage === '') {
+        document.getElementById('offerDiscountPercentageErr').innerText = 'Discount percentage cannot be empty';
+        isValid = false;
+    } else if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
+        document.getElementById('offerDiscountPercentageErr').innerText = 'Please enter a valid discount percentage between 0 and 100';
+        isValid = false;
+    } else {
+        document.getElementById('offerDiscountPercentageErr').innerText = '';
+    }
+
+    // Date Range Validation
+if (startingDate !== '' && endingDate !== '') {
+    let startDateObj = new Date(startingDate);
+    let endDateObj = new Date(endingDate);
+    let currentDate = new Date(); // Get current date
+
+    if (startDateObj >= endDateObj) {
+        document.getElementById('offerStartDateErr').innerText = 'Starting date must be before the ending date';
+        document.getElementById('offerEndDateErr').innerText = 'Ending date must be after the starting date';
+        isValid = false;
+    } else if (startDateObj < currentDate && !isSameDay(startDateObj, currentDate)) { // Check if start date is before current date (excluding today)
+        document.getElementById('offerStartDateErr').innerText = 'Starting date cannot be before the current date';
+        isValid = false;
+    } else {
+        document.getElementById('offerStartDateErr').innerText = '';
+        document.getElementById('offerEndDateErr').innerText = '';
+    }
+}
+
+// Function to check if two dates are the same day
+function isSameDay(date1, date2) {
+    return date1.getDate() === date2.getDate() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getFullYear() === date2.getFullYear();
+}
+
+
+
+    return isValid;
+}
+
+// Event listener for form submission
+document.getElementById('offerForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent default form submission
+    if (validateOfferForm()) {
+
+
+ const formData = new FormData(this);
+  // Convert FormData to JSON object
+  const offerData = {};
+            formData.forEach((value, key) => {
+                offerData[key] = value;
+            });
+            console.log('form data :',offerData.startDate);
+
+        
+            axios.post('/admin/addOffer', offerData)
+                .then(function(response) {
+                   
+                   if(response.data.data === false){
+                    
+                    iziToast.warning({
+                     title: response.data.message,            
+                     position: 'topRight',
+                     theme: 'orange', 
+                     color: 'black',
+                     backgroundColor: 'orange'
+                        });
+                   }
+                   else{
+                    iziToast.success({
+                     title: response.data.message,            
+                     position: 'topRight',
+                     theme: 'orange', 
+                     color: 'white',
+                     backgroundColor: '#79e313'
+                        });
+                   }
+                   
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    // Handle error response
+                    alert('Error occurred while creating the offer.',error); // Notify user about the error
+                });
+    }
+});
+
+
+
+
+
+</script>
+
+
+
+
+<%-include('./layouts/footer')%>
+            
+
+
+

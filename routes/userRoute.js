@@ -3,6 +3,7 @@ const router = express();
 let path = require("path");
 let User = require('../model/userModel')
 const passport = require('passport');
+let {logRequest} = require('../middleware/loggingMiddleware');
 let userController = require("../controller/userController");
 let userAuth = require("../middleware/userAuth");
 let cartController  = require('../controller/cartController')
@@ -27,7 +28,7 @@ router.get("/error", userController.errorPage);
 router.get("/", userController.loadIndex);
 router.get("/signin",userAuth.isLoggedOut, userController.signinUser); // If no session it will render login page
 router.post("/signin", userController.verifyLogin);
-router.get("/signup", userController.signUpUser);
+router.get("/signup",userAuth.isLoggedOut,  userController.signUpUser);
 router.post("/signup", userController.createUser);
 router.post("/verifyOTP", userController.verifyOTP);
 router.post("/resendOTP",userController.resendOTP);
@@ -40,25 +41,25 @@ router.get("/productPage", userController.aProductPage);
 
 //  -- -- -- -- -- -- -- c a r t -- -- -- -- -- -- -- - - - - - - -- --
 
-router.get("/cart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.loadCart);
+router.get("/cart",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,cartController.loadCart);
 
-router.post("/addToCart",userAuth.isBlocked,userAuth.isLoggedIn,cartController.addToCart);
+router.post("/addToCart",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,cartController.addToCart);
 
 router.post("/addToCart/:productId/:quantity/:userId?",userAuth.isLoggedIn,cartController.addToCart)
 
 
-router.delete("/deleteCartItem", userAuth.isBlocked, userAuth.isLoggedIn, cartController.deleteCartItem);
+router.delete("/deleteCartItem",  userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified, cartController.deleteCartItem);
 
-router.post("/updatequantity",userAuth.isBlocked,userAuth.isLoggedIn,cartController.updateCartItemCount);
+router.post("/updatequantity",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,cartController.updateCartItemCount);
 
-router.get('/checkout',userAuth.isBlocked,userAuth.isLoggedIn,cartController.loadCheckout)
+router.get('/checkout',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,cartController.loadCheckout)
 
-router.post("/addAddressAtCheckout",userAuth.isBlocked,userAuth.isLoggedIn,cartController.addAddressAtCheckout);
+router.post("/addAddressAtCheckout",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,cartController.addAddressAtCheckout);
 
 
-router.post('/placeorder',userAuth.isBlocked,userAuth.isLoggedIn,orderController.placeTheOrder)
+router.post('/placeorder',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.placeTheOrder)
 
-router.get('/ordersuccess',userAuth.isBlocked,userAuth.isLoggedIn,orderController.orderSuccess)
+router.get('/ordersuccess',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.orderSuccess)
 
 // router.post("/moveToSaveForLater",userAuth.isBlocked,userAuth.isLoggedIn,cartController.moveToSaveForLater);
 
@@ -67,21 +68,21 @@ router.get('/ordersuccess',userAuth.isBlocked,userAuth.isLoggedIn,orderControlle
 
 //================= user profile page --------------------------
 
-router.get('/userProfile',userAuth.isBlocked,userAuth.isLoggedIn,userAuth.isVerified,userController.loadUserProfile)
+router.get('/userProfile',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.loadUserProfile)
 
-router.post('/editProfile',userController.editProfile)
+router.post('/editProfile',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.editProfile)
   
-router.post('/changePassword',userController.changePassword)
+router.post('/changePassword',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.changePassword)
 
-router.post("/addAddressatProfile",userAuth.isBlocked,userAuth.isLoggedIn,userController.addAddressatProfile);
+router.post("/addAddressatProfile",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.addAddressatProfile);
 
-router.post('/updateaddress/:id',userController.editAddress)
+router.post('/updateaddress/:id',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.editAddress)
 
-router.delete('/removeaddress/:id', userController.removeAddress);
+router.delete('/removeaddress/:id', userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.removeAddress);
 
-router.get("/orderdetails",orderController.loadOrderDetailsPage)
+router.get("/orderdetails",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.loadOrderDetailsPage)
   
-router.post('/cancelOrder', orderController.cancelOrPlacedOrder);
+router.post('/cancelOrder',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified, orderController.cancelOrPlacedOrder);
 
 
 
@@ -160,10 +161,7 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
   
 
 
-
-
 module.exports = router;
-
 
 
 

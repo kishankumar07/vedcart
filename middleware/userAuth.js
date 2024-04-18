@@ -3,42 +3,23 @@ const User = require('../model/userModel')
 
 
 
-const isLoggedIn = async(req, res, next) => {
+const isLoggedIn = (req, res, next) => {
 
     if (req.session.userData) {
-        const user = await User.findById(req.session.userData).lean()
        
-        if (user) {
-            if (user && !user.isBlocked) {
-                 req.user = user;
-                next();
-            } else if (user.isBlocked) {
-                req.session.destroy()
-                res.redirect('/signin');
-            } else {
-                res.redirect('/signin');
-
-            }
-        }
-        else {
-            res.redirect('/signin');
-
-            console.error(error);
-            res.status(500).send('No User data found');
-        };
-    } else {
+           next();                    
         
+    } else {
+        req.flash('message','Please login to continue')
         res.redirect('/signin');
 
     }
 };
 
 
-const isLoggedOut = async(req, res, next) => {
+const isLoggedOut = (req, res, next) => {
 
-let userLogged = await User.findById(req.session.userData);
-
-    if (userLogged && userLogged.isVerified) {
+    if (req.session.userData) {
     
         res.redirect('/')
     } else {
@@ -47,40 +28,31 @@ let userLogged = await User.findById(req.session.userData);
 
     }
 }
-// const adminLoggedIn=(req,res,next)=>{
-//     if(req.session.adminLoggedIn){
-//         next()
-//     }else{
-//         res.redirect('/admin/login')
-//     }
-// }
 
 
 const isBlocked = async (req,res,next)=>{
     try {
-        const id = req.session.userData
-        // console.log("this is id of user"+id)
-        if(!id){
+          
+        if(req.session.userData){
+           let user = await User.findById(req.session.userData)
+         if(user.isBlocked == false){
             next();
         }else{
-        const user = await User.findById(id);
-        // console.log("this is user session from is blocked" ,user);
-        if(user.isBlocked == false){
-            next();
-        }else{
-            req.session.destroy(err => {
-                if (err) throw err;
-                const userSession = req.session;
-                res.render('userSignin',{message:"your account has been blocked by administrator",userSession})
-              });
+            req.session.userData=null;
 
+            
+
+            req.flash('message','You have been blocked by the administrator')
+            res.redirect('/signin')
             }
         }
 
     }catch(error){
-console.log("is Blocked error")
+console.log("is Blocked error",error)
     }
 }
+
+
 
 
 let isVerified = async(req,res,next) =>{
@@ -91,6 +63,7 @@ let isVerified = async(req,res,next) =>{
         if(user.isVerified){
             next();
         }else{
+            req.flash('message','User not verified')
             res.redirect('/')
         }
 

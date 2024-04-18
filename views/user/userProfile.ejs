@@ -292,6 +292,9 @@
                 role="tabpanel"
                 aria-labelledby="tab-orders-link"
               >
+
+
+
                 <section class="vh-70 gradient-custom-2">
                   <div class="container py-5" id="taborders">
                     <% orders.forEach(order=> { %>
@@ -316,6 +319,9 @@
                                   Place On
                                   <span class="fw-bold text-body">
                                     <%= order.date %>
+                                  </span> at:
+                                  <span class="fw-bold text-body">
+                                    <%= order.time %>
                                   </span>
                                 </p>
                               </div>
@@ -327,7 +333,7 @@
                               <div class="flex-fill">
                                 <h5 class="bold">
                                   <a
-                                    href="/productPage?id=<%=  product._id%>"
+                                    href="/productPage?id=<%=  product. productId%>"
                                   >
                                     <%= product.name %>
                                   </a>

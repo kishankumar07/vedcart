@@ -5,6 +5,7 @@ let adminController = require('../controller/adminController')
 let adminAuth = require('../middleware/adminAuth');
 let {logRequest} = require('../middleware/loggingMiddleware');
 let productController = require('../controller/productController');
+let offerController = require('../controller/offerController')
 let categoryController = require('../controller/categoryController');
 let orderController = require('../controller/orderController');
 let {upload} = require('../multer/multer');
@@ -81,7 +82,31 @@ router.get("/orders",adminAuth.isLoggedIn,orderController.loadOrder)
 
 
 
+
+
+//===================  Offer creation ============================
+
+router.get('/offer',adminAuth.isLoggedIn,offerController.loadOfferListingPage)
+
+router.get('/addOffer',adminAuth.isLoggedIn,offerController.loadAddOffer)
+
+router.post('/addOffer',adminAuth.isLoggedIn,offerController.createOffer)
+
+router.get('/statusOffer',adminAuth.isLoggedIn,offerController.changeOfferStatus)
+
+
+
+
 module.exports = router
+
+
+
+
+
+
+
+
+
 
 
 

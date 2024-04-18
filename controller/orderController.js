@@ -214,22 +214,29 @@ console.log('this is the updatedOrder',updatedOrder);
 //==============loading the order at admin side=========
 const loadOrder = async (req, res) => {
     try {
+
+        //In order model date is given to get the latest product for admin view in admin page
         const admin = req.session.admin;
-       
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 8; 
+        const totalOrders = await Orders.countDocuments();
+        const totalPages = Math.ceil(totalOrders / limit);
+
         const allOrders = await Orders.find().sort({date:-1})
-        .populate({
-            path: "Products.productId",
-            model: "Product",
-        })
-        .populate('userId', 'name')
-        
-        
-        .exec();
+            .populate({
+                path: "Products.productId",
+                model: "Product",
+            })
+            .populate('userId', 'name')
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .exec();
+
 
 console.log('this is at the allorder',allOrders);
 
 
-        res.render("orderView", { allOrders });
+        res.render("orderView", { allOrders, totalPages, currentPage: page  });
     } catch (error) {
         res.redirect("/error")
         console.log('error at loadOrder at admin',error);

@@ -516,13 +516,23 @@ const aProductPage = async (req, res) => {
 
     let queriedProduct = req.query.id;
 
+    console.log(`this is the queried product ${queriedProduct}`)
+
     const aProductFoundFromDb = await Product.findById(queriedProduct)
       .populate("category")
       .exec();
 
+console.log(`this is the full details of the queried product ${aProductFoundFromDb}`)
+
+
     let relatedProductCat = aProductFoundFromDb.category;
 
+console.log( `this is the relatedProductCat : ${relatedProductCat}`)
+
     let category = await Category.find({ status: "active" });
+
+
+
 
     let product = await Product.find({ status: "active" })
       .populate("category")
@@ -713,6 +723,11 @@ const productremovefromwish = async (req, res) => {
 //=============loading the user profile page =====================
 const loadUserProfile = async (req, res) => {
   try {
+
+//It is found that the orders is actually an array of that users all orders, because the Array.isArray(orders) returned true 
+
+
+
     const userId = req.session.userData;
 
     if (!userId) {
@@ -725,6 +740,14 @@ const loadUserProfile = async (req, res) => {
     
 
     const orders = await Orders.find({ userId: userId })
+
+    // console.log(`total ${orders.length} order made by ${userNameforProfile.name} and these are the orders : ${orders}`)
+
+  
+
+
+    // console.log(`want to know the type of the orders :${typeof orders} and to whether it is an array :::${Array.isArray(orders)}`)
+
     const deletePending = await Orders.deleteMany({paymentStatus:"pending"})
 
       .populate({

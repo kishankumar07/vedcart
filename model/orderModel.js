@@ -55,8 +55,7 @@ grandTotal: {
     type: Number,
 
 },
-
-    paymentMode: {
+paymentMode: {
         type: String,
 
     },
@@ -78,7 +77,7 @@ grandTotal: {
     },
 
 },
-{ timestamps: true }
+
 );
 
 const Orders=mongoose.model('Orders',ordersSchema)

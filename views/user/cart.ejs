@@ -102,9 +102,9 @@
 
             
               <tbody>
-                <% if(locals.cartData) { %>
-
-                  <% if(cartData.products && cartData.products.length > 0) { %>
+      
+                 <% if(locals.cartData) { %>
+                  <% if(locals.cartData.products && locals.cartData.products.length > 0) { %>
 
                     <% cartData.products.forEach(product => { %>
 
@@ -177,6 +177,7 @@
                   </tr>
 
                 <% } %>
+              
 
                 <tr>
                   <td colspan="6" class="text-end">
@@ -219,6 +220,12 @@
             </div>
             <!-- End .cart-bottom -->
           </div>
+
+
+
+
+
+          
           <!-- End .col-lg-9 -->
           <aside class="col-lg-3">
             <div class="summary summary-cart">
@@ -284,13 +291,6 @@
             <!-- End .summary -->
 
 
-
-
-
-
-
-
-
             <a
               href="category.html"
               class="btn btn-outline-dark-2 btn-block mb-3"
@@ -299,6 +299,9 @@
           </aside>
           <!-- End .col-lg-3 -->
           <!-- Existing HTML code for cart page -->
+
+
+          
         </div>
         <!-- End .row -->
       </div>
@@ -311,6 +314,10 @@
 <!-- End .main -->
 
 <% } %>
+
+
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
