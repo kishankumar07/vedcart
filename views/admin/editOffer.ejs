@@ -1,0 +1,194 @@
+<%-include('./layouts/header')%>
+
+
+<!-- iziToast CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+<!-- iziToast JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+
+
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Edit Offer</h2>
+              
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-body">
+
+
+                    <form id="offerForm" action="#" method="post">
+                        <div class="mb-4">
+
+
+                            <input type="hidden" name="id" value="<%= offerData._id %>">
+
+                            <label for="offerName" class="form-label">Offer Name</label>
+                            <input value="<%= offerData.name %>" type="text" placeholder="Type here" class="form-control" name="offerName" id="offerName" />
+                            <p id="offerNameErr" class="error-message" style="color: red;"></p>
+                        </div>
+                        <div class="row gx-3">
+                            <div class="col-md-4 mb-3">
+                                <label for="startDate" 
+                                
+                               
+                                
+                                class="form-label">Starting Date</label>
+                                <% 
+                                 <!-- in the input form the format have to be like yyyy-mm-dd -->
+                                    // Split the starting date string into day, month, and year
+                                    var startingDateParts = offerData.startingDate.split('-');
+                                    // Rearrange the date parts in 'yyyy-mm-dd' format
+                                    var formattedStartingDate = startingDateParts[2] + '-' + startingDateParts[1] + '-' + startingDateParts[0];
+                                %>
+                                <input value="<%= formattedStartingDate %>" name="startDate" type="date" placeholder="Type here" class="form-control" id="startDate" />
+                                <p id="offerStartDateErr" class="error-message" style="color: red;"></p>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="endDate" class="form-label">Ending Date</label>
+                                <% 
+                                    // Split the ending date string into day, month, and year
+                                    var endDateParts = offerData.endDate.split('-');
+                                    // Rearrange the date parts in 'yyyy-mm-dd' format
+                                    var formattedEndDate = endDateParts[2] + '-' + endDateParts[1] + '-' + endDateParts[0];
+                                %>
+                                <input value="<%= formattedEndDate %>" name="endDate" type="date" placeholder="Type here" class="form-control" id="endDate" />
+                                <p id="offerEndDateErr" class="error-message" style="color: red;"></p>
+                            </div>
+                            
+                        </div>
+                        <div class="mb-4">
+                            <label for="offerPercentage" class="form-label">Discount Percentage</label>
+                            <input value="<%= offerData.discount %>" name="discountPercentage" type="text" placeholder="Type here" class="form-control" id="offerPercentage" />
+                            <p id="offerDiscountPercentageErr" class="error-message" style="color: red;"></p>
+                        </div>
+                        <button type="submit" class="btn btn-md rounded font-sm hover-up">Publish</button>
+                    </form>
+                    
+                                                 
+                </div>
+
+            </div>
+            <!-- card end// -->
+          
+           
+        </div>
+       
+    </div>
+</section>
+
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  
+// Function to validate the offer form before submission
+function validateOfferForm() {
+    let offerName = document.getElementById('offerName').value.trim();
+    let startingDate = document.getElementById('startDate').value;
+    let endingDate = document.getElementById('endDate').value;
+    let discountPercentage = document.getElementById('offerPercentage').value;
+
+    let isValid = true;
+
+    // Offer Name Validation (Optional)
+    if (offerName === '') {
+        // Display error only if the field is not empty
+        if (!document.getElementById('offerName').hasAttribute('readonly')) {
+            document.getElementById('offerNameErr').innerText = 'Offer name cannot be empty';
+            isValid = false;
+        }
+    } else {
+        document.getElementById('offerNameErr').innerText = '';
+    }
+
+    // Discount Percentage Validation (Optional)
+    if (discountPercentage !== '') {
+        if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
+            document.getElementById('offerDiscountPercentageErr').innerText = 'Please enter a valid discount percentage between 0 and 100';
+            isValid = false;
+        } else {
+            document.getElementById('offerDiscountPercentageErr').innerText = '';
+        }
+    }
+
+    // Date Range Validation
+    if (startingDate !== '' && endingDate !== '') {
+        let startDateObj = new Date(startingDate);
+        let endDateObj = new Date(endingDate);
+
+        if (startDateObj > endDateObj) {
+            document.getElementById('offerStartDateErr').innerText = 'Starting date must be before the ending date';
+            document.getElementById('offerEndDateErr').innerText = 'Ending date must be after the starting date';
+            isValid = false;
+        } else {
+            document.getElementById('offerStartDateErr').innerText = '';
+            document.getElementById('offerEndDateErr').innerText = '';
+        }
+    }
+
+    return isValid;
+}
+
+
+// Event listener for form submission
+document.getElementById('offerForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent default form submission
+    if (validateOfferForm()) {
+
+
+ const formData = new FormData(this);
+  // Convert FormData to JSON object
+  const offerData = {};
+            formData.forEach((value, key) => {
+                offerData[key] = value;
+            });
+
+            console.log('offerdata object ',offerData);
+
+        
+            axios.post('/admin/editOffer', offerData)
+                .then(function(response) {
+                   
+                   if(response.data.data === false){
+                    
+                    iziToast.warning({
+                     title: response.data.message,            
+                     position: 'topRight',
+                     theme: 'orange', 
+                     color: 'black',
+                     backgroundColor: 'orange'
+                        });
+                   }
+                   else{
+                    iziToast.success({
+                     title: response.data.message,            
+                     position: 'topRight',
+                     theme: 'orange', 
+                     color: 'white',
+                     backgroundColor: '#79e313'
+                        });
+                        window.location.href = '/admin/offer'
+                   }
+                   
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    // Handle error response
+                    alert('Error occurred while creating the offer.',error); // Notify user about the error
+                });
+    }
+});
+
+
+
+
+
+</script>
+
+
+
+<%-include('./layouts/footer')%>

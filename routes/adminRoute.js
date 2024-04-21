@@ -84,7 +84,7 @@ router.get("/orders",adminAuth.isLoggedIn,orderController.loadOrder)
 
 
 
-//===================  Offer creation ============================
+//===================  Offer creation  ============================
 
 router.get('/offer',adminAuth.isLoggedIn,offerController.loadOfferListingPage)
 
@@ -93,6 +93,25 @@ router.get('/addOffer',adminAuth.isLoggedIn,offerController.loadAddOffer)
 router.post('/addOffer',adminAuth.isLoggedIn,offerController.createOffer)
 
 router.get('/statusOffer',adminAuth.isLoggedIn,offerController.changeOfferStatus)
+
+router.get('/editOffer',adminAuth.isLoggedIn,offerController.loadEditOffer)
+
+router.post('/editOffer',adminAuth.isLoggedIn,offerController.offerEdited)
+
+router.delete('/deleteOffer',adminAuth.isLoggedIn,offerController.deleteOffer)
+
+router.patch('/applyCategoryOffer',adminAuth.isLoggedIn,offerController.applyCategoryOffer)
+
+router.patch('/removeCategoryOffer',adminAuth.isLoggedIn,offerController.removeCategoryOffer);
+
+
+
+
+
+
+
+
+
 
 
 

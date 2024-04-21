@@ -1,6 +1,11 @@
 
 <%-include('./layouts/header')  %>
 
+
+
+
+
+
             <section class="content-main">
                 <div class="content-header">
                     <div>
@@ -50,9 +55,11 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                <% if(locals.offerData !=='undefined') { %>
 
-                                   
+                                 
+
+                                <% if(locals.offerData.length !==0) { %>
+
 
                                     <% offerData.forEach((offer,i)=>{ %>
 
@@ -60,8 +67,8 @@
                                         <td><%= i+1 %></td>
                                         <td><b><%= offer.name %></b></td>
                                         <td><%= offer.discount %>%</td>
-                                        <td><%= offer.startingDate %></td>
-                                        <td><%= offer.endDate %></td>
+                                        <td><%= moment(offer.startingDate).format('DD-MM-YYYY') %></td>
+                                        <td><%= moment(offer.endDate).format('DD-MM-YYYY') %></td>
 
                                        
 
@@ -77,21 +84,22 @@
                                             <a href="#" class="btn btn-md rounded font-sm <%= offer.status === true ? 'btn-danger' : 'btn-success' %>" style="background-color: <%= offer.status === true ? 'red' : 'green' %>; border-color: <%= offer.status === true ? 'red' : 'green' %>" onclick="changeOfferStatus('<%= offer.id %>','<%= offer.status %>')">
                                                 <%= offer.status === true ? 'Unlist' : 'List' %>
                                             </a>
-                                            <a href="" class="btn btn-md rounded font-sm">Edit</a>
-                                            <a href="" class="btn btn-md rounded font-sm">Delete</a>
+
                                             
+                                            <a href="/admin/editOffer?id=<%= offer.id %>" id="editOfferBtn" class="btn btn-md rounded font-sm" >Edit</a>
 
 
-                                                                                 
-
-                                           
+                                        
+                                            <a href="#" onclick="confirmDelete('<%= offer._id %>')" class="btn btn-md rounded font-sm">Delete</a>
+                                                                                                                                                    
                                             <!-- dropdown //end -->
                                         </td>
                                     </tr>
                                     <% }) %>
                                     <% }else{%>
 
-                                        
+                                      
+
 
                                         <td colspan="2"> Offer not found </td>
                                         <% } %>
@@ -119,9 +127,11 @@
             </section>
         
 
-
+            <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+    // =============== to unlist or list the offer =================
 function changeOfferStatus(offerId,currentStatus){
 
 console.log('this is the offerid',offerId)
@@ -142,6 +152,51 @@ Swal.fire({
 }
 
 
+// =========== to delete the offer ==========================
+function confirmDelete(offerId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'You won\'t be able to revert this!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            deleteOffer(offerId);
+        }
+    });
+}
+
+async function deleteOffer(offerId) {
+    try {
+        const response = await axios.delete(`/admin/deleteOffer?id=${offerId}`);
+        
+        if (response.status === 200) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: response.data.message
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: response.data.error || 'An error occurred.'
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred during deletion.'
+        });
+    }
+}
 
 </script>
 

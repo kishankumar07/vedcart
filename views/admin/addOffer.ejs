@@ -115,7 +115,7 @@ if (startingDate !== '' && endingDate !== '') {
     let endDateObj = new Date(endingDate);
     let currentDate = new Date(); // Get current date
 
-    if (startDateObj >= endDateObj) {
+    if (startDateObj > endDateObj) {
         document.getElementById('offerStartDateErr').innerText = 'Starting date must be before the ending date';
         document.getElementById('offerEndDateErr').innerText = 'Ending date must be after the starting date';
         isValid = false;
@@ -152,14 +152,17 @@ document.getElementById('offerForm').addEventListener('submit', function(event) 
             formData.forEach((value, key) => {
                 offerData[key] = value;
             });
-            console.log('form data :',offerData.startDate);
+console.log('offerData gonna sent to backend :',offerData)
+
+           
+
 
         
             axios.post('/admin/addOffer', offerData)
                 .then(function(response) {
                    
                    if(response.data.data === false){
-                    
+                   
                     iziToast.warning({
                      title: response.data.message,            
                      position: 'topRight',
@@ -176,6 +179,7 @@ document.getElementById('offerForm').addEventListener('submit', function(event) 
                      color: 'white',
                      backgroundColor: '#79e313'
                         });
+                        window.location.href= '/admin/offer'
                    }
                    
                 })

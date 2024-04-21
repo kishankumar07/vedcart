@@ -498,3 +498,20 @@ function validateMobile(mobile) {
 
 
 
+//To convert the date to a standart Indian format
+// ------------------------------------------------------------------
+function convertDateFormat(startDate,endDate) {
+         
+  let startDatePart = startDate.split('-');
+  let endDatePart = endDate.split('-');
+  
+  let newFormatofStartDate = startDatePart[2] + '-' + startDatePart[1] + '-' + startDatePart[0];
+
+  let newFormatofEndDate = endDatePart[2] + '-' + endDatePart[1] + '-' + endDatePart[0];
+   
+  return {newFormatofStartDate,newFormatofEndDate};
+ }
+     
+ let {newFormatofStartDate,newFormatofEndDate} = convertDateFormat(startDate,endDate);
+
+// -------------------------------------------------

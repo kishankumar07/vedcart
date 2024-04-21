@@ -1,18 +1,33 @@
 let Category = require('../model/categoryModel');
-
-
+let Offer = require('../model/offerModel');
+let moment = require('moment');
 //=============== landing page for category control===================
 const allCategory=async(req,res)=>{
     try {
         //category is set at session
       let errMess = req.flash('message');
-        const category=await Category.find()
-       
+        const category=await Category.find().populate({
+            path:"offer",
+            model:"Offer"
+        })
+    
+        const currentDate = new Date();
+
+        const offerData = await Offer.find({
+          status: true,
+          startingDate: { $lte: currentDate },
+          endDate: { $gte: currentDate }
+        })
+
+
+
+console.log('this is the offerData shown at dropdown ',offerData)
+
         req.session.category=category
-        res.render('category',{category,errMess})
+        res.render('category',{category,errMess,offerData})
     } catch (error) {
         console.log('This is all category error',error);
-        
+        res.redirect('/error')
     }
 }
 

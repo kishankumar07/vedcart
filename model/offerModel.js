@@ -11,11 +11,11 @@ let offerSchema = mongoose.Schema({
         required:true,
     },
     startingDate:{
-        type:String,
+        type:Date,
         
     },
     endDate:{
-        type:String,
+        type:Date,
         required: true
     },
     status:{

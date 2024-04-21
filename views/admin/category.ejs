@@ -1,5 +1,10 @@
 <%- include('./layouts/header.ejs')%>
 
+
+
+
+
+
 <section class="content-main">
   <div class="content-header">
     <div>
@@ -82,6 +87,8 @@
         <div class="col-md-9">
           <div class="table-responsive">
             <table class="table table-hover">
+
+
                 <thead>
                     <tr>
                       <th class="text-center">
@@ -96,16 +103,18 @@
                       <th>Image</th>
                       <th>Name</th>
                       <th>Description</th>
+                      <th>Category Offer</th>
                       <th>Status</th>
     
                       <th class="text-end">Action</th>
                     </tr>
                   </thead>
 
-             <% if(category.length>0) { %>
+              <tbody>
+                <% if(category.length>0) { %>
                   <% for(let i=0;i< category.length;i++) { %>
 
-              <tbody>
+
                 <tr>
                   <td class="text-center">
                     <div class="form-check">
@@ -129,12 +138,39 @@
                   <td><%= category[i].name%></td>
                   <td><%= category[i].description%></td>
                   
+
+                  <td>
+                    <% if(category[i].offer) { %>
+                    <!-- Display offer name and discount if offer exists for the category -->
+
+                    <span class="badge rounded-pill alert-success"><%= category[i].offer.name %> (<%= category[i].offer.discount %>%)</span>
+<span><a href="#" style="color: red;" onclick="removeOffer('<%= category[i]._id %>')">Remove Offer</a></span> 
+
+                
+                    <% } else { %>
+                    <!-- Display message if no offer exists for the category -->
+                   
+                    <span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#categoryModal<%= category[i]._id %>">Apply Offer</a></span><br>
+                   <span>No offer</span>
+
+                    
+                    <% } %>
+                </td>
+
+
+              
+
+
+
+
+
+
                   <% if (category[i].status=='active') { %>
                     <td>
                       <span class="badge rounded-pill alert-success">Active</span>
                     </td>
   
-                    <% } else { %>
+                    <%  } else { %>
                     <td>
                       <span class="badge rounded-pill alert-danger">Unlisted</span>
                     </td>
@@ -179,14 +215,23 @@
                   </td>
                 </tr>
                
+
+
+
+
+
+
+                <% } %> <% } else { %>
+                  <tr>
+                    <td colspan="7">Category not found</td>
+                  </tr>
+                  <% } %>
+  
+
+
               </tbody>
 
-              <% } %> <% } else { %>
-                <tr>
-                  <td colspan="2">Category not found</td>
-                </tr>
-                <% } %>
-
+              
             </table>
           </div>
         </div>
@@ -199,8 +244,59 @@
   <!-- card .// -->
 </section>
 
+
+
+<!-- Modal for category offer that pops up when clicked on create offer -->
+<% for(let i=0; i< category.length; i++) { %>
+	<div class="modal fade" id="categoryModal<%= category[i]._id %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		<div class="modal-header">
+		  <h5 class="modal-title">Select Offer</h5>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+    <div class="modal-body">
+      <div class="">
+        <div class="custom_select">
+            <select class="form-select offer-select">
+              <option selected>Select Offer for the categories</option>
+                      <% offerData.forEach((offer) => { %>
+                        <option value="<%= offer._id %>"><%= offer.name %></option>
+                      <% }) %>
+            </select>
+        </div>
+    </div>
+  </div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		  <button type="button" class="btn btn-primary save-offer-btn">Save</button>
+     
+		</div>
+	  </div>
+	  </div>
+	</div>
+  <% } %>
+
+
+
+
+
 <!-- Include SweetAlert library in your EJS template -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+
+<!-- for the modal to work these are needed  start guess what , these are the basics that are needed for the modal to work-->
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<!-- for the modal to work these are needed end -->
+
 
 
 <script>
@@ -363,6 +459,81 @@ if (existingCategories.includes(categoryName)) {
       }
     });
   }
+
+//===================== for selecting the offer---------------------------
+
+document.addEventListener("DOMContentLoaded", function () {
+        const saveButtons = document.querySelectorAll(".save-offer-btn");
+
+        saveButtons.forEach((button) => {
+            button.addEventListener("click", async function () {
+                const modal = button.closest(".modal");
+                const categoryId = modal.getAttribute("id").replace("categoryModal", "");
+                const offerSelect = modal.querySelector(".offer-select");
+                const offerId = offerSelect.value;
+
+                try {
+                    const response = await axios.patch("/admin/applyCategoryOffer", {
+                        categoryId,
+                        offerId
+                    });
+
+                    if (response.data.success) {
+                                        
+                        window.location.reload()
+                    
+                    } else {
+                        // Handle failure, e.g., show an error message
+                        console.error("Failed to apply category offer");
+                    }
+                } catch (error) {
+                    console.error("Error applying category offer:", error);
+                }
+            });
+        });
+    });
+
+//===========remove category offer ============================
+async function removeOffer(categoryId) {
+    try {
+        const isConfirmed = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'You want to remove the offer!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, remove it!'
+        });
+
+        if (isConfirmed.isConfirmed) {
+            const response = await axios.patch('/admin/removeCategoryOffer', {
+                categoryId
+            });
+
+            if (response.data.success) {
+                Swal.fire({
+                    title: 'Offer Removed',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload the page or perform any other action
+                        window.location.reload();
+                    }
+                });
+            } else {
+                console.error('Error removing offer:', response.statusText);
+            }
+        }
+    } catch (error) {
+        console.error('Error removing offer:', error);
+    }
+}
+
+
+
+
 
 
 

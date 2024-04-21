@@ -186,8 +186,6 @@ const toggleBlockStatusProduct = async (req, res) => {
   try {
     const productId = req.query.id;
 
-
-
     // console.log('this is the product id :',productId);
     // console.log('this si teh type of  product forund :',typeof productId);
     const product = await Product.findOne({_id:productId});
@@ -220,6 +218,10 @@ const productEdited = async (req, res) => {
     const id = req.body.id;
     const productData = req.body;
     
+console.log('this is the productDatas imagess :',productData.images)
+
+console.log('this is the existing images',req.body.existingImages)
+
 console.log('product data at body rec : ',productData)
 
 let existingImages = req.body.existingImages;
@@ -241,7 +243,8 @@ let existingImages = req.body.existingImages;
 
  // Handle existing images
  // Ensure it's an array
- if (existingImages.length > 0) {
+
+ if (existingImages && existingImages.length > 0) {
    updateData.images = existingImages;
  }
  
