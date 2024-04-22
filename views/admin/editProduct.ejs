@@ -55,6 +55,20 @@
                             </div>
                         </div> <!-- col.// -->
                     </div> <!-- row.// -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>3. Date of creation</h6>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-4">
+                                <label class="form-label">Date </label>
+                        
+                                <input type="date" value="<%= moment(product.date).format('YYYY-MM-DD') %>" id="date" name="date" class="form-control">
+
+                                <div class="error-message text-danger" id="date-error"></div>
+                            </div>
+                        </div> <!-- col.// -->
+                    </div> <!-- row.// -->
                     <hr class="mb-4 mt-0">
                     <div class="row">
                         <div class="col-md-3">

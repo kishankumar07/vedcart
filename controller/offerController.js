@@ -113,8 +113,15 @@ let loadEditOffer = async(req,res)=>{
         let offerData = await Offer.findById(offerId);
 
     console.log('when the offer edit page load this is the data rendered to the page: ',offerData);
+    console.log('this is the starting date  :', offerData.startingDate)
+            console.log('this is the starting date type :',typeof offerData.startingDate)
 
-        res.render('editOffer',{offerData})
+
+           
+
+
+
+        res.render('editOffer',{offerData,moment})
     }catch(err){
         console.log('error at the loadEditOffer page :',err);
         res.redirect('/error');
@@ -141,24 +148,6 @@ console.log('end date :',endDate);
 
        
 
-
-//To convert the date to a standart Indian format
-// ------------------------------------------------------------------
-        function convertDateFormat(startDate,endDate) {
-         
-            let startDatePart = startDate.split('-');
-            let endDatePart = endDate.split('-');
-            
-            let newFormatofStartDate = startDatePart[2] + '-' + startDatePart[1] + '-' + startDatePart[0];
-
-            let newFormatofEndDate = endDatePart[2] + '-' + endDatePart[1] + '-' + endDatePart[0];
-             
-            return {newFormatofStartDate,newFormatofEndDate};
-           }
-               
-           let {newFormatofStartDate,newFormatofEndDate} = convertDateFormat(startDate,endDate);
-         
-// -------------------------------------------------
         if(existingOffer){
            
            return res.json({data:false,message:'Offer already exists'})
@@ -166,13 +155,13 @@ console.log('end date :',endDate);
            
          await Offer.findByIdAndUpdate(
             id,
-            { name: offerName, discount: discountPercentage, startingDate: newFormatofStartDate, endDate: newFormatofEndDate },
+            { name: offerName, discount: discountPercentage, startingDate: startDate, endDate: endDate },
             { new: true }
         )
         return res.json({data:true,message:'Offer successfully edited'});
         }
     }catch(err){
-        console.log('error at createOffer controller : ',err)
+        console.log('error at offerEdited controller : ',err)
         return res.status(500).json({error:"Internal server error"})
         
     }
@@ -235,12 +224,34 @@ const removeCategoryOffer = async (req, res) => {
 };
 
 
+//===============apply product offer =====================================
+const applyProductOffer = async (req,res)=>{
+    console.log('reached here')
+    try {
+        const {offerId,productId}=req.body
+
+        await Products.updateOne({_id:productId},
+            {$set:{offer:offerId}
+        })
+        res.json({success:true})
+    } catch (error) {
+      console.log('error at apply product offer :',error)
+    }
+}
 
 
-
-
-
-
+//============== remove product offer ====================
+const removeProductOffer = async (req,res)=>{
+    try {
+        const {productId} = req.body
+        await Products.updateOne({_id:productId},
+            {$unset:{offer:1,offerprice:1}
+        })
+        res.json({success:true})
+    } catch (error) {
+      console.log('error at the remove product offer :',error)
+    }
+}
 
 
 
@@ -263,4 +274,6 @@ module.exports = {
     deleteOffer,
     applyCategoryOffer,
     removeCategoryOffer,
+    applyProductOffer,
+    removeProductOffer
 }

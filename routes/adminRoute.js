@@ -8,6 +8,7 @@ let productController = require('../controller/productController');
 let offerController = require('../controller/offerController')
 let categoryController = require('../controller/categoryController');
 let orderController = require('../controller/orderController');
+let couponController = require('../controller/couponController');
 let {upload} = require('../multer/multer');
 
 router.set('view engine','ejs');
@@ -28,13 +29,13 @@ router.post('/toggleBlock',adminAuth.isLoggedIn,adminController.toggleBlockStatu
 //=========product part============================
 
 
-router.get('/product',productController.productListPage);
+router.get('/product',adminAuth.isLoggedIn,productController.productListPage);
 
 router.get('/addProduct',adminAuth.isLoggedIn,productController.loadAddProduct)
 
 router.get('/searchProduct', productController.loadProductSearchQuery);
 
-router.get('/editProduct',productController.editProduct);
+router.get('/editProduct',adminAuth.isLoggedIn,productController.editProduct);
 
 
 router.post('/createProduct',adminAuth.isLoggedIn,upload.array('images', 4),productController.createProduct);
@@ -104,8 +105,26 @@ router.patch('/applyCategoryOffer',adminAuth.isLoggedIn,offerController.applyCat
 
 router.patch('/removeCategoryOffer',adminAuth.isLoggedIn,offerController.removeCategoryOffer);
 
+router.patch('/applyProductOffer',adminAuth.isLoggedIn,offerController.applyProductOffer);
+
+router.patch('/removeProductOffer',adminAuth.isLoggedIn,offerController.removeProductOffer);
 
 
+
+
+// =============   coupon management =============================
+
+router.get('/coupon',couponController.couponView)
+
+router.get('/addCoupon',couponController.loadAddCoupon)
+
+router.post('/addCoupon',couponController.addCouponDetails)
+
+router.get('/editCoupon',couponController.loadEditCoupon)
+
+router.post('/editCoupon',couponController.editCoupon)
+
+router.delete('/deleteCoupon/:id',couponController.deleteCoupon)
 
 
 

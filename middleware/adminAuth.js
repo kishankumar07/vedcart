@@ -2,7 +2,9 @@ let isLoggedIn = async(req,res,next)=>{
     try{
         if(req.session.Admin) next();
         else{
-            console.log('admin redirected at  is loggedin middleware')
+            
+            console.log(`admin session value is ${req.session.Admin} no session found, hence redirecting to the login page `)
+            
             res.redirect('/admin/login');
         }
         

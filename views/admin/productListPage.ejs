@@ -7,12 +7,17 @@
       <!-- <p>Add, edit or delete a category</p> -->
     </div>
     <div>
-      <input type="text" id="searchInput" placeholder="Search Products" class="form-control bg-white" />
-
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search Products"
+        class="form-control bg-white"
+      />
     </div>
     <div>
-       
-        <a href="/admin/addProduct" class="btn btn-primary btn-sm rounded">Create new</a>
+      <a href="/admin/addProduct" class="btn btn-primary btn-sm rounded"
+        >Create new</a
+      >
     </div>
   </div>
   <div class="card">
@@ -35,6 +40,7 @@
                   <th>S.no</th>
                   <th>Name</th>
                   <th>Images</th>
+                  <th>Date</th>
                   <th>Stock</th>
                   <th>Price</th>
                   <th>Status</th>
@@ -70,6 +76,9 @@
 
                     <% } %>
                   </td>
+
+                  <td><%= moment(product.date).format('DD-MM-YYYY') %></td>
+                
                   <td>
                     <% if (product.quantity === 0) { %>
                     <h5 style="color: red">0</h5>
@@ -94,13 +103,26 @@
                   </td>
 
                   <td>
-                    <button
-                      class="btn btn-sm btn-outline-danger rounded-pill font-sm"
-                    >
-                      Remove offer
-                    </button>
+                    <% if(product.offer){ %>
+                      <span
+
+
+                          class="badge rounded-pill alert-success"
+                          onclick="removeOffer('<%= product._id %>')"><%= product.offer.name%>(<%=product.offer.discount %>%)</span><br>
+                      <span><a style="color: red;" onclick="removeOffer('<%= product._id %>')">Remove Offer</a></span>
+                     
+                      <%}else{%>
+
+
+                        <span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#productModal<%= product._id %>">Apply Offer</a></span><br>
+                        <span>No offer</span>
+
+
+                          <% } %>
                   </td>
                   <td class="text-end">
+                    <!-- Three dropdown items here for listing unlisting and deleting -->
+
                     <div class="dropdown">
                       <a
                         href="#"
@@ -120,22 +142,31 @@
                             value="<%= product.id %>"
                           />
 
-                          <% if(product.status === 'active') { %>
-                          <span style="color: red">Unlist</span>
 
-                          <% } else { %>
-                          <span style="color: rgb(38, 213, 56)">List</span>
+                       
+                         <span style="color: <%= product.status === 'active' ? 'red' : 'green' %>;">
+                          <%= product.status === 'active' ? 'Unlist':'List' %>
+                         </span>
+                          
 
-                          <% } %>
+
+
+
                         </a>
 
+                        <a
+                          class="dropdown-items"
+                          style="margin-left: 15%"
+                          href="/admin/editProduct?id=<%= product.id %>"
+                          >Edit
+                        </a>
 
-
-                        <a class="dropdown-items" href="/admin/editProduct?id=<%= product.id %>">Edit </a>
-
-
-
-                        <a onclick="confirmDelete('<%= product.id %>')" class="dropdown-item text-danger" href="">Delete</a>
+                        <a
+                          onclick="confirmDelete('<%= product.id %>')"
+                          class="dropdown-item text-danger"
+                          href=""
+                          >Delete</a
+                        >
                       </div>
                     </div>
                     <!-- dropdown //end -->
@@ -152,33 +183,101 @@
     </div>
     <!-- card body .// -->
   </div>
+
+
+
+
+
+
+
+
+
+<!-- Modal for category offer that pops up when clicked on create offer -->
+<% productData.forEach(product=>{ %>
+	<div class="modal fade" id="productModal<%= product._id %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		<div class="modal-header">
+		  <h5 class="modal-title">Select Offer</h5>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+    <div class="modal-body">
+      <div class="">
+        <div class="custom_select">
+            <select class="form-select offer-select">
+              <option selected>Select Offer for the products</option>
+                      <% offerData.forEach((offer) => { %>
+                        <option value="<%= offer._id %>"><%= offer.name %></option>
+                      <% }) %>
+            </select>
+        </div>
+    </div>
+  </div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+		  <button type="button" class="btn btn-primary save-offer-btn">Save</button>
+     
+		</div>
+	  </div>
+	  </div>
+	</div>
+  <% }) %>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <div class="pagination-area mt-15 mb-50">
     <!-- Pagination -->
-<nav aria-label="Page navigation example">
-  <ul class="pagination justify-content-start">
-    <% for (let i = 1; i <= totalPages; i++) { %>
-      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-        <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
-      </li>
-    <% } %>
-  </ul>
-</nav>
-
-</div>
+    <nav aria-label="Page navigation example">
+      <ul class="pagination justify-content-start">
+        <% for (let i = 1; i <= totalPages; i++) { %>
+        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+          <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"
+            ><%= i %></a
+          >
+        </li>
+        <% } %>
+      </ul>
+    </nav>
+  </div>
   <!-- card .// -->
 </section>
 <!-- content-main end// -->
 
-
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
 
+<!-- for modal to work start -->
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+
+
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<!-- for modal to work end -->
+
+
 <script>
-//====== to list or unlist the product====================
+  //====== to list or unlist the product====================
   document.querySelectorAll(".dropdown-item").forEach((item) => {
     item.addEventListener("click", function (event) {
       event.preventDefault();
@@ -227,8 +326,7 @@
     });
   });
 
-
-//==========For deleting the product from the listing individually
+  //==========For deleting the product from the listing individually
   function confirmDelete(productId) {
     Swal.fire({
       title: "Are you sure?",
@@ -245,29 +343,26 @@
     });
   }
 
+  // ================   Function to handle search   ====================
 
+  const handleSearch = () => {
+    const searchQuery = document.getElementById("searchInput").value.trim();
 
- // ================   Function to handle search   ====================
+    axios
+      .get(`/admin/searchProduct?search=${searchQuery}`)
+      .then((response) => {
+        const productTableBody = document.querySelector(".table tbody");
+        productTableBody.innerHTML = ""; // Clear previous search results as soon as response comes from the server
 
-
-
-const handleSearch = () => {
-  const searchQuery = document.getElementById('searchInput').value.trim();
-
-  axios.get(`/admin/searchProduct?search=${searchQuery}`)
-    .then(response => {
-      const productTableBody = document.querySelector('.table tbody');
-      productTableBody.innerHTML = ''; // Clear previous search results
-
-      
-      if (response.data.products.length === 0) {
-        // Display message for empty search results
-        productTableBody.innerHTML = '<tr><td colspan="9" class="text-center">No products found</td></tr>';
-      } else {
-        // Iterate over search results and append them to the table
-        response.data.products.forEach((product, index) => {
-          const productRow = `
-          <tr>
+        if (response.data.products.length === 0) {
+          // Display message for empty search results
+          productTableBody.innerHTML =
+            '<tr><td colspan="9" class="text-center">No products found</td></tr>';
+        } else {
+          // Iterate over search results and append them to the table
+          response.data.products.forEach((product, index) => {
+            const productRow = `
+            <tr>
             <td class="text-center">
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="">
@@ -276,43 +371,170 @@ const handleSearch = () => {
             <td>${index + 1}</td>
             <td>${product.name}</td>
             <td>
-              ${product.images.map(image => `
+              ${product.images
+                .map(
+                  (image) => `
                 <img src="/adminAssets/imgs/category/${image}" alt="Product Image" width="50" height="50">
-              `).join('')}
+              `
+                )
+                .join("")}
             </td>
-            <td>${product.quantity <= 0 ? `<h5 style="color: red">0</h5>` : product.quantity <= 5 ? `<span style="color: red">${product.quantity}</span>` : `<span style="color: #3b5e33">${product.quantity}</span>`}</td>
+
+            <td>${moment(product.date).format('DD-MM-YYYY')}</td>
+
+            <td>
+              ${
+                product.quantity <= 0
+                  ? `<h5 style="color: red">0</h5>`
+                  : product.quantity <= 5
+                  ? `<span style="color: red">${product.quantity}</span>`
+                  : `<span style="color: #3b5e33">${product.quantity}</span>`
+              }
+            </td>
             <td>₹ ${product.price}</td>
             <td>
-              ${product.status === 'active' ? `<a class="badge rounded-pill alert-success">Active</a>` : `<a class="badge rounded-pill alert-danger">Inactive</a>`}
+              ${
+                product.status === "active"
+                  ? `<a class="badge rounded-pill alert-success">Active</a>`
+                  : `<a class="badge rounded-pill alert-danger">Inactive</a>`
+              }
             </td>
             <td>
-              <button class="btn btn-sm btn-outline-danger rounded-pill font-sm">Remove offer</button>
+              ${
+                product.offer
+                  ? `<span class="badge rounded-pill alert-success" onclick="removeOffer('${product._id}')">${product.offer.name}(${product.offer.discount}%)</span><br><span><a style="color: red;" onclick="removeOffer('${product._id}')">Remove Offer</a></span>`
+                  : `<span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#productModal${product._id}">Apply Offer</a></span><br><span>No offer</span>`
+              }
             </td>
             <td class="text-end">
+              <!-- Three dropdown items here for listing unlisting and deleting -->
               <div class="dropdown">
-                <!-- Dropdown menu options -->
+                <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm">
+                  <i class="material-icons md-more_horiz"></i>
+                </a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" id="list-item-${product.id}">
+                    <input class="productId" type="hidden" value="${product.id}">
+                    ${product.status === 'active' ? '<span style="color: red">Unlist</span>' : '<span style="color: rgb(38, 213, 56)">List</span>'}
+                  </a>
+                  <a class="dropdown-items" style="margin-left: 15%;" href="/admin/editProduct?id=${product.id}">Edit</a>
+                  <a onclick="confirmDelete('${product.id}')" class="dropdown-item text-danger" href="">Delete</a>
+                </div>
               </div>
+              <!-- dropdown //end -->
             </td>
           </tr>
         `;
-          productTableBody.innerHTML += productRow;
-        });
-      }
-    })
-    .catch(error => console.error('Error searching products:', error));
-};
+            productTableBody.innerHTML += productRow;
+          });
+        }
+      })
+      .catch((error) => console.error("Error searching products:", error));
+  };
 
-// Add event listener for input changes
-document.getElementById('searchInput').addEventListener('input', handleSearch);
+  // Add event listener for input changes
+  document
+    .getElementById("searchInput")
+    .addEventListener("input", handleSearch);
+
+
+
+
+//===================== for selecting the offer---------------------------
+
+document.addEventListener("DOMContentLoaded", function () {
+        const saveButtons = document.querySelectorAll(".save-offer-btn");
+
+        saveButtons.forEach((button) => {
+            button.addEventListener("click", async function () {
+                const modal = button.closest(".modal");
+                const productId = modal.getAttribute("id").replace("productModal", "");
+                const offerSelect = modal.querySelector(".offer-select");
+                const offerId = offerSelect.value;
+
+                try {
+
+
+
+                    const response = await axios.patch("/admin/applyProductOffer", {
+                        productId,
+                        offerId
+                    });
+
+                    if (response.data.success) {
+                                        
+                        window.location.reload()
+                    
+                    } else {
+                        // Handle failure, e.g., show an error message
+                        console.error("Failed to apply category offer");
+                    }
+                } catch (error) {
+                    console.error("Error applying category offer:", error);
+                    window.location.href='/error'
+                }
+            });
+        });
+    });
+
+
+
+
+//===========remove Prouduct offer ============================
+async function removeOffer(productId) {
+    try {
+        
+        const isConfirmedWarning = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You want remove the offer!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, remove it!'
+        });
+
+        if (isConfirmedWarning.isConfirmed) {
+          console.log('reached here')
+            const response = await fetch("/admin/removeProductOffer", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ productId })
+            });
+            console.log("hfkhjkhh");
+
+            if (response.ok) {
+                const responseData = await response.json();
+
+                const isConfirmed = await Swal.fire({
+                title: 'Offer Removed',
+                icon: 'success',
+                confirmButtonText: 'OK',
+            });
+
+            if (isConfirmed.value) {
+                window.location.reload();
+            }
+            } else {
+                console.error('Error removing offer:', response.statusText);
+            }
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+
+
+
+
+
+
+
 
 
 </script>
 
 <%- include('./layouts/footer') %>
-
-
-
-
-
-
-

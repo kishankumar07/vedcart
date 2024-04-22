@@ -38,25 +38,14 @@
                                
                                 
                                 class="form-label">Starting Date</label>
-                                <% 
-                                 <!-- in the input form the format have to be like yyyy-mm-dd -->
-                                    // Split the starting date string into day, month, and year
-                                    var startingDateParts = offerData.startingDate.split('-');
-                                    // Rearrange the date parts in 'yyyy-mm-dd' format
-                                    var formattedStartingDate = startingDateParts[2] + '-' + startingDateParts[1] + '-' + startingDateParts[0];
-                                %>
-                                <input value="<%= formattedStartingDate %>" name="startDate" type="date" placeholder="Type here" class="form-control" id="startDate" />
+                             
+                                <input value="<%= moment(offerData.startingDate).format('YYYY-MM-DD') %>" name="startDate" type="date" placeholder="Type here" class="form-control" id="startDate" />
                                 <p id="offerStartDateErr" class="error-message" style="color: red;"></p>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label for="endDate" class="form-label">Ending Date</label>
-                                <% 
-                                    // Split the ending date string into day, month, and year
-                                    var endDateParts = offerData.endDate.split('-');
-                                    // Rearrange the date parts in 'yyyy-mm-dd' format
-                                    var formattedEndDate = endDateParts[2] + '-' + endDateParts[1] + '-' + endDateParts[0];
-                                %>
-                                <input value="<%= formattedEndDate %>" name="endDate" type="date" placeholder="Type here" class="form-control" id="endDate" />
+                               
+                                <input value="<%= moment(offerData.endDate).format('YYYY-MM-DD') %>" name="endDate" type="date" placeholder="Type here" class="form-control" id="endDate" />
                                 <p id="offerEndDateErr" class="error-message" style="color: red;"></p>
                             </div>
                             
