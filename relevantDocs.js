@@ -515,3 +515,164 @@ function convertDateFormat(startDate,endDate) {
  let {newFormatofStartDate,newFormatofEndDate} = convertDateFormat(startDate,endDate);
 
 // -------------------------------------------------
+
+
+
+
+
+
+// =================== for shop page, loading parts====================
+// taken out for pagenation
+
+// <div class="products mb-3 tablet">
+// <div class="row">
+
+//   <% if(product.length > 0) {%>
+//   <% for(let i=0;i< product.length;i++) { %>
+
+//   <div class="col-6 col-md-4 col-xl-3">
+//     <div class="product">
+//       <figure class="product-media">
+      
+//         <a href="/productPage?id=<%= product[i]._id %>" class="product-link">
+//           <img class="default-img product-image" src="/adminAssets/imgs/category/<%= product[i].images[0] %>" alt="Product image">
+//           <img class="hover-img product-image" src="/adminAssets/imgs/category/<%= product[i].images[1] %>" alt="Product image">
+//       </a>
+        
+//         <div class="product-action-vertical">
+
+
+
+//           <% if (user) { %>
+//             <a
+//                 href="#"
+//                 onclick="wishList(event,'<%= product[i]._id %>','<%= user %>')"
+//                 class="btn-product-icon btn-wishlist btn-expandable"
+//             >
+//                 <span>add to wishlist</span>
+//             </a>
+//         <% } else { %>
+//             <a
+//                 href="#"
+//                 onclick="wishList(event,'<%= product[i]._id %>','')"
+//                 class="btn-product-icon btn-wishlist btn-expandable"
+//             >
+//                 <span>add to wishlist</span>
+//             </a>
+//         <% } %>
+        
+        
+
+
+
+
+//           <a
+//             href="#"
+//             class="btn-product-icon btn-compare"
+//             title="Compare"
+//             ><span>Compare</span></a
+//           >
+//           <a
+//             href="/userAssets/home/popup/quickView.html"
+//             class="btn-product-icon btn-quickview"
+//             title="Quick view"
+//             ><span>Quick view</span></a
+//           >
+//         </div>
+//         <!-- End .product-action-vertical -->
+
+//         <div class="product-action">
+//           <a href="#" 
+//           class="btn-product btn-cart"
+//           title="Add to cart"
+//           onclick="addToCart('<%= user %>','<%= product[i].id %>');return false;"
+//           data-product-id="<%= product[i].id %>">
+//           <span>add to cart</span>
+//        </a>
+//         </div>
+
+
+
+//         <!-- End .product-action -->
+//       </figure>
+//       <!-- End .product-media -->
+
+//       <div class="product-body">
+//         <div class="product-cat">
+//           <a href="#"><%= product[i].category.name %></a>
+//         </div>
+//         <!-- End .product-cat -->
+//         <h3 class="product-title">
+//           <a href="/productPage?id=<%=  product[i]._id%>"
+//             ><%= product[i].name %></a
+//           >
+//         </h3>
+//         <!-- End .product-title -->
+//         <div class="product-price ">
+//           <% if (product[i].offer || product[i].category.offer) { %>
+//               <div class="row">
+
+
+//                   <br>
+//                   <span class="original-price  " style="margin-left: 10px;">₹
+//                       <%= product[i].price %>
+//                   </span>
+                 
+//                   <span class="offer-price" style="color: red;font-size:16px ;">
+//                      (<%= product[i].offer ? product[i].offer.discount :
+//                           product[i].category.offer.discount %> % Off)
+//                   </span> 
+
+
+//               </div>
+//               <span class="w-100" style="color: rgb(0, 170, 0);font-size: 18px;">₹<%= product[i].offerprice %>
+//                       </span>
+
+//               <% } else { %>
+//                 <span class="original-price  " style="margin-left: 10px;color:rgb(0, 170, 0);font-size: 15px;">₹
+//                   <%= product[i].price %>
+//               </span>
+//                       <% } %>
+//       </div>
+//         <!-- End .product-price -->
+
+  
+//         <!-- stock part -->
+//         <% if (product[i].quantity === 0) { %>
+//           <h5 style="color: red;">OUT OF STOCK!</h5>
+//           <% } else if(product[i].quantity ===1) { %>
+//               <span style="color: #4eb44e;">Only <%=product[i].quantity%> left!</span>
+//               <% } else if(product[i].quantity <=15) { %>
+//                   <span style="color: #40a240;"> Hurry Only <%=product[i].quantity%> items left!</span>
+//                   <% } %>
+
+//                 <!-- stock part ends -->
+
+//         <div class="ratings-container">
+//           <div class="ratings">
+//             <div class="ratings-val" style="width: 60%"></div>
+//             <!-- End .ratings-val -->
+//           </div>
+//           <!-- End .ratings -->
+//           <span class="ratings-text">( 6 Reviews )</span>
+//         </div>
+//         <!-- End .rating-container -->
+//       </div>
+//       <!-- End .product-body -->
+//     </div>
+//     <!-- End .product -->
+//   </div>
+//   <!-- End .col-sm-6 col-md-4 col-xl-3 -->
+
+//  <% } %>
+
+//  <% } else { %>
+//   <tr>
+//     <td colspan="2">Product not found</td>
+//   </tr>
+//   <% } %>
+
+
+// </div>
+// <!-- End .row -->
+// </div>

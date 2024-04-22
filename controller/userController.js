@@ -507,7 +507,7 @@ let shopPage = async (req, res) => {
     const category = await Category.find({ status: "active" });
     let categoryName = "All"; // Default category name
     let selectedCategoryId = req.query.category || "";
-
+    let selectedFilter = req.query.filter || "lowToHigh"; // Default sort filter
     let filters = { status: { $ne: "blocked" }, quantity: { $gt: 0 } }; // Add condition for quantity greater than 0
 
     if (selectedCategoryId && selectedCategoryId !== "all") {
@@ -542,15 +542,69 @@ let shopPage = async (req, res) => {
     })
 
 
-
+    
 
     // Apply price sorting based on the selected filter
-    const selectedFilter = req.query.filter || "lowToHigh";
-    if (selectedFilter === "lowToHigh") {
-      product.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-    } else if (selectedFilter === "highToLow") {
-      product.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+    // Apply price sorting based on the selected filter
+let productSortFunction;
+if (selectedFilter === "lowToHigh") {
+  productSortFunction = (a, b) => parseFloat(a.price) - parseFloat(b.price);
+} else if (selectedFilter === "highToLow") {
+  productSortFunction = (a, b) => parseFloat(b.price) - parseFloat(a.price);
+} else if (selectedFilter === "AtoZ") {
+  productSortFunction = (a, b) => {
+    const nameA = a.name.toLowerCase();
+    const nameB = b.name.toLowerCase();
+    if (nameA < nameB) {
+      return -1;
     }
+    if (nameA > nameB) {
+      return 1;
+    }
+    return 0;
+  };
+  
+} else if (selectedFilter === "ZtoA") {
+  productSortFunction = (a, b) => {
+    const nameA = a.name.toLowerCase();
+    const nameB = b.name.toLowerCase();
+    if (nameA > nameB) {
+      return -1;
+    }
+    if (nameA < nameB) {
+      return 1;
+    }
+    return 0;
+  };
+  
+} else if (selectedFilter === "newlyLaunched") {
+  productSortFunction = (a, b) => b.createdAt - a.createdAt;
+}
+
+// Sort the product array using the selected sorting function
+if (productSortFunction) {
+  product.sort(productSortFunction);
+}
+
+
+// ======  pagenation part===========
+const productsPerPage = 8; 
+
+let currentPage = parseInt(req.query.page) || 1;
+const totalProducts = await Product.countDocuments(filters);
+const totalPages = Math.ceil(totalProducts / productsPerPage);
+
+// Ensure currentPage is within valid range
+currentPage = Math.max(1, Math.min(currentPage, totalPages));
+
+
+
+
+
+
+
+
+
 
      // Call updatedProductsDiscount function and await its result
      let updatedProducts = await updatedProductsDiscount(product);
@@ -560,6 +614,9 @@ let shopPage = async (req, res) => {
       product: updatedProducts,
       user,
       category,
+      currentPage,
+      productsPerPage,
+      totalPages,
       userNameforProfile,
       selectedCategoryId,
       categoryName,
@@ -1052,5 +1109,13 @@ module.exports = {
   editAddress,
   removeAddress
 };
+
+
+
+
+
+
+
+
 
 

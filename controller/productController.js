@@ -68,9 +68,15 @@ let loadAddProduct = async (req, res) => {
 const loadProductSearchQuery = async (req, res) => {
   try {
     const searchQuery = req.query.search || "";
+    
     const products = await Product.find({
       name: { $regex: searchQuery, $options: "i" },
-    });
+    }).populate({
+      path:'offer',
+      model:'Offer'
+    })
+
+
 
     res.json({ products });
   } catch (error) {
