@@ -31,6 +31,10 @@ let productSchema = new mongoose.Schema({
         min:0,
         required:true
     },
+    offerprice: {
+        type: Number,
+        required: false,
+    },
     images:{
         type:[String]
     },
@@ -46,3 +50,10 @@ let productSchema = new mongoose.Schema({
 
 })
 module.exports = mongoose.model('Product',productSchema);
+
+
+
+
+
+
+

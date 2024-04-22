@@ -40,25 +40,33 @@ const loadIndex = async (req, res) => {
 
     let category = await Category.find({ status: "active" });
 
-    let product = [];
-    const pro = await Product.find({
+    const productData = await Product.find({
       status: { $ne: "blocked" },
       quantity: { $ne: 0 }
-      })
-      .populate({
-        path: "category",
-        model: "Category",
-      })
-      .exec();
-
-    // console.log('this comes in pro after  loading the home page :',pro)
-
-    pro.forEach((e) => {
-      if (e.category.status == "active") {
-        product.push(e);
+  }) .populate({
+    path: 'category',
+    populate: {
+      path: 'offer',
+      match: {
+        startingDate: { $lte: new Date() },
+        endDate: { $gte: new Date() }
       }
-    });
+    }
+  })
+  .populate({
+    path: 'offer',
+    match: {
+      startingDate: { $lte: new Date() },
+      endDate: { $gte: new Date() }
+    }
+  }).limit(7)
 
+  const product = productData.filter((product) => product.category.status !== "blocked")
+
+    console.log('this comes in pro after  loading the home page :',productData)
+
+
+    
     res.render("home", { userNameforProfile, user, category, product });
   } catch (error) {
     console.log("Error happens in userController loadIndex function:", error);
@@ -453,6 +461,44 @@ const signout = async (req, res) => {
   }
 };
 
+
+
+
+// Calculate discounts for products kept as a seperate function=====
+const updatedProductsDiscount = async (products) => {
+  try {
+
+
+    return await Promise.all(products.map(async (product) => {
+      if (product.offer) {
+
+        let discount = Math.round(product.price * (product.offer.discount / 100));
+        
+        product.offerprice = product.price - discount;
+       
+        
+      }
+       else if (product.category && product.category.offer) {
+        let discount = Math.round(product.price * (product.category.offer.discount / 100));
+        product.offerprice = product.price - discount;
+        
+      } 
+      else {
+        product.offerprice = undefined;
+        
+      }
+      await product.save();
+      return product;
+    }));
+  } catch (error) {
+    console.error("Error updating products:", error);
+    throw error;
+  }
+};
+
+
+
+
 //=============shop list page======================
 let shopPage = async (req, res) => {
   try {
@@ -462,7 +508,7 @@ let shopPage = async (req, res) => {
     let categoryName = "All"; // Default category name
     let selectedCategoryId = req.query.category || "";
 
-    let filters = { status: "active", quantity: { $gt: 0 } }; // Add condition for quantity greater than 0
+    let filters = { status: { $ne: "blocked" }, quantity: { $gt: 0 } }; // Add condition for quantity greater than 0
 
     if (selectedCategoryId && selectedCategoryId !== "all") {
       // Only apply category filter if a valid category is selected
@@ -477,11 +523,26 @@ let shopPage = async (req, res) => {
     }
 
     let product = await Product.find(filters)
-      .populate({
-        path: "category",
-        model: "Category",
-      })
-      .exec();
+    .populate({
+      path: 'category',
+      populate: {
+        path: 'offer',
+        match: {
+          startingDate: { $lte: new Date() },
+          endDate: { $gte: new Date() }
+        }
+      }
+    })
+    .populate({
+      path: 'offer',
+      match: {
+        startingDate: { $lte: new Date() },
+        endDate: { $gte: new Date() }
+      }
+    })
+
+
+
 
     // Apply price sorting based on the selected filter
     const selectedFilter = req.query.filter || "lowToHigh";
@@ -491,8 +552,12 @@ let shopPage = async (req, res) => {
       product.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
     }
 
+     // Call updatedProductsDiscount function and await its result
+     let updatedProducts = await updatedProductsDiscount(product);
+
+
     res.render("shopPage", {
-      product,
+      product: updatedProducts,
       user,
       category,
       userNameforProfile,
@@ -502,7 +567,7 @@ let shopPage = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).render("error");
+    res.redirect('/error')
   }
 };
 

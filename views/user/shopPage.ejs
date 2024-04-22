@@ -103,7 +103,7 @@
                             Most Popular
                           </option>
                           <option value="rating">Most Rated</option>
-                          <option value="date">Date</option>
+                          <option value="date">Recent</option>
                         </select>
                       </div>
                     </div>
@@ -198,13 +198,35 @@
                             >
                           </h3>
                           <!-- End .product-title -->
-                          <div class="product-price">Rs.<%= product[i].price %></div>
+                          <div class="product-price ">
+                            <% if (product[i].offer || product[i].category.offer) { %>
+                                <div class="row">
+
+
+                                    <br>
+                                    <span class="original-price  " style="margin-left: 10px;">₹
+                                        <%= product[i].price %>
+                                    </span>
+                                   
+                                    <span class="offer-price" style="color: red;font-size:16px ;">
+                                       (<%= product[i].offer ? product[i].offer.discount :
+                                            product[i].category.offer.discount %> % Off)
+                                    </span> 
+
+
+                                </div>
+                                <span class="w-100" style="color: rgb(0, 170, 0);font-size: 18px;">₹<%= product[i].offerprice %>
+                                        </span>
+
+                                <% } else { %>
+                                  <span class="original-price  " style="margin-left: 10px;color:rgb(0, 170, 0);font-size: 15px;">₹
+                                    <%= product[i].price %>
+                                </span>
+                                        <% } %>
+                        </div>
                           <!-- End .product-price -->
 
-
-
-
-
+                    
                           <!-- stock part -->
                           <% if (product[i].quantity === 0) { %>
                             <h5 style="color: red;">OUT OF STOCK!</h5>

@@ -10,7 +10,7 @@ const loadAddCoupon = async(req,res)=>{
         const admin=req.session.Admin
         let error = req.flash('error')
 
-        console.log('thhe error : ',error)
+        // console.log('thhe error : ',error)
         res.render("addCoupon",{admin,error})
     } catch (error) {
        res.redirect("/error")
