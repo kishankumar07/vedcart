@@ -67,9 +67,21 @@
                                         <td><%= i+1 %></td>
                                         <td><b><%= offer.name %></b></td>
                                         <td><%= offer.discount %>%</td>
-                                        <td><%= moment(offer.startingDate).format('DD-MM-YYYY') %></td>
-                                        <td><%= moment(offer.endDate).format('DD-MM-YYYY') %></td>
+                                        <td>
+                                            <%= moment(offer.startingDate).format('DD-MM-YYYY') %>
+                                            <br>
+                                            <%- new Date(offer.startingDate) > new Date() ? '<span style="color: rgb(0, 145, 255);">Upcoming date</span>' : '' %>
 
+                                        </td>
+                                       
+                                        <td>
+                                            <%= moment(offer.endDate).format('DD-MM-YYYY') %>
+                                            <br>
+                                            <%- new Date(offer.endDate) < new Date() ? '<span style="color: red;">expired already</span>' : '' %>
+                                        </td>
+                                        
+                                        
+                                        
                                        
 
                                         <td><span class="badge rounded-pill <%= offer.status === true ? 'alert-success' : 'alert-danger'  %>">

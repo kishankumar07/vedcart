@@ -48,7 +48,9 @@ let productSchema = new mongoose.Schema({
         ref: 'Offer'
       },
 
-})
+}, 
+{ timestamps: true }) // Adding timestamps option
+
 module.exports = mongoose.model('Product',productSchema);
 
 

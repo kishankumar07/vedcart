@@ -5,8 +5,8 @@
 <!-- iziToast JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
 
 
@@ -36,7 +36,7 @@
         <div class="col-lg-6">
             <div class="card mb-4">
                 <div class="card-body">
-                    <form action="/admin/createProduct" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+                    <form action="/admin/createProduct" id="addProductForm" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
                     <div class="row">
                         <div class="col-md-3">
                             <h6>1. General info</h6>
@@ -80,7 +80,7 @@
                     <hr class="mb-4 mt-0">
                     <div class="row">
                         <div class="col-md-3">
-                            <h6>3. Date of creation</h6>
+                            <h6>3. Date </h6>
                         </div>
                         <div class="col-md-9">
                             <div class="mb-4">
@@ -120,21 +120,27 @@
                             <div class="mb-4">
 
                                 <label class="form-label">Images</label>
-          <!-- Add an input element to upload images -->
-          <input id="imageInput" name="images" class="form-control" type="file" multiple>
-
-        
 
 
-          <!-- Add an image element to display the cropped image -->
-          <img id="croppedImage" class="img-fluid" style="display: none;">
-          <div class="error-message text-danger" id="image-error"></div>
+                                <input id="imageInput" name="images" class="form-control" type="file" multiple>
+
+                                <div id="imagePreviewContainer"></div>
+
+                                <input type="hidden" id="croppedImageData" name="croppedImageData">
+                                
+                               
+
+
+
+
+
+          
                             </div>
                         </div> <!-- col.// -->
                     </div> <!-- .row end// -->
                     <div>
                    
-                        <button type="submit" class="btn btn-md rounded font-sm hover-up">Publish</button>
+                        <button type="submit" id="cropAndSubmitButton" class="btn btn-md rounded font-sm hover-up">Publish</button>
                     </div>
                     </form>
                 </div>
@@ -144,10 +150,20 @@
     </div>
 </section> <!-- content-main end// -->
 
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
+
 
 
 <script>
-    function validateForm() {
+
+function validateForm() {
         let isValid = true;
     
         // General Info Validation
@@ -230,6 +246,52 @@
         const errorElement = document.getElementById(elementId);
         errorElement.textContent = message;
     }
+
+
+
+
+    //==================for the cropper.js ==========================
+  
+    const imageInput = document.getElementById('imageInput');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const croppedImageDataInput = document.getElementById('croppedImageData');
+    let croppieInstances = [];
+
+    imageInput.addEventListener('change', function(event) {
+        const files = event.target.files;
+        for (const file of files) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                imagePreviewContainer.appendChild(img);
+
+                const croppie = new Croppie(img, {
+                    enableExif: true,
+                    viewport: { width: 200, height: 200, type: 'square' },
+                    boundary: { width: 300, height: 300 }
+                });
+                croppieInstances.push(croppie);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    document.getElementById('cropAndSubmitButton').addEventListener('click', function() {
+        const croppedImages = [];
+        for (const croppieInstance of croppieInstances) {
+            croppieInstance.result('base64').then(function(result) {
+                croppedImages.push(result);
+                if (croppedImages.length === croppieInstances.length) {
+                    croppedImageDataInput.value = JSON.stringify(croppedImages);
+                    document.getElementById('addProductForm').submit();
+                }
+            });
+        }
+    });
+
+    
+
 
 
 

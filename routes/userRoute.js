@@ -8,7 +8,7 @@ let userController = require("../controller/userController");
 let userAuth = require("../middleware/userAuth");
 let cartController  = require('../controller/cartController')
 let orderController  = require('../controller/orderController')
-const {aProductPage,shopProduct}=require('../controller/productController');
+const {aProductPage,shopProduct,loadProductSearchQuery}=require('../controller/productController');
 // const GoogleSignIn = require('../model/googleModel');
 const googleModel = require("../model/googleModel");
 
@@ -37,7 +37,7 @@ router.get('/signout',userController.signout);
 
 router.get("/shop", userController.shopPage);
 router.get("/productPage", userController.aProductPage);
-
+router.get('/loadProductSearchQuery',loadProductSearchQuery)
 
 //  -- -- -- -- -- -- -- c a r t -- -- -- -- -- -- -- - - - - - - -- --
 

@@ -17,14 +17,24 @@ const productListPage = async (req, res) => {
 
     const totalProducts = await Product.countDocuments();
     const totalPages = Math.ceil(totalProducts / limit);
-
     const productData = await Product.find()
-      .populate({
-        path:'offer',
-        model:'Offer'
-      })
-      .skip((page - 1) * limit)
-      .limit(limit);
+    .populate({
+      path: "category",
+      model: "Category",
+      populate: { // Populate the offer field for the category
+        path: "offer",
+        model: "Offer"
+      }
+    })
+    .populate({
+      path: "offer",
+      model: "Offer"
+    })
+    .skip((page - 1) * limit)
+    .limit(limit);
+  
+
+    // console.log('this  is the product data :',productData)
 
     const currentDate = new Date();
 
@@ -34,7 +44,7 @@ const productListPage = async (req, res) => {
     endDate: { $gte: currentDate }
     })
 
-console.log('this is the product data :',offerData)
+
 
 
     res.render("productListPage", {
@@ -67,18 +77,37 @@ let loadAddProduct = async (req, res) => {
 //============= Load the prouduct Listing  page ==================
 const loadProductSearchQuery = async (req, res) => {
   try {
+    let userId = req.session.userData;
+    let user = await User.findById(userId)
     const searchQuery = req.query.search || "";
     
-    const products = await Product.find({
+    
+    console.log('search query :',searchQuery)
+    let products = await Product.find({
       name: { $regex: searchQuery, $options: "i" },
-    }).populate({
-      path:'offer',
-      model:'Offer'
     })
+    .populate({
+      path: 'category',
+      populate: {
+        path: 'offer',
+        match: {
+          startingDate: { $lte: new Date() },
+          endDate: { $gte: new Date() }
+        }
+      }
+    })
+    .populate({
+      path: 'offer',
+      match: {
+        startingDate: { $lte: new Date() },
+        endDate: { $gte: new Date() }
+      }
+    })
+console.log('thse will be the responses at search proudcts at shop page: ',products)
 
+console.log('thse will be the responses of user at search proudcts at shop page: ',user)
 
-
-    res.json({ products });
+    res.json({ products,user });
   } catch (error) {
     console.error("Error loading product listing:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -86,69 +115,68 @@ const loadProductSearchQuery = async (req, res) => {
 };
 
 //creating new product========================
-
 const createProduct = async (req, res) => {
   try {
     const { name } = req.body;
     const productData = req.body;
 
-    // console.log('this is the req.files associated with multer:', req.files);
-
     const productExist = await Product.findOne({ name });
 
     if (!productExist) {
-      const caseInsensitiveProductExist = await Product.findOne({
-        name: { $regex: new RegExp("^" + name + "$", "i") },
-      });
-      if (caseInsensitiveProductExist) {
-        console.log(
-          "case insensitive search for product found : ",
-          caseInsensitiveProductExist
-        );
-        req.flash("message", "Product already exists");
-        res.redirect("/admin/addProduct");
-      } else {
-        const images = [];
-        if (req.files && req.files.length > 0) {
-          console.log("5");
-          for (let i = 0; i < req.files.length; i++) {
-            const imagePath = req.files[i].filename;
+      const images = [];
 
-            images.push(imagePath);
-            console.log(
-              "this is the images array that is going to be saved in the database : ",
-              images
-            );
-          }
+      // Check if there are uploaded files
+      if (req.files && req.files.length > 0) {
+        for (let i = 0; i < req.files.length; i++) {
+          const imagePath = req.files[i].filename;
+          images.push(imagePath);
         }
+      } 
 
-        const newProduct = new Product({
-          name: productData.name,
-          description: productData.description,
-          brand: productData.brand,
-          price: productData.price,
-          date: productData.date,
-          quantity: productData.quantity,
-          category: productData.category,
-          images: images,
-        });
+      // Handle cropped images
+      const croppedImageData1 = req.body.croppedImageData1;
+      const croppedImageData2 = req.body.croppedImageData2;
+      const croppedImageData3 = req.body.croppedImageData3;
 
-        await newProduct.save();
-
-        res.redirect("/admin/product");
+      // Push cropped image data to the images array
+      if (croppedImageData1) {
+        images.push(croppedImageData1);
       }
+      if (croppedImageData2) {
+        images.push(croppedImageData2);
+      }
+      if (croppedImageData3) {
+        images.push(croppedImageData3);
+      }
+
+console.log('thse are the imaes : ',images)
+
+
+      const newProduct = new Product({
+        name: productData.name,
+        description: productData.description,
+        brand: productData.brand,
+        price: productData.price,
+        date: productData.date,
+        quantity: productData.quantity,
+        category: productData.category,
+        images: images,
+      });
+
+      await newProduct.save();
+
+      res.redirect("/admin/product");
     } else {
-      console.log(
-        "Product already exists while add product and iziToast worked"
-      );
-      req.flash("message", "Product already exists..");
+      console.log("Product already exists.");
+      req.flash("message", "Product already exists.");
       res.redirect("/admin/addProduct");
     }
   } catch (error) {
     console.log("Error happened in createProduct function", error);
-    // Handle error response
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
 
 //delete product====================
 const deleteProduct = async (req, res) => {
@@ -191,7 +219,7 @@ const editProduct = async (req, res) => {
     }
   } catch (error) {
     console.log("Error occurred in editProduct function", error);
-    res.status(500).send("Server Error"); // Send a suitable error response
+    res.redirect('/error') // Send a suitable error response
   }
 };
 
@@ -322,3 +350,5 @@ module.exports = {
   productListPage,
   toggleBlockStatusProduct,
 };
+
+

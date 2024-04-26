@@ -139,25 +139,54 @@
                   <td><%= category[i].description%></td>
                   
 
+
+                  
+                <!-- offer part  -->
                   <td>
+                    <% let flag = 0 %>
                     <% if(category[i].offer) { %>
-                    <!-- Display offer name and discount if offer exists for the category -->
+                        <% const currentDate = new Date(); %>
+                        <% const startDate = new Date(category[i].offer.startingDate); %>
+                        <% const endDate = new Date(category[i].offer.endDate); %>
+                        
+                        <% if (startDate > currentDate) {
+                           %> 
 
-                    <span class="badge rounded-pill alert-success"><%= category[i].offer.name %> (<%= category[i].offer.discount %>%)
-                    </span><br>
-<span><a href="#" style="color: red;" onclick="removeOffer('<%= category[i]._id %>')">Remove Offer</a></span> 
+                         
+                            <!-- Display upcoming offer -->
+                            <span class="badge rounded-pill alert-info">
+                                Offer <%= category[i].offer.name %> (<%= category[i].offer.discount %>%) starts on <%= moment(startDate).format('DD-MM-YYYY') %>
+                            </span>
+                           
+                            <br> <span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#categoryModal<%= category[i]._id %>">Apply another Offer</a></span>
+                            <span><a style="color: red;" onclick="removeOffer('<%= category[i]._id %>', '<%= flag %>')">Remove offer</a></span>
+                        
+                        <% } else if (endDate < currentDate) { %>
+                            <% flag++ %>    
+                            
+                        
+                            <span class="badge rounded-pill alert-danger">Offer <%= category[i].offer.name %> (<%=category[i].offer.discount %>%) had Expired</span><br>
+                            <span><a style="color: red;" onclick="removeOffer('<%= category[i]._id %>', '<%= flag %>')">Click to update</a></span>
+                        
+                        <% } else { %>
+                            <!-- Display offer name and discount if offer is currently valid -->
 
-                
+                         
+
+                            <span class="badge rounded-pill alert-success"><%= category[i].offer.name %> (<%= category[i].offer.discount %>%)
+                            </span><br>
+                            <span><a href="#" style="color: red;" onclick="removeOffer('<%= category[i]._id %>')">Remove Offer</a></span> 
+                        <% } %>
                     <% } else { %>
-                    <!-- Display message if no offer exists for the category -->
-                   
-                    <span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#categoryModal<%= category[i]._id %>">Apply Offer</a></span><br>
+                        <!-- Display message if no offer exists for the category -->
+
+                       
+                        <span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#categoryModal<%= category[i]._id %>">Apply Offer</a></span><br>
                    <span>No offer</span>
-
-                    
-                    <% } %>
-                </td>
-
+                      <% } %>
+                  </td>
+                  
+               
 
               
 
@@ -495,9 +524,31 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 //===========remove category offer ============================
-async function removeOffer(categoryId) {
+async function removeOffer(categoryId,flag) {
     try {
-        const isConfirmed = await Swal.fire({
+
+      if(flag === String(flag)){
+        const response = await axios.patch('/admin/removeCategoryOffer', {
+                categoryId
+            });
+
+            if (response.data.success) {
+                Swal.fire({
+                    title: 'Update successful',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload the page or perform any other action
+                        window.location.reload();
+                    }
+                });
+            } else {
+                console.error('Error removing offer:', response.statusText);
+            }
+      }
+else{
+  const isConfirmed = await Swal.fire({
             title: 'Are you sure?',
             text: 'You want to remove the offer!',
             icon: 'warning',
@@ -527,6 +578,8 @@ async function removeOffer(categoryId) {
                 console.error('Error removing offer:', response.statusText);
             }
         }
+}
+       
     } catch (error) {
         console.error('Error removing offer:', error);
     }

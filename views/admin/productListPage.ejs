@@ -40,6 +40,7 @@
                   <th>S.no</th>
                   <th>Name</th>
                   <th>Images</th>
+                  <th>Category</th>
                   <th>Date</th>
                   <th>Stock</th>
                   <th>Price</th>
@@ -76,7 +77,10 @@
 
                     <% } %>
                   </td>
-
+                  <td>
+                    <%= product.category.name %>
+                  
+                  </td>
                   <td><%= moment(product.date).format('DD-MM-YYYY') %></td>
                 
                   <td>
@@ -102,18 +106,31 @@
                     <% } %>
                   </td>
 
+
+
+
+                  <!-- offer part starts here -->
                   <td>
-                    <% if(product.offer){ %>
-                      <span
+                    <!-- to check for 3 cases, 1 is : if offer exist and not expired here flag is zero, 2 :offer expired and want to delete the offer already applied , 3 is no offer and so here there is no offer and apply option would be there  -->
+                    <% let flag = 0 %>
+                   
+                    <% if(product.offer && new Date(product.offer.endDate) > new Date()) { %>  
+              
+                      
+                      <span                    
+                          class="badge rounded-pill alert-success"><%= product.offer.name%>(<%=product.offer.discount %>%)</span><br>
+                      <span><a style="color: red;" onclick="removeOffer('<%= product._id %>', '<%= flag %>')">Remove Offer</a></span>
+                  
+                      
+
+                      <% } else if (product.offer && new Date(product.offer.endDate) < new Date()) { %>
+                        <% flag++ %>           
+                        <span class="badge rounded-pill alert-danger">Offer  <%= product.offer.name %>(<%=product.offer.discount %>%) had Expired</span><br>
+                        <span><a style="color: red;" onclick="removeOffer('<%= product._id %>', '<%= flag %>')">Click to update</a></span>
+                       
 
 
-                          class="badge rounded-pill alert-success"
-                          onclick="removeOffer('<%= product._id %>')"><%= product.offer.name%>(<%=product.offer.discount %>%)</span><br>
-                      <span><a style="color: red;" onclick="removeOffer('<%= product._id %>')">Remove Offer</a></span>
-                     
                       <%}else{%>
-
-
                         <span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#productModal<%= product._id %>">Apply Offer</a></span><br>
                         <span>No offer</span>
 
@@ -481,10 +498,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 //===========remove Prouduct offer ============================
-async function removeOffer(productId) {
+async function removeOffer(productId,flag) {
     try {
         
-        const isConfirmedWarning = await Swal.fire({
+    
+      
+if(flag === String(1)){
+
+  // case when offer is expired and still showing on admin side, so inorder to remove without any swal message .Flag was set to 1 when swal not needed
+  
+  const response = await fetch("/admin/removeProductOffer", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ productId })
+            });
+            if (response.ok) {
+                const responseData = await response.json();
+
+                const isConfirmed = await Swal.fire({
+                title: 'Updated Successfully',
+                icon: 'success',
+                confirmButtonText: 'OK',
+            });
+
+            if (isConfirmed.value) {
+                window.location.reload();
+            }      
+      }
+}
+
+else{
+
+  const isConfirmedWarning = await Swal.fire({
             title: 'Are you sure?',
             text: "You want remove the offer!",
             icon: 'warning',
@@ -521,20 +568,25 @@ async function removeOffer(productId) {
                 console.error('Error removing offer:', response.statusText);
             }
         }
-    } catch (error) {
+}
+      
+      } catch (error) {
         console.error(error);
     }
 }
 
 
 
-
-
-
-
-
-
-
 </script>
 
 <%- include('./layouts/footer') %>
+
+
+
+
+
+
+
+
+
+

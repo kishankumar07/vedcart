@@ -63,11 +63,12 @@ const loadIndex = async (req, res) => {
 
   const product = productData.filter((product) => product.category.status !== "blocked")
 
-    console.log('this comes in pro after  loading the home page :',productData)
+let upcomingProducts = await Product.find({date:{$gt:new Date()}
+})
 
 
     
-    res.render("home", { userNameforProfile, user, category, product });
+    res.render("home", { userNameforProfile, user, category, product,upcomingProducts });
   } catch (error) {
     console.log("Error happens in userController loadIndex function:", error);
   }
@@ -504,24 +505,48 @@ let shopPage = async (req, res) => {
   try {
     const user = req.session.userData;
     const userNameforProfile = await User.findById(user);
-    const category = await Category.find({ status: "active" });
-    let categoryName = "All"; // Default category name
+
+
+    //all the categories that exist without being blocked will be shown at the shop page
+    const category = await Category.find({ status: {$ne:'blocked'} });
+
+
+//By default the category filter is set to 'all' and when the  page loads no category based filtration would be there
+    let categoryName = "All"; 
     let selectedCategoryId = req.query.category || "";
-    let selectedFilter = req.query.filter || "lowToHigh"; // Default sort filter
-    let filters = { status: { $ne: "blocked" }, quantity: { $gt: 0 } }; // Add condition for quantity greater than 0
+
+    //Default sorting is for price category 'Low to high'
+    let selectedFilter = req.query.filter || "lowToHigh"; 
+
+//The products displayed would be based on this filter
+    let filters = { status: { $ne: "blocked" }, quantity: { $gt: 0 } }; 
+
+
+
 
     if (selectedCategoryId && selectedCategoryId !== "all") {
+
+
       // Only apply category filter if a valid category is selected
+
       const selectedCategory = await Category.findById(selectedCategoryId);
+
       if (selectedCategory) {
+
+        console.log( `${selectedCategory.name} i.e was selected at if case`)
+
         categoryName = selectedCategory.name;
         filters.category = selectedCategoryId;
       } else {
+        console.log( `all was selected at else case`)
+
         // If the selected category is invalid, reset it to "all"
         selectedCategoryId = "all";
       }
     }
 
+    console.log('these are the filters :',filters)
+    //only existing offers will be displayed here , upcoming and expired offers are not displayed
     let product = await Product.find(filters)
     .populate({
       path: 'category',
@@ -545,7 +570,7 @@ let shopPage = async (req, res) => {
     
 
     // Apply price sorting based on the selected filter
-    // Apply price sorting based on the selected filter
+   
 let productSortFunction;
 if (selectedFilter === "lowToHigh") {
   productSortFunction = (a, b) => parseFloat(a.price) - parseFloat(b.price);
@@ -596,13 +621,6 @@ const totalPages = Math.ceil(totalProducts / productsPerPage);
 
 // Ensure currentPage is within valid range
 currentPage = Math.max(1, Math.min(currentPage, totalPages));
-
-
-
-
-
-
-
 
 
 
@@ -1107,7 +1125,8 @@ module.exports = {
   changePassword,
   addAddressatProfile,
   editAddress,
-  removeAddress
+  removeAddress,
+  
 };
 
 

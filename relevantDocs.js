@@ -497,7 +497,6 @@ function validateMobile(mobile) {
 
 
 
-
 //To convert the date to a standart Indian format
 // ------------------------------------------------------------------
 function convertDateFormat(startDate,endDate) {
@@ -676,3 +675,21 @@ function convertDateFormat(startDate,endDate) {
 // </div>
 // <!-- End .row -->
 // </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -26,13 +26,13 @@ const loadCart = async (req, res) => {
           path: "products.productId",
           model: "Product",
       });
-      // console.log('this is the cartData when rendering the cart page::',cartData);
+      console.log('this is the cartData when rendering the cart page::',cartData);
 
       if (!cartData) {
 
         console.log('cart page loaded with no cart data')
-          // res.render("cart", { cartData: { products: [] },userNameforProfile,category });
-          res.render("cart", { userNameforProfile,category });
+          res.render("cart", { cartData: { products: [] },userNameforProfile,category });
+          // res.render("cart", { userNameforProfile,category });
 
           return;
       }

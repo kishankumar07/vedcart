@@ -1,13 +1,14 @@
 const multer  = require('multer')
 const path = require('path')
 const mimetype=require('mime-types')
+const { v4: uuidv4 } = require('uuid');
 
 const storage = multer.diskStorage({
     destination: function(req, file, callback) {
       callback(null, 'public/adminAssets/imgs/category');
     },
     filename: function (req, file, callback) {
-      callback(null,  file.fieldname + '-' + Date.now() + path.extname(file.originalname))}
+      callback(null,  uuidv4() + path.extname(file.originalname))}
   });
 
 const fileFilter = function (req, file, callback) {
@@ -24,5 +25,12 @@ const fileFilter = function (req, file, callback) {
   const upload=multer({storage:storage,fileFilter:fileFilter})
 
   module.exports={upload}
+
+  
+
+
+
+
+
 
   

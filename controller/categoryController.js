@@ -21,10 +21,10 @@ const allCategory=async(req,res)=>{
 
 
 
-console.log('this is the offerData shown at dropdown ',offerData)
+// console.log('this is the offerData shown at dropdown ',offerData)
 
         req.session.category=category
-        res.render('category',{category,errMess,offerData})
+        res.render('category',{category,errMess,offerData,moment})
     } catch (error) {
         console.log('This is all category error',error);
         res.redirect('/error')

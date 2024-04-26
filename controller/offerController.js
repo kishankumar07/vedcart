@@ -112,14 +112,6 @@ let loadEditOffer = async(req,res)=>{
         let offerId = req.query.id;
         let offerData = await Offer.findById(offerId);
 
-    console.log('when the offer edit page load this is the data rendered to the page: ',offerData);
-    console.log('this is the starting date  :', offerData.startingDate)
-            console.log('this is the starting date type :',typeof offerData.startingDate)
-
-
-           
-
-
 
         res.render('editOffer',{offerData,moment})
     }catch(err){
@@ -137,8 +129,8 @@ let offerEdited = async(req,res)=>{
 
 
 //clarification at start date and end date:
-console.log('start date :',startDate);
-console.log('end date :',endDate);
+// console.log('start date :',startDate);
+// console.log('end date :',endDate);
 
 
 
