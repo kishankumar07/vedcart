@@ -1,6 +1,6 @@
 let Coupon = require('../model/couponModel');
 const moment = require("moment")
-
+let Cart = require("../model/cartModel");
 
 
 
@@ -36,7 +36,7 @@ const couponView = async (req, res) => {
             .limit(limit);
         let success = req.flash('success')
 
-        console.log('the success : ',success)
+        console.log('the success at coupon view at admin side: ',success)
 
         res.render("coupon", {
             admin,
@@ -158,8 +158,78 @@ const deleteCoupon = async(req,res)=>{
 }
 
 
+//================= apply the coupon ===============================
+const applyCoupon = async (req, res) => {
+    try {
+        console.log('reached here at apply coupon')
+        const userId = req.session.userData;
+
+console.log('this is the userId :',userId)
+
+        const { couponCode } = req.body;
+  
+console.log('this is teh coupon code :',couponCode)
+
+        const currentDate = new Date();
+
+        const cartData = await Cart.findOne({ userId:userId }).populate({
+            path: "products.productId",
+            model: "Product",
+        });
+
+        console.log('this is the cartData :',cartData)
+
+        const totalPriceTotal = cartData.products.reduce((total, product) => {
+            return total + product.totalPrice;
+        }, 0);
+  
+console.log('this is the totalPriceTotal :',totalPriceTotal)
+
+        
+       
+        const coupon = await Coupon.findOne({
+          couponCode,
+          expiryDate: { $gte: currentDate },
+          minAmount: { $lte: totalPriceTotal },
+          "userUsed.used": { $ne: true }
+      });
+      
+console.log('this is the coupon found :',coupon)
+
+
+      if (coupon) {
+          const alreadyUsed = coupon.userUsed.some((user) => user.userid.toString() === userId && user.used === true);
+      
+
+console.log('this is the already used coupon:',alreadyUsed)
+
+          if (!alreadyUsed) {
+
+             // Update the coupon document to mark it as used by the user
+             coupon.userUsed.push({ userid: userId, used: true });
+             await coupon.save();
+
+              const discount = totalPriceTotal - coupon.discount;
+      
+            console.log('this is teh discount applied to the subtotal : ',discount)
+
+              res.json({ success: `${coupon.couponName} added`, totalPriceTotal, discount });
+          } else {
+              res.json({ already: 'Coupon already used by this user' });
+          }
+      } else {
+          res.json({ error: 'Coupon not found or not applicable' });
+      }
+      
+    } catch (err) {
+     
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
+
 
 module.exports = {
+    applyCoupon,
     loadAddCoupon,
     couponView,
     addCouponDetails,
@@ -167,3 +237,5 @@ module.exports = {
     editCoupon,
     deleteCoupon
 }
+
+

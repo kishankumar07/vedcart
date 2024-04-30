@@ -1,5 +1,22 @@
 //for google users later on for address management
 
+
+// --=======================  razorpay details ====================
+key_id,
+rzp_test_Mjpyug9KzUZ3Wb,
+
+key_secret
+ItgtAc365vyuqpoorMcCUsrw
+
+{/* <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> */}
+
+
+
+
+
+
+
+
 const mongoose = require('mongoose');
 
 // Define GoogleSignIn schema
@@ -675,13 +692,6 @@ function convertDateFormat(startDate,endDate) {
 // </div>
 // <!-- End .row -->
 // </div>
-
-
-
-
-
-
-
 
 
 

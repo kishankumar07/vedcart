@@ -129,7 +129,10 @@ router.delete('/deleteCoupon/:id',couponController.deleteCoupon)
 
 
 
-
+// router.use((req, res, next) => {
+//     console.log('Request to non-existent route:', req.path);
+//     res.status(404).render('error404'); // Assuming you have a 404.ejs template for your error page
+//   });
 
 
 

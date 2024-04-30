@@ -82,7 +82,7 @@ const loadProductSearchQuery = async (req, res) => {
     const searchQuery = req.query.search || "";
     
     
-    console.log('search query :',searchQuery)
+    // console.log('search query :',searchQuery)
     let products = await Product.find({
       name: { $regex: searchQuery, $options: "i" },
     })
@@ -103,9 +103,9 @@ const loadProductSearchQuery = async (req, res) => {
         endDate: { $gte: new Date() }
       }
     })
-console.log('thse will be the responses at search proudcts at shop page: ',products)
+// console.log('thse will be the responses at search proudcts at shop page: ',products)
 
-console.log('thse will be the responses of user at search proudcts at shop page: ',user)
+// console.log('thse will be the responses of user at search proudcts at shop page: ',user)
 
     res.json({ products,user });
   } catch (error) {
@@ -206,12 +206,12 @@ const editProduct = async (req, res) => {
       .exec();
     let category = await Category.find({});
 
-    console.log(
-      "this is the product image or the existing images found at edit Product :",
-      product.images
-    );
+    // console.log(
+    //   "this is the product image or the existing images found at edit Product :",
+    //   product.images
+    // );
 
-    console.log("this is the rendering products : ", product);
+    // console.log("this is the rendering products : ", product);
     if (product) {
       res.render("editProduct", { product, category, moment });
     } else {

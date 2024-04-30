@@ -2,15 +2,12 @@ let User = require("../model/userModel");
 let Product = require("../model/productModel");
 let Cart = require("../model/cartModel");
 let Category = require("../model/categoryModel");
+const Coupons = require("../model/couponModel")
 
-// let getCart = async(req,res)=>{
 
-// let user = req.session.userData;
-// let userNameforProfile = await User.findById(user);
-// let category = await Category.find({'status':'active'})
 
-//     res.render('cart',{user,category,userNameforProfile})
-// }
+
+
 
 //===========  Loading the cart page========================
 
@@ -26,7 +23,7 @@ const loadCart = async (req, res) => {
           path: "products.productId",
           model: "Product",
       });
-      console.log('this is the cartData when rendering the cart page::',cartData);
+      // console.log('cart ddataaaa -----------------------------------------',cartData)
 
       if (!cartData) {
 
@@ -36,13 +33,21 @@ const loadCart = async (req, res) => {
 
           return;
       }
+      const productsWithZeroStock = cartData.products.filter(product => product.quantity === 0);
 
+
+
+      // case if there is products in the cart at least one
       if (cartData.products.length > 0) {
           // cartData.products.forEach((product) => {
           //     const productPrice =  product.productPrice;
           //     product.productTotalPrice = productPrice * product.quantity;
           // });
 
+
+
+
+        //subtotalwithnoshipping charge is the thing at the right most part of the cart page
           const subtotalWithNoShippingCharge = cartData.products.reduce((total, product) => total + product.totalPrice, 0);
 
 
@@ -59,7 +64,7 @@ let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoS
 
 // console.log('this is the grandTotal for checkout ::',grandTotalForCheckOut);
 
-          res.render("cart", { userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message });
+          res.render("cart", { userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock });
 
       } else {
         console.log('cart page loaded with no cart data')
@@ -73,104 +78,32 @@ let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoS
 
 
 
-
-
-
-
-
-
-
-const cartLoad = async (req, res) => {
-  try {
-   
-    let Total = 0;
-    let shippingCharges = 0;
-    let grandtotal = 0;
-    let cartNotEmpty = 0;
-let userId = req.session.userData;
-
-const userNameforProfile = await User.findById(userId);
-
-// console.log('this is the user we are talking',userNameforProfile);
-
-let category = await Category.find({ status: "active" });
-
-let cart = await Cart.findOne({userId}).populate({
-  path:'Products.products'
-}).exec();
-
-// console.log('populated cart of the user is :::',cart);
-
-
-
-// console.log('this is the cart of this logged user',cart.Products);
-
-
-let totalproprice = [];
-let proprice = [];
-
-if (cart && cart.Products && cart.Products.length > 0) {
-  cartNotEmpty = 1;
-
-  for (const prod of cart.Products) {
-    let productPrice = parseFloat(prod.total);
-    let individualprice = prod.price;
-
-    Total = Total + parseFloat(productPrice);
-    totalproprice.push(parseFloat(productPrice));
-    proprice.push(parseFloat(individualprice));
-
-    if (prod.products.quantity === 0) {
-      await cart.updateOne({ userId: userId }, { $pull: { 'Products': { 'products': prod.products } } });
-      totalproprice.pop();
-      proprice.pop();
-    }
-  }
-
-console.log('this is the totalproprice',totalproprice);
-console.log('this is the proprice',proprice);
-
-
-  cart.Products = cart.Products.filter((product) => product.products.quantity != 0);
-
-  if (Total < 500) {
-    shippingCharges = 40;
-  }
-
-  grandtotal = Total + shippingCharges;
-console.log('grand total is ::',grandtotal);
-
-res.render("cart", { userNameforProfile,cartNotEmpty,userId, category,cart,shippingCharges,Total,grandtotal,totalproprice,proprice });
-
-}else{
-  res.render("cart", { userNameforProfile,cartNotEmpty,userId, category,cart });
-}
-
-
-
-  }
-
-   catch (error) {
-    console.error("Error loading cart:", error);
-    res.redirect("/error");
-  }
-};
-
-
-
-
+//==========================    add to cart   ==========================
 
 const addToCart = async (req, res) => {
   try {
       const productId = req.params.productId;
       const userId = req.session.userData;
       const quantity = parseInt(req.params.quantity);
+let {isBlocked} = await User.findById(userId);
+
+// console.log('value of user at isBlocked at add to cart controller :',isBlocked)
 
       // console.log('this is the userId',userId);
         // user logged or not checking 
-        if (!userId) {
+        if (!userId ) {
+
+          console.log('user not found at add to cart controller')
+
           return res.status(401).json({ error: "Unauthorized - User not authenticated" });
+
+          //to check whether the user has been blocked
+      }else if(isBlocked){
+        return res.json({data:false,message: 'Blocked by the admin'})
       }
+
+
+
 
       const productFound = await Product.findOne({ _id: productId });
 
@@ -186,6 +119,8 @@ const addToCart = async (req, res) => {
 
 
             //if the product already exists in the cart ??
+
+            //note that only the quantity and total price is increading, still the product price is always the same, either the offerprice or the default price of that product
             if (existingProductIndex !== -1) {
                 const existingProduct = cart.products[existingProductIndex];
 
@@ -195,7 +130,7 @@ const addToCart = async (req, res) => {
 
                 //just add that new product to the existing array
             } else {
-                const productPrice =  productFound.price
+                const productPrice = productFound.offerprice || productFound.price
                 const totalPrice = quantity * productPrice
 
                 cart.products.push({
@@ -211,7 +146,7 @@ const addToCart = async (req, res) => {
 
             //if the user has no existing cart ??
         } else {
-            const productPrice = productFound.price
+            const productPrice = productFound.offerprice || productFound.price
             const totalPrice = quantity * productPrice
 
             const newCart = new Cart({
@@ -230,7 +165,7 @@ const addToCart = async (req, res) => {
             await newCart.save();
         }
 
-        return res.status(200).json({ message: "Product added to cart successfully." });
+        return res.status(200).json({data:true, message: "Product added to cart successfully." });
     } else {
         return res.status(400).json({ error: "Invalid product." });
     }
@@ -243,150 +178,7 @@ const addToCart = async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-// const cartLoad = async (req, res) => {
-//     try {
-//       let user = req.session.userData;
-//       let userNameforProfile = await User.findById(user);
-//       let category = await Category.find({});
-
-// //this is the  crucial part to be considered when you needa cart of that specific user
-//       let carts = await Cart.find({ userId: user }).populate('Products.product');
-
-//     // let carts = await Cart.find({})
-//       let allProducts = carts.reduce((acc, cart) => {
-//         acc.push(...cart.Products);
-//         return acc;
-//       }, []);
-
-//       res.render('cart', { user, category, allProducts, userNameforProfile });
-//     } catch (error) {
-//       console.error('Error loading cart:', error);
-//       res.redirect('/error');
-//     }
-//   };
-
-//==========================    add to cart   ==========================
-
-// Controller function to add a product to the cart
-const addCart = async (req, res) => {
-  try {
-
-    // console.log('add to cart initiation started');
-
-    let userId = req.session.userData;
-
-    if (!userId) {
-      return res.json({
-        data: "noUser",
-        message: "You need to sign in to add products to your cart.",
-      });
-    }
-
-    // Retrieve product details
-    const {productId,quantity,cart} = req.body;
-
-    console.log('this is the productId', productId);
-    console.log('this is the quantity', quantity);
-    console.log('this is the cart', cart);
-
-
-    // Retrieve product from the database
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.json({ data: "notFound", message: "Product not found." });
-    }
-
-    // this means stock of the product right now is zero
-    if (product.quantity < quantity) {
-      return res.json({ data: "stockOut", message: "Insufficient stock." });
-    }
-
-    
-// // Deduct the quantity from the product's stock
-// product.quantity -= quantity;
-
-// // Save the updated product information back to the database
-// await product.save();
-
-
-
-
-    const cartFind = await Cart.findOne({userId});
-
-    if(cartFind){
-
-      const existingProduct = cartFind.Products.find(
-        (prod) => prod.products.toString() === product._id.toString()
-      );
-      
-
-        // console.log('user already has cart and checking whether the cart product and selected product are both same : : ',existingProduct);
-
-        if (existingProduct) {
-          // Product is already in the cart, increase the quantity
-          existingProduct.quantity += parseInt(quantity); // Increment the quantity
-          existingProduct.total = existingProduct.quantity * existingProduct.price;
-        } else {
-          // Product is not in the cart, add it to the product array
-          cartFind.Products.push({
-            products: product._id,
-            price: product.price,
-            name: product.name,
-            quantity: quantity,
-            total: quantity * product.price,
-          });
-        }
-        await cartFind.save();
-        
-
-
-
-
-    }else {
-      console.log('user has no cart and this is his first product');
-      // User does not have a cart document, creating a new one
-      const cartAdd = new Cart({
-        userId: userId,
-        Products: [
-          {
-            products: product._id,
-            price: product.price,
-            name: product.name,
-            quantity: quantity,
-            total:product.price*quantity
-          }
-        ],
-       
-      });
-
-      
-
-      await cartAdd.save();
-    }
-
-   
-
-    return res.json({ data: true, message: "Added" });
-
-  } catch (error) {
-    console.error("Error adding product to cart:", error);
-    return res.status(500).json({ message: "Internal server error." });
-  }
-};
-
-
-
-
-// Controller function to delete a subproduct from the cart
+// =====================  Delete a cart item ===========================
 let deleteCartItem = async (req, res) => {
   try {
     const { productId } = req.body;
@@ -421,13 +213,13 @@ let deleteCartItem = async (req, res) => {
   }
 };
 
-//update the cart quantity==================
 
 
 
 
 
-//================updating the cart item============================
+
+//================   updating the cart item   ============================
 
 const updateCartItemCount = async (req, res) => {
   try {
@@ -499,17 +291,31 @@ let updatedGrandTotal = updatedShippingCharges ==='free delivery' ? totalOfSubTo
 };
 
 
-
+//=========== Load the checkout ====================
 
 const loadCheckout = async (req, res) => {
   try {
       const userId = req.session.userData;
+
+      const coupon = await Coupons.find({ 'userUsed.used': { $ne: true } });
+// console.log('this is the user id :',userId)
+const couponCode = req.query.coupon || ''
+
       let userNameforProfile = await User.findById(userId);
 
       // console.log('this is the user value at loadCheckout :',userNameforProfile);
 
     let category = await Category.find({'status': 'active'})
-    let cartFound = await Cart.findOne({userId})
+
+
+    // very important to note that it should be findONe not find
+    
+    const cartData = await Cart.findOne({ userId }).populate({
+      path: "products.productId",
+      model: "Product",
+  });
+
+// console.log('this is the cart found at checkout',cartFound)
 
     let states = [
       'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 
@@ -520,12 +326,21 @@ const loadCheckout = async (req, res) => {
     ];
 
 
-// console.log('this the founded cart ::',cartFound);
+// console.log('this the founded cart at checkout ::',cartFound);
       if (!userId) {
+  console.log("user has no session so redirecting to signin Paage")
           res.redirect("/");
 
 
-      } else if (cartFound && cartFound.products.length === 0){
+      } else if(!cartData){
+      console.log('user has no existing cart at checkout so redirected to /cart');
+      res.redirect('/cart')
+      }
+      
+      
+      else if (cartData && cartData?.products && cartData?.products?.length === 0){
+
+      console.log('user has a cart and has no products so redirected to cart page')
 
      
         res.redirect('/cart')
@@ -534,32 +349,42 @@ const loadCheckout = async (req, res) => {
       
       else {
 
-        
+        // console.log('this worked at checkout the else case :')
           // const userDetail = await User.findById(userId);
-          const cartData = await Cart.findOne({ userId }).populate({
-              path: "products.productId",
-              model: "Product",
-          });
+          
 
-let totalOfSubTotals = cartData.products.reduce((total,product)=>{
-  return total + product.totalPrice;
+let totalWithoutDiscount = cartData.products.reduce((total,product)=>{
+  const price = product.productId.offerprice || product.productId.price;
+  return total + price * product.quantity;
 },0)
 
-let shippingCharges = totalOfSubTotals >500 ? 'Free shipping' : '₹40.00'
+let totalWithDiscount = totalWithoutDiscount;
 
 
-let grandTotal = shippingCharges === 'Free shipping' ? totalOfSubTotals : totalOfSubTotals + 40;
+//this following thing will work in the case of coupon application, it has nothing to do with the offer
+if (couponCode) {
+  const coupon = await Coupons.findOne({ couponCode });
+
+  if (coupon) {
+      const discountAmount = coupon.discount;
+      totalWithDiscount -= discountAmount;
+  }
+}
+
+let shippingCharges = totalWithDiscount >500 ? 'Free shipping' : '₹40.00'
+
+
+let grandTotal = shippingCharges === 'Free shipping' ? totalWithDiscount : totalWithDiscount + 40;
 
 
 
-          res.render("checkout", { totalOfSubTotals,shippingCharges,grandTotal,cartData,userNameforProfile,category,states });
+          res.render("checkout", { coupon,shippingCharges,grandTotal,cartData,userNameforProfile,category,states,totalWithoutDiscount,totalWithDiscount });
       }
   } catch (error) {
     console.log('error occured at load checkout page : ',error);
      res.redirect("/error");
   }
 };
-
 
 
 

@@ -184,14 +184,14 @@
 									
 									
 
-									<hr>
+									
 
 
 									<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addAddressModal">
 										Add New Address
 									</button>
 
-
+<hr>
 <br><br>
 
 
@@ -200,6 +200,7 @@
     <!-- Other content -->
 
     <!-- Table to display ordered products -->
+	<h6>Order details</h6>
     <table class="table">
         <thead>
             <tr>
@@ -216,11 +217,65 @@
             <% }); %>
         </tbody>
     </table>
+
+
+	<h6>Add coupon</h6>
+	<label for="checkout-discount-input" class="text-truncate">Have a coupon?
+		<span>Select here</span></label><br>
+
+	<div class="cart-discount">
+		<form action="#">
+		  <div class="input-group">
+			<input
+			  type="text"
+			  class="form-control"
+			  required
+			  placeholder="coupon code"
+			/>
+			<div class="input-group-append">
+			  <button class="btn btn-outline-primary-2" type="submit">
+				<i class="icon-long-arrow-right"></i>
+			  </button>
+			</div>
+			<!-- .End .input-group-append -->
+		  </div>
+		  <!-- End .input-group -->
+		</form>
+	  </div>
 </div><!-- End .col-lg-9 -->
 
 
 
+<div class="checkout-discount">
+	<form id="couponForm">
 
+		<select id="couponCode" name="couponCode" style="max-width: 200px;"
+			required>
+			<option disabled selected value="">Available coupons
+			</option>
+			<% if (coupon.length> 0) { %>
+				<% coupon.forEach(coupon=> { %>
+					<option>
+						<%= coupon.couponCode%>
+					</option>
+					<% }); %>
+						<% } else { %>
+							<option>No Coupons are Avilable.</option>
+							<% } %>
+		</select>
+
+		<div id="couponMessage" style="color: red;"></div>
+
+
+		
+		<button class="btn btn-primary mt-4" type="button"
+			onclick="applyCoupon();return false">Apply
+			Coupon</button>
+
+
+	</form>
+
+</div>
 
 
 
@@ -247,10 +302,19 @@
 		                							<td>₹ <%= cartData.totalPrice %>.00</td>
 		                						</tr>
 										<%	}) %>
-		                						
+		                					
+										<% if (totalWithoutDiscount - totalWithDiscount> 0) { %>
+											<tr>
+												<td>Discount:</td>
+												<td>
+													<%= totalWithoutDiscount - totalWithDiscount %>
+												</td>
+											</tr>
+											<% } %>
+
 		                						<tr class="summary-subtotal">
 		                							<td>Total:</td>
-		                							<td>₹ <%= locals.totalOfSubTotals %>.00</td>
+		                							<td>₹ <%= locals.totalWithDiscount %>.00</td>
 		                						</tr><!-- End .summary-subtotal -->
 		                						<tr>
 		                							<td>Shipping:</td>
@@ -291,86 +355,22 @@
             </div><!-- End .page-content -->
         </main><!-- End .main -->
 
-        <footer class="footer">
-        	<div class="footer-middle">
-	            <div class="container">
-	            	<div class="row">
-	            		<div class="col-sm-6 col-lg-3">
-	            			<div class="widget widget-about">
-	            				<img src="/userAssets/home/assets/images/logo.png" class="footer-logo" alt="Footer Logo" width="105" height="25">
-	            				<p>Praesent dapibus, neque id cursus ucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. </p>
-
-	            				<div class="social-icons">
-	            					<a href="#" class="social-icon" target="_blank" title="Facebook"><i class="icon-facebook-f"></i></a>
-	            					<a href="#" class="social-icon" target="_blank" title="Twitter"><i class="icon-twitter"></i></a>
-	            					<a href="#" class="social-icon" target="_blank" title="Instagram"><i class="icon-instagram"></i></a>
-	            					<a href="#" class="social-icon" target="_blank" title="Youtube"><i class="icon-youtube"></i></a>
-	            					<a href="#" class="social-icon" target="_blank" title="Pinterest"><i class="icon-pinterest"></i></a>
-	            				</div><!-- End .soial-icons -->
-	            			</div><!-- End .widget about-widget -->
-	            		</div><!-- End .col-sm-6 col-lg-3 -->
-
-	            		<div class="col-sm-6 col-lg-3">
-	            			<div class="widget">
-	            				<h4 class="widget-title">Useful Links</h4><!-- End .widget-title -->
-
-	            				<ul class="widget-list">
-	            					<li><a href="about.html">About Molla</a></li>
-	            					<li><a href="#">How to shop on Molla</a></li>
-	            					<li><a href="#">FAQ</a></li>
-	            					<li><a href="contact.html">Contact us</a></li>
-	            					<li><a href="login.html">Log in</a></li>
-	            				</ul><!-- End .widget-list -->
-	            			</div><!-- End .widget -->
-	            		</div><!-- End .col-sm-6 col-lg-3 -->
-
-	            		<div class="col-sm-6 col-lg-3">
-	            			<div class="widget">
-	            				<h4 class="widget-title">Customer Service</h4><!-- End .widget-title -->
-
-	            				<ul class="widget-list">
-	            					<li><a href="#">Payment Methods</a></li>
-	            					<li><a href="#">Money-back guarantee!</a></li>
-	            					<li><a href="#">Returns</a></li>
-	            					<li><a href="#">Shipping</a></li>
-	            					<li><a href="#">Terms and conditions</a></li>
-	            					<li><a href="#">Privacy Policy</a></li>
-	            				</ul><!-- End .widget-list -->
-	            			</div><!-- End .widget -->
-	            		</div><!-- End .col-sm-6 col-lg-3 -->
-
-	            		<div class="col-sm-6 col-lg-3">
-	            			<div class="widget">
-	            				<h4 class="widget-title">My Account</h4><!-- End .widget-title -->
-
-	            				<ul class="widget-list">
-	            					<li><a href="#">Sign In</a></li>
-	            					<li><a href="cart.html">View Cart</a></li>
-	            					<li><a href="#">My Wishlist</a></li>
-	            					<li><a href="#">Track My Order</a></li>
-	            					<li><a href="#">Help</a></li>
-	            				</ul><!-- End .widget-list -->
-	            			</div><!-- End .widget -->
-	            		</div><!-- End .col-sm-6 col-lg-3 -->
-	            	</div><!-- End .row -->
-	            </div><!-- End .container -->
-	        </div><!-- End .footer-middle -->
-
-	        <div class="footer-bottom">
-	        	<div class="container">
-	        		<p class="footer-copyright">Copyright © 2019 Molla Store. All Rights Reserved.</p><!-- End .footer-copyright -->
-	        		<figure class="footer-payments">
-	        			<img src="userAssets/home/assets/images/payments.png" alt="Payment methods" width="272" height="20">
-	        		</figure><!-- End .footer-payments -->
-	        	</div><!-- End .container -->
-	        </div><!-- End .footer-bottom -->
-        </footer><!-- End .footer -->
-    </div><!-- End .page-wrapper -->
-    <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+       
 
 
 
+	
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+	<!-- jQuery -->
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	
+	<!-- Bootstrap JS -->
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+	
+  
+	<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  
 
 <script>
     function addressValidation() {
@@ -457,76 +457,214 @@ dropdown.addEventListener('change', function() {
 
 })
 
+
+
 function sendSelection(){
 
 
-	const paymentMethod = document.getElementById("payment").value;
-// console.log('selected address is :',selectedAddress);
+const paymentMethod = document.getElementById("payment").value;
 
 
+
+const couponCode = document.getElementById('couponCode').value;
+
+
+
+//address validation when address is not selected
 if (selectedAddress === '' || selectedAddress === undefined) {
-                   // Show Izitoast toast with warning message
+			   // Show Izitoast toast with warning message
 iziToast.warning({
-    title: 'Please select an address',
-    // message: 'You must select an address before proceeding.',
-    position: 'topRight',
-    timeout: 2500 // Adjust the duration as needed
+title: 'Please select an address',
+// message: 'You must select an address before proceeding.',
+position: 'topRight',
+timeout: 2500 // Adjust the duration as needed
 });
-
-                    return;
-                }
-
-				const selectedValue = JSON.parse(selectedAddress);
-console.log('after parsiing : : ',selectedValue);
+return;
+}
 
 
-fetch('/placeorder', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-
-                        paymentMethod: paymentMethod,
-                        selectedValue: selectedValue,
-                       
-
-                    }),
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Backend response after order placed:', data);
+			const selectedValue = JSON.parse(selectedAddress);
 
 
-                        if (data.success) {
-                            Swal.fire({
-                                title: 'Order Placed Successfully!',
-                                icon: 'success',
-                                showConfirmButton: false,
-                                timer: 2000
 
-                            });
+				fetch('/placeorder', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
 
-                            setTimeout(() => {
+					paymentMethod: paymentMethod,
+					selectedValue: selectedValue,
+					couponCode: couponCode
+				   
 
-                                window.location.href = '/ordersuccess';
-                            }, 2000)
-                        } else if (data.message) {
-                            // Display SweetAlert error notification for product quantity check
-                            Swal.fire({
-                                title: 'Order Processing Failed',
-                                text: data.message,
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    
-                    });
- }
+				}),
+			})
+				.then(response => response.json())
+				.then(data => {
+					console.log('razorpay server promise send this to our server and inturn send to frontend:', data);
 
+
+					if (data.success) {
+						Swal.fire({
+							title: 'Order Placed Successfully!',
+							icon: 'success',
+							showConfirmButton: false,
+							timer: 2000
+
+						});
+
+						setTimeout(() => {
+
+							window.location.href = '/ordersuccess';
+						}, 2000)
+					} else if (data.message) {
+						// Display SweetAlert error notification for product quantity check
+						Swal.fire({
+							title: 'Order Processing Failed',
+							text: data.message,
+							icon: 'error',
+							confirmButtonText: 'OK'
+						});
+					}else if (data.response) {
+
+console.log('response.data which is immediately resolved at backend',data.response)
+
+						console.log('data.response.order.amount ',data.response.order.amount)
+						console.log('data.response.order.id',data.response.order.id)
+						console.log('data.respone.orderId', data.response.orderId)
+						console.log('data.response.order.orderId',data.response.order.orderId)
+
+						
+
+
+
+						var options = {
+							"key": 'rzp_test_Mjpyug9KzUZ3Wb',
+							"amount": data.response.order.amount,
+							"currency": "INR",
+							"name": "VedCart", //your business name
+							"description": "Test Transaction",
+							"image": "https://exahttps://media.istockphoto.com/id/855840144/photo/image-of-lotus-flower-on-the-water.jpg?s=612x612&w=0&k=20&c=Gh7KaGTxKRhuvunBm-kqPps3f-VOWgfO1kWhWdf6l4Q=mple.com/your_logo",
+							"order_id":data.response.order.id,
+							"handler": function (response) {
+
+
+								
+
+								verifyPayment(response,data.response)
+							},
+							"prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
+								"name": "Gaurav Kumar", //your customer's name
+								"email": "gaurav.kumar@example.com",
+								"contact": "9000090000"  //Provide the customer's phone number for better conversion rates 
+							},
+							"notes": {
+								"address": "Razorpay Corporate Office"
+							},
+							"theme": {
+								"color": "#3399cc"
+							}
+						};
+
+
+console.log('reached at var rzpl = new Razorpay(options)')
+
+						var rzp1 = new Razorpay(options);
+
+						rzp1.open();
+
+					}else {
+						
+						Swal.fire({
+							title: 'Order Processing Failed',
+							text: 'An error occurred while processing the order.',
+							icon: 'error',
+							confirmButtonText: 'OK'
+						});
+					}
+				})
+				.catch(error => {
+					console.error('Error at response back from placeOrder:', error);
+				
+				});
+}
+
+function verifyPayment(payment, order) {
+
+console.log('reached here at verifyPaymentttttt ========payment',payment)
+
+console.log('reached here at verifyPaymentttttt ========order',order)
+
+$.ajax({
+	url: '/verifypayment',
+	data: {
+		payment,
+		order
+	},
+	method: 'post',
+	success: (response) => {
+		if (response.payment) {
+
+			Swal.fire({
+				title: 'Order Placed Successfully!',
+				icon: 'success',
+				showConfirmButton: false,
+				timer: 2000 
+
+			});
+
+			setTimeout(() => {
+				window.location.href = '/ordersuccess';
+			}, 2000)
+		}
+		else{
+			window.location.href = '/error'
+		}
+	}
+})
+}
+
+
+
+
+//==============  coupon applicaton  =====================================
+ async function applyCoupon() {
+
+const couponCode = document.getElementById('couponCode').value;
+
+console.log("this is the coupon code selected at check out page ejs:", couponCode);
+
+try {
+	const response = await fetch('/applyCoupon', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify({ couponCode }),
+	});
+
+	if (!response.ok) {
+		throw new Error(`HTTP error! Status: ${response.status}`);
+	}
+
+	const data = await response.json();
+
+	if (data.success) {
+		window.location.href = `/checkout?coupon=${couponCode}`
+		document.getElementById('couponMessage').innerHTML = data.success;
+	} else if (data.already) {
+		document.getElementById('couponMessage').innerHTML = data.already;
+	} else if (data.error) {
+		document.getElementById('couponMessage').innerHTML = data.error;
+	}
+
+} catch (error) {
+	console.error('Error:', error);
+
+}
+}
 
 
 </script>
@@ -542,18 +680,7 @@ fetch('/placeorder', {
 
 
   
-  <!-- Include SweetAlert library in your EJS template -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  
-  <!-- Bootstrap JS -->
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-  
-  <script>
-	// Your JavaScript code here
-  </script>
   
   <%- include('./layouts/footer.ejs')%>
   

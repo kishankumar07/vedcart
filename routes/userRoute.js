@@ -7,6 +7,7 @@ let {logRequest} = require('../middleware/loggingMiddleware');
 let userController = require("../controller/userController");
 let userAuth = require("../middleware/userAuth");
 let cartController  = require('../controller/cartController')
+let couponController = require('../controller/couponController');
 let orderController  = require('../controller/orderController')
 const {aProductPage,shopProduct,loadProductSearchQuery}=require('../controller/productController');
 // const GoogleSignIn = require('../model/googleModel');
@@ -18,6 +19,7 @@ router.set("views", path.join(__dirname, "../views/user"));
 
 //=======================error route========================
 router.get("/error", userController.errorPage);
+
 
 //=====User login==================================
 
@@ -59,6 +61,8 @@ router.post("/addAddressAtCheckout",userAuth.isLoggedIn,userAuth.isBlocked,userA
 
 router.post('/placeorder',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.placeTheOrder)
 
+router.post("/verifypayment",orderController.verifyPayment)
+
 router.get('/ordersuccess',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.orderSuccess)
 
 // router.post("/moveToSaveForLater",userAuth.isBlocked,userAuth.isLoggedIn,cartController.moveToSaveForLater);
@@ -88,7 +92,7 @@ router.post('/cancelOrder',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVer
 
   
 
-
+router.post("/applyCoupon",userAuth.isLoggedIn,userAuth.isBlocked,couponController.applyCoupon)
 
 
 
@@ -102,11 +106,11 @@ router.post('/cancelOrder',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVer
 
 
 //----------  w i s h l i s t --------------------------------
-router.get("/wishlist", userAuth.isBlocked,userAuth.isLoggedIn, userController.wishList);
+router.get("/wishlist",userAuth.isLoggedIn,userAuth.isBlocked, userController.wishList);
 
-router.post('/productaddtowishlist',userController.addProductToWishList)
+router.post('/productaddtowishlist',userAuth.isLoggedIn,userAuth.isBlocked,userController.addProductToWishList)
 
-router.post('/productremovefromwishlist',userController.productremovefromwish)
+router.post('/productremovefromwishlist',userAuth.isLoggedIn,userAuth.isBlocked,userController.productremovefromwish)
 
 
 
@@ -157,7 +161,10 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
 });
 
 
-
+//================== route for error 404 middleware -------------------------
+// router.use((req, res, next) => {
+//     res.status(404).render('error404'); // Assuming you have a 404.ejs template for your error page
+//   });
   
 
 

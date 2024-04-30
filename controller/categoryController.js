@@ -21,6 +21,7 @@ const allCategory=async(req,res)=>{
 
 
 
+
 // console.log('this is the offerData shown at dropdown ',offerData)
 
         req.session.category=category

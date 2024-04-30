@@ -84,16 +84,11 @@
 
                                     <div class="dropdown-menu">
                                         <!-- Pass the product ID as an argument to the addToCart function -->
-                                        <a class="dropdown-item" style="background-color: rgb(109, 200, 35);" href="#" onclick="addToCart(event,'<%= wishlist.products[i].product %>','<%= user %>')">Add to cart</a>
-                                    </div>
-                                    
-
-
+                                        <a class="dropdown-item" style="background-color: #b2bfcd;" href="#" onclick="addToCart('<%= wishlist.products[i].product %>','<%= user %>');return false">Add to cart</a>
                                         <a class="dropdown-item"
-                                        style="background-color: rgb(93, 203, 59);"  onclick="removeWishItem(event,'<%= wishlist.products[i].product %>','<%= user %>')"  href="#">Delete the wishlist item</a>
-                                        
-                                        
-                                        
+                                        style="background-color: #cad5e0;"  onclick="removeWishItem(event,'<%= wishlist.products[i].product %>','<%= user %>')"  href="#">Delete the wishlist item</a>
+                                    </div>
+                                                                                                                        
                                        
                                       </div>
                                     </div>
@@ -358,8 +353,11 @@
         </div><!-- End .mobile-menu-wrapper -->
     </div><!-- End .mobile-menu-container -->
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+
 
 
 //to remove wishlist item===================================
@@ -387,24 +385,85 @@ function removeWishItem(event, productId, userId) {
 //=============   adding the product to cart ======================
 
 
-    async function addToCart(productId) {
-        try {
-            const response = await fetch(`/addToCart?id=${productId}`);
-            const data = await response.json();
-            
-            if (data.success) {
-                // Show success message using SweetAlert or any other method
-                alert('Product added to cart successfully!');
-            } else {
-                // Handle error
-                console.error('Error:', data.message);
-                alert('Failed to add product to cart');
-            }
-        } catch (error) {
-            console.error('Error occurred:', error);
-            alert('Failed to add product to cart');
-        }
-    }
+function addToCart(productId,userId,isBlocked) {
+
+// let quantity = document.getElementById('qty').value;
+// console.log('this is the quantity ::',quantity);
+
+
+
+if(!userId || userId === 'null'){
+Swal.fire({
+title: 'Login to Purchase',
+text: 'To make a purchase, please log in.',
+icon: 'info',
+showCancelButton: true,
+confirmButtonColor: '#3085d6',
+cancelButtonColor: '#d33',
+confirmButtonText: 'Login'
+}).then((result) => {
+if (result.isConfirmed) {
+  
+  window.location.href = '/signin';
+}
+});
+}
+// else if(quantity === '0'){
+//  console.log('else if is only working');
+//   addToCartButton.disabled = true;
+
+// }
+else{
+let quantity = 1;
+
+              fetch(`/addTocart/${productId}/${quantity}/${userId}`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                      quantity: quantity,
+                  }),
+              })
+              .then((response) => {
+                  if (response.status === 401) {
+                      throw new Error('User not authenticated. Please login first.');
+                  }
+                  return response.json();
+              })
+              
+              .then((data) => {
+                if (data.true === true){
+                    Swal.fire({
+                      icon: 'success',
+                      title: 'Product added to cart!',
+                      showConfirmButton: false,
+                      timer: 500, 
+
+                  })}
+                  else if(data.data === false){
+                    console.log('it worked')
+                    window.location.href ='/signin'
+                  }
+                })
+                
+      
+                 
+                 
+
+              .catch((error) => {
+                  console.error('Error at product addition to the cart :', error);
+                  Swal.fire({
+                      icon: 'error',
+                      title: 'Error adding to cart',
+                      text: error.message || 'An error occurred while adding the product to the cart.',
+                  });
+              });
+       }
+
+}
+
+
 
 
 
