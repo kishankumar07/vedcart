@@ -42,42 +42,126 @@
                         <tr>
                             <th>#ID</th>
                             <th scope="col">Name</th>
+                            <th scope="col">price</th>
+                            <th scope="col">Address</th>
                             <th scope="col">Product</th>
-                            <th scope="col">Total</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Image</th>
                             <th scope="col">Status</th>
-                            <th scope="col">Date</th>
                             <th scope="col" class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
 
 
-
+                    <% if(allOrders.length !==0) {%>
                         <% allOrders.forEach(order =>{ %>
+                            <% order.Products.forEach((product, index) => { %>
                         <tr>
-                            <td><%= order.id %></td>
-                            <td><b><%= order.userId.name %></b></td>
-                            <td><%= order.userId %></td>
-                            <td>$9.00</td>
-                            <td><span class="badge rounded-pill alert-warning">Pending</span></td>
-                            <td>03.12.2020</td>
+                            <% if (index === 0) { %>
+
+                            <td rowspan="<%= order.Products.length %>">
+                                <p><%= order.id %></p>
+                            </td>
+
+
+
+                            <td rowspan="<%= order.Products.length %>">
+                                <% if (order.userId) { %>
+                                    <b><%= order.userId.name %></b>
+                                <% } else { %>
+        
+                                    <b>User not available</b>
+                                <% } %>
+                               
+                            </td>
+
+
+                            <td rowspan="<%= order.Products.length %>">
+                                ₹<%= order.grandTotal %>
+                            </td>
+
+
+                            <td rowspan="<%= order.Products.length %>">
+                                <p class="text-center"> <%= `Name: ${order.address.name}, Mobile: ${order.address.mobile}, Pincode: ${order.address.pincode}, Address: ${order.address.addressDetails}, City: ${order.address.city}, State: ${order.address.state}` %></p>
+                            </td>
+
+                            <% } %>
+
+                           
+
+
+
+                            <td>
+                                <p><%= product.name %></p>
+                            </td>
+                            <td>
+                                <p class="text-center"><%= product.quantity %></p>
+                            </td>
+                            <td>
+                                <img src="/adminAssets/imgs/category/<%= product.image[0] %>" alt="Product Image" width="50" height="50">
+                            </td>
+
+                            <td>
+
+                                <% if(product.orderStatus === 'delivered') { %>
+                                <span id="orderStatus_<%= order._id %>" class="badge rounded-pill alert-success"><%= product.orderStatus %></span>
+                                <% }else if(product.orderStatus === 'returned'){ %>
+                                   
+                                    <span id="orderStatus_<%= order._id %>" class="badge rounded-pill alert-danger"><%= product.orderStatus %></span>
+
+                                    <% }else if(product.orderStatus ==='cancelled') { %>
+                                   
+                                        <span id="orderStatus_<%= order._id %>" class="badge rounded-pill alert-danger"><%= product.orderStatus %></span>
+
+                                   
+                                <% }else { %>
+                                   
+                                        <span id="orderStatus_<%= order._id %>" class="badge rounded-pill alert-warning"><%= product.orderStatus %></span>
+
+                                    <% } %>
+                            </td>
+
                             <td class="text-end">
-                                <a href="#" class="btn btn-md rounded font-sm">Detail</a>
+
+                                <a hidden  href="#" class="btn btn-md rounded font-sm">Detail</a>
+                                <% if (product.orderStatus !== 'cancelled' && product.orderStatus !== 'returned' && product.orderStatus !== 'delivered' ) { %>
                                 <div class="dropdown">
-                                    <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm"> <i class="material-icons md-more_horiz"></i> </a>
+                                    <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm"> <i class="material-icons md-more_horiz"></i> Status</a>
+
+                                    <% if(product.orderStatus == 'request return'){ %>
                                     <div class="dropdown-menu">
-                                        <a class="dropdown-item" href="#">View detail</a>
-                                        <a class="dropdown-item" href="#">Edit info</a>
-                                        <a class="dropdown-item text-danger" href="#">Delete</a>
+                                       <a class="dropdown-item text-danger" href="#" onclick="updateStatus('returned', '<%= order._id %>','<%= product._id %>')">Returned</a>
+                                       
+                                        <a hidden  class="dropdown-item text-danger" href="#">Delete</a>
                                     </div>
+                                    <%}else if (product.orderStatus == 'request cancellation'){%>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item text-danger" href="#" onclick="updateStatus('cancelled', '<%= order._id %>','<%= product._id %>')">Cancelled</a>
+                                        </div>
+                                        <%}else{%>
+                                            <div class="dropdown-menu">
+
+                                                <a class="dropdown-item text-danger" href="#" onclick="updateStatus('shipped', '<%= order._id %>','<%= product._id %>')">Shipped</a>
+
+                                                <a class="dropdown-item text-danger" href="#" onclick="updateStatus('placed', '<%= order._id %>','<%= product._id %>')">Placed</a>
+                                                
+                                                <a class="dropdown-item text-success" href="#" onclick="updateStatus('delivered', '<%= order._id %>','<%=product._id%>')">Delivered</a>
+
+                                            </div>
                                 </div>
+                                    <% } %>
+                                <% } %>
                                 <!-- dropdown //end -->
                             </td>
                         </tr>
                         
                         <% }) %>
 
-
+                     <% }); %>
+                        <% }else {%>
+                            <td colspan="7">No orders found</td>
+                            <% } %>
                     </tbody>
                 </table>
             </div>
@@ -103,5 +187,40 @@
 </section>
 <!-- content-main end// -->
 
+<script>
 
+
+    function updateStatus(status,orderId, productId) {
+  // const productId = document.getElementById("productId").value
+       
+        console.log(orderId);
+        const url = `/admin/updateStatus/${orderId}`; 
+  
+  
+        fetch(url, {
+            method: 'PUT',  
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status,productId }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+          
+            console.log('Status updated successfully at admin side about the ordeer:', data);
+  
+            window.location.reload()
+  
+        })
+        .catch(error => {
+            // Handle errors
+            console.error('There was a problem updating the status:', error.message);
+        });
+    }
+  </script>
 <%- include('./layouts/footer.ejs')%>

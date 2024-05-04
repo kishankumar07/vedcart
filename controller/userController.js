@@ -1,10 +1,11 @@
 let User = require("../model/userModel");
 const bcrypt = require("bcrypt");
-
+let fs = require('fs')
+let path = require('path');
 const nodemailer = require("nodemailer");
 const speakeasy = require("speakeasy");
 const OTP = require("../model/otpModel");
-
+let moment = require("moment");
 let Category = require("../model/categoryModel");
 let Product = require("../model/productModel");
 let Wishlist = require("../model/wishListModel");
@@ -29,6 +30,7 @@ const securePassword = async (password) => {
    res.redirect("/500")
   }
 }
+
 
 //load index-----------------------------------------------
 const loadIndex = async (req, res) => {
@@ -877,9 +879,12 @@ const loadUserProfile = async (req, res) => {
     let category = await Category.find({ status: "active" });
     const userNameforProfile  = await User.findById(userId);
 
-    
+    console.log('this is the full user details of this user :',userNameforProfile);
 
-    const orders = await Orders.find({ userId: userId })
+   // Query orders sorted by createdAt field in descending order
+   const orders = await Orders.find({ userId: userId })
+   .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+  
 
     // console.log(`total ${orders.length} order made by ${userNameforProfile.name} and these are the orders : ${orders}`)
 
@@ -907,9 +912,10 @@ const loadUserProfile = async (req, res) => {
   
 
 
-    res.render("userProfile", { userNameforProfile , orders,category,states,orders });
+    res.render("userProfile", { moment,userNameforProfile , orders,category,states,orders });
   } catch (error) {
-   res.redirect("/500")
+    console.log('error at loading userProfilePage',error)
+   res.redirect("/error")
   }
 };
 
@@ -944,7 +950,7 @@ const editProfile = async (req, res) => {
 //Change password
 
 const changePassword = async (req, res) => {
-  console.log('resaddsafdfasdfdfdfdsfdfdfdfdfdf');
+  console.log('change password controller at userProfile reached');
   const userId = req.session.userData;
   const currentPassword = req.body.currentPassword
   const newPassword = req.body.newPassword
@@ -964,13 +970,13 @@ const changePassword = async (req, res) => {
     if (currentPassword) {
       const passwordMatch = await bcrypt.compare(currentPassword, user.password)
       if (!passwordMatch) {
-        console.log(' current password was matched from db');
+      
         return res.json({ message: 'Current password is incorrect' });
       }
     }
 
     if (newPassword !== confirmNewPassword) {
-      console.log('new password and conf password is not correct');
+     
       return res.json({ message: 'New password and confirm password do not match' });
     }
 
@@ -1097,8 +1103,6 @@ const removeAddress = async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-
-
 
 
 

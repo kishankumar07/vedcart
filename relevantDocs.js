@@ -697,9 +697,88 @@ function convertDateFormat(startDate,endDate) {
 
 
 
+// <div class="col-lg-9">
+//     <!-- Other content -->
+
+//     <!-- Table to display ordered products -->
+// 	<h6>Order details</h6>
+//     <table class="table">
+//         <thead>
+//             <tr>
+//                 <th>Product</th>
+//                 <th>Price</th>
+// 				<th>Coupon</th>
+//             </tr>
+//         </thead>
+//         <tbody>
+//             <% cartData.products.forEach(product => { %>
+//                 <tr>
+//                     <td><%= product.name %></td>
+//                     <td>₹ <%= product.totalPrice %>.00</td>
 
 
+// 					<% 
 
+// 					let arr = [];
+// 					cartData.products.forEach(x=>{
+// 					  arr.push(x.totalPrice)
+// 					})
+
+// 					console.log('total price at checkout page ejs : ',arr);
+
+
+// 					let val = [];
+// 			coupon.forEach(x=>{
+//   			val.push(x.minAmount)
+// 			})
+// 			console.log('coupon minAmount at checkout ejs :',val)
+
+// 					let couponAvailable = false;
+// 					if (coupon && coupon.length > 0) {
+// 						for (let i = 0; i < coupon.length; i++) {
+// 							if (product.totalPrice > coupon[i].minAmount) {
+// 							couponAvailable = true;
+// 							break;
+// 							}
+// 						}
+// 					}
+// 					console.log('couponAvailable value at checkout :',couponAvailable)
+// 					%>
+// 					<td>
+// 						<%= coupon.length > 0 ? (couponAvailable ? 'Coupon available scroll down to select :' : 'Order not eligible for coupon') : 'No coupon available' %>
+// 					</td>
+					
+
+//                 </tr>
+//             <% }); %>
+//         </tbody>
+//     </table>
+
+
+// 	<h6>Add coupon</h6>
+// 	<label for="checkout-discount-input" class="text-truncate">Have a coupon?
+// 		<span>Select here</span></label><br>
+
+// 	<div class="cart-discount">
+// 		<form action="#">
+// 		  <div class="input-group">
+// 			<input
+// 			  type="text"
+// 			  class="form-control"
+// 			  required
+// 			  placeholder="coupon code"
+// 			/>
+// 			<div class="input-group-append">
+// 			  <button class="btn btn-outline-primary-2" type="submit">
+// 				<i class="icon-long-arrow-right"></i>
+// 			  </button>
+// 			</div>
+// 			<!-- .End .input-group-append -->
+// 		  </div>
+// 		  <!-- End .input-group -->
+// 		</form>
+// 	  </div>
+// </div><!-- End .col-lg-9 -->
 
 
 

@@ -126,7 +126,7 @@
                         </div>
                       </td>
                       <td style="padding-left: 5%;" class="price-col">
-                        ₹ <%= product.productPrice %>.00
+                        ₹<%= product?.productId?.offerprice ? product?.productId?.offerprice : product?.productId?.price %>.00
                      
                       </td>
 
@@ -479,15 +479,6 @@ function proceedToCheckout(cartLength) {
 </script>
 
 <%- include('./layouts/footer') %>
-
-
-
-
-
-
-
-
-
 
 
 

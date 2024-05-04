@@ -33,7 +33,7 @@
                         </ul>
                         <div class="tab-content" id="tab-content-5">
                             <div class="tab-pane fade show active" id="signin" role="tabpanel" aria-labelledby="signin-tab">
-                                <form action="/addAddress" method="post" onsubmit="return addressValidation()">
+                                <form action="/addAddressAtCheckout" method="post" onsubmit="return addressValidation()">
 
 
                                     <div class="form-group">
@@ -196,86 +196,96 @@
 
 
 <!-- Add this code below the address field -->
-<div class="col-lg-9">
-    <!-- Other content -->
+<table class="table table-wishlist table-mobile">
+	<thead>
+		<tr>
+			<th>Product</th>
+			<th>Price</th>
+			<th>Offer</th>
+			<th></th>
+			<th></th>
+		</tr>
+	</thead>
 
-    <!-- Table to display ordered products -->
-	<h6>Order details</h6>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Product</th>
-                <th>Price</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% cartData.products.forEach(product => { %>
-                <tr>
-                    <td><%= product.name %></td>
-                    <td>₹ <%= product.totalPrice %>.00</td>
-                </tr>
-            <% }); %>
-        </tbody>
-    </table>
+	<tbody>
+
+		<% if(cartData && cartData.products) { %>
+
+		<% cartData.products.forEach(product => { %>
+		<tr>
+			<td class="product-col">
+				<div class="product">
+					<figure class="product-media">
+						<a href="#">
+							<img src="/adminAssets/imgs/category/<%= product.productId.images[0] %>" alt="Product image">
+						</a>
+					</figure>
+
+					<h3 class="product-title">
+						<a href="#"><%= product.name %></a>
+					</h3><!-- End .product-title -->
+				</div><!-- End .product -->
+			</td>
+			<td class="price-col">₹<%= product?.productId?.offerprice ? product?.productId?.offerprice : product?.productId?.price %></td>
+
+			
+
+			<td class="stock-col">
+				<% if (product.appliedOffer) { %>
+					<span class="in-stock"><%= product.appliedOffer %></span><br>
+					<span class="in-stock">(<%= product.appliedOfferDiscount %> % off)</span>
+				<% } else { %>
+					<span class="out-of-stock">Offer unavailable</span>
+				<% } %>
+			</td>
+		
+
+			
+			
+			
+			
+		</tr>
+		<% }); %>
+			<% }; %>
 
 
-	<h6>Add coupon</h6>
-	<label for="checkout-discount-input" class="text-truncate">Have a coupon?
-		<span>Select here</span></label><br>
-
-	<div class="cart-discount">
-		<form action="#">
-		  <div class="input-group">
-			<input
-			  type="text"
-			  class="form-control"
-			  required
-			  placeholder="coupon code"
-			/>
-			<div class="input-group-append">
-			  <button class="btn btn-outline-primary-2" type="submit">
-				<i class="icon-long-arrow-right"></i>
-			  </button>
-			</div>
-			<!-- .End .input-group-append -->
-		  </div>
-		  <!-- End .input-group -->
-		</form>
-	  </div>
-</div><!-- End .col-lg-9 -->
+	</tbody>
+</table><!-- End .table table-wishlist -->
 
 
 
 <div class="checkout-discount">
 	<form id="couponForm">
+		<select id="couponCode" name="couponCode" style="max-width: 200px;" required
+		 <% if (couponNameForDisplay) { %>
+			 disabled
+			  <% } %>>
 
-		<select id="couponCode" name="couponCode" style="max-width: 200px;"
-			required>
-			<option disabled selected value="">Available coupons
-			</option>
-			<% if (coupon.length> 0) { %>
-				<% coupon.forEach(coupon=> { %>
-					<option>
-						<%= coupon.couponCode%>
-					</option>
-					<% }); %>
-						<% } else { %>
-							<option>No Coupons are Avilable.</option>
-							<% } %>
+			<option disabled selected value="">Available coupons</option>
+			<% if (coupon.length > 0) { %>
+				<% coupon.forEach(coupon => { %>
+					<option><%= coupon.couponCode %></option>
+				<% }); %>
+			<% } else { %>
+				<option>No Coupons are Available.</option>
+			<% } %>
 		</select>
-
+  
 		<div id="couponMessage" style="color: red;"></div>
-
-
-		
-		<button class="btn btn-primary mt-4" type="button"
-			onclick="applyCoupon();return false">Apply
-			Coupon</button>
-
-
+		<br>
+  
+		<% if (couponNameForDisplay) { %>
+			<div>
+				<h5 class="in-stock">
+					<%= couponNameForDisplay !== undefined ? couponNameForDisplay : '' %> 
+				</h5>
+				<button class="btn btn-danger" onclick="removeCoupon();return false">Click to remove</button>
+			</div>
+			<% } else { %>
+				<button class="btn btn-primary mt-4" type="button" onclick="applyCoupon(); return false;">Apply Coupon</button>
+			<% } %>
 	</form>
-
-</div>
+  </div>
 
 
 
@@ -299,14 +309,14 @@
 											
 		                						<tr>
 		                							<td><a href="#"><%= cartData.name %></a></td>
-		                							<td>₹ <%= cartData.totalPrice %>.00</td>
+		                							<td>₹ <%= cartData?.productId?.offerprice ? cartData?.productId?.offerprice : cartData?.productId?.price %>.00</td>
 		                						</tr>
 										<%	}) %>
 		                					
 										<% if (totalWithoutDiscount - totalWithDiscount> 0) { %>
 											<tr>
-												<td>Discount:</td>
-												<td>
+												<td class="in-stock">Discount:</td>
+												<td class="in-stock">
 													<%= totalWithoutDiscount - totalWithDiscount %>
 												</td>
 											</tr>
@@ -630,41 +640,70 @@ $.ajax({
 
 
 //==============  coupon applicaton  =====================================
- async function applyCoupon() {
+async function applyCoupon() {
+    const couponCode = document.getElementById('couponCode').value;
+    console.log("this is the coupon code selected at checkout page ejs:", couponCode);
 
-const couponCode = document.getElementById('couponCode').value;
+    try {
+        const response = await fetch('/applyCoupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ couponCode }),
+        });
 
-console.log("this is the coupon code selected at check out page ejs:", couponCode);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-try {
-	const response = await fetch('/applyCoupon', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		body: JSON.stringify({ couponCode }),
-	});
+        const data = await response.json();
 
-	if (!response.ok) {
-		throw new Error(`HTTP error! Status: ${response.status}`);
-	}
+        if (data.success) {
+            window.location.href = `/checkout?coupon=${couponCode}`
+            document.getElementById('couponMessage').innerHTML = data.success;
 
-	const data = await response.json();
-
-	if (data.success) {
-		window.location.href = `/checkout?coupon=${couponCode}`
-		document.getElementById('couponMessage').innerHTML = data.success;
-	} else if (data.already) {
-		document.getElementById('couponMessage').innerHTML = data.already;
-	} else if (data.error) {
-		document.getElementById('couponMessage').innerHTML = data.error;
-	}
-
-} catch (error) {
-	console.error('Error:', error);
-
+            // Disable the select dropdown and apply coupon button
+            document.getElementById('couponCode').disabled = true;
+            document.querySelector('button[type="button"]').disabled = true;
+        } else if (data.already) {
+            document.getElementById('couponMessage').innerHTML = data.already;
+        } else if (data.error) {
+            document.getElementById('couponMessage').innerHTML = data.error;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
+//=============================== remove coupon =======================
+
+async function removeCoupon() {
+    try {
+        const response = await fetch('/removeCoupon', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            window.location.href = '/checkout'; // Redirect to the checkout page
+        } else {
+            console.error('Failed to remove coupon:', data.error);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
+
+
 
 
 </script>
@@ -682,7 +721,7 @@ try {
   
   
   
-  <%- include('./layouts/footer.ejs')%>
+
   
 
 

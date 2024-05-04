@@ -1,5 +1,25 @@
 <%- include('./layouts/header') %>
 
+
+
+<!-- Izitoast CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/izitoast/dist/css/iziToast.min.css">
+
+<!-- Izitoast JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/izitoast/dist/js/iziToast.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
 <style>
   #successMessage {
     color: green;
@@ -44,6 +64,8 @@
               class="nav nav-dashboard flex-column mb-3 mb-md-0"
               role="tablist"
             >
+
+            <!-- index to all the tabitems -->
               <li class="nav-item">
                 <a
                   class="nav-link active"
@@ -73,7 +95,7 @@
                   class="nav-link"
                   id="tab-downloads-link"
                   data-toggle="tab"
-                  href="#tab-downloads"
+                  href="#tab-wallet"
                   role="tab"
                   aria-controls="tab-downloads"
                   aria-selected="false"
@@ -97,7 +119,7 @@
                   class="nav-link"
                   id="tab-account-link"
                   data-toggle="tab"
-                  href="#tab-account"
+                  href="#tab-password"
                   role="tab"
                   aria-controls="tab-account"
                   aria-selected="false"
@@ -111,7 +133,18 @@
           </aside>
           <!-- End .col-lg-3 -->
 
-          <!-- main dashboard page  for viewing the user basic details and editing it-->
+
+
+
+
+
+
+
+
+
+
+
+          <!-- main dashboard page  for viewing the user basic details of the user and editing it-->
 
           <div class="col-md-8 col-lg-9">
             <div class="tab-content">
@@ -153,7 +186,18 @@
                 </div>
                 <!-- End .col-lg-6 -->
 
-                <!-- //modal for editing the user -->
+
+
+
+
+
+
+
+
+
+
+
+                <!------   modal for editing the user basic details  ------------->
                 <div
                   class="modal fade"
                   id="editProfileModal"
@@ -286,6 +330,13 @@
               </div>
               <!-- .End .tab-pane -->
 
+
+              <!-- modal for editing the user details is over -->
+
+
+
+
+              <!-- this part is for displaying the orders made by the user -->
               <div
                 class="tab-pane fade"
                 id="tab-orders"
@@ -294,9 +345,9 @@
               >
 
 
-
                 <section class="vh-70 gradient-custom-2">
                   <div class="container py-5" id="taborders">
+
                     <% orders.forEach(order=> { %>
                     <div class="row align-items-center h-100">
                       <div class="col-md-10 col-lg-8 col-xl-6">
@@ -318,10 +369,10 @@
                                 <p class="text-muted mb-0">
                                   Place On
                                   <span class="fw-bold text-body">
-                                    <%= order.date %>
+                                    <%= moment(order.date).format('DD-MM-YYYY') %>
                                   </span> at:
                                   <span class="fw-bold text-body">
-                                    <%= order.time %>
+                                    <%= moment(order.date).format('HH:mm:ss') %>
                                   </span>
                                 </p>
                               </div>
@@ -358,10 +409,31 @@
                                 />
                               </div>
                             </div>
-                            <p class="text-primary"><%=product.orderStatus%></p>
+
+<% if(product.orderStatus === 'returned') {%>
+
+<p class="text-warning"><%=product.orderStatus%></p>
+
+<% }else if(product.orderStatus === 'cancelled'){ %>
+
+  <p class="text-danger"><%=product.orderStatus%></p>
+
+  <% }else if(product.orderStatus === 'delivered'){ %>  
+
+    <p class="text-success"><%=product.orderStatus%></p>
+
+<% }else{ %>
+  <p class="text-info"><%=product.orderStatus%></p>
+  <% }%>
+
 
                             <% }); %>
+
+
+
                           </div>
+
+                          
                           <a
                             href="/orderdetails?orderId=<%= order._id %>"
                             class="btn btn-primary"
@@ -380,8 +452,94 @@
 
 
 
+<!-- modal for wallet history view is starting here  -->
 
+<div
+class="modal fade"
+id="walletHistoryModal"
+tabindex="-1"
+role="dialog"
+aria-hidden="true"
+>
+<div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-content">
+    <div class="modal-body">
+      <button
+        type="button"
+        class="close"
+        data-dismiss="modal"
+        aria-label="Close"
+      >
+        <span aria-hidden="true"
+          ><i class="icon-close"></i
+        ></span>
+      </button>
 
+      <div class="form-box">
+        <div class="form-tab">
+          <ul
+            class="nav nav-pills nav-fill nav-border-anim"
+            role="tablist"
+          >
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="register-tab"
+                data-toggle="tab"
+                href="#register"
+                role="tab"
+                aria-controls="register"
+                aria-selected="false"
+                >Wallet history</a
+              >
+            </li>
+          </ul>
+          <div class="tab-content" id="tab-content-5">
+            <div class="tab-pane fade show active" id="signin" role="tabpanel" aria-labelledby="signin-tab">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead class="thead-primary">
+                                     
+                    <tr>
+                      <th>Date</th>
+                      <th>Amount</th>
+                      <th>Reason</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if(userNameforProfile?.wallet_history?.length !==0) {%>
+                    <% wallet_history.forEach((wallet)=>{ %>
+
+                    <tr>
+                      <td><%= wallet_history.date %></td>
+                      <td><%= wallet_history.amount %></td>
+                      <td><%= wallet_history.reason %></td>
+                    </tr>
+
+                 <% }) %>
+                 <% }else{ %>
+                  <td colspan="7">Wallet history is empty</td>
+                  <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <!-- .End .tab-pane -->
+          </div>
+          <!-- End .tab-content -->
+        </div>
+        <!-- End .form-tab -->
+      </div>
+      <!-- End .form-box -->
+    </div>
+    <!-- End .modal-body -->
+  </div>
+  <!-- End .modal-content -->
+</div>
+<!-- End .modal-dialog -->
+</div>
+
+<!-- wallet history ends here -->
 
 
 
@@ -389,14 +547,41 @@
 
               <div
                 class="tab-pane fade"
-                id="tab-downloads"
+                id="tab-wallet"
                 role="tabpanel"
                 aria-labelledby="tab-downloads-link"
               >
-                <p> Wallet</p>
-                <a href="category.html" class="btn btn-outline-primary-2"
-                  ><span>GO SHOP</span><i class="icon-long-arrow-right"></i
-                ></a>
+                  <div class="col-lg-6">
+                  <div class="card card-dashboard">
+                    <div class="card-body">
+                      <h3 class="card-title">Wallet Information</h3>
+                      <!-- End .card-title -->
+
+                      <% if(userNameforProfile?.wallet !== 0) {%>
+                      <p>
+                        Wallet Balance : ₹<%= userNameforProfile.wallet %>
+
+                       
+                        <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/5154e78e-684f-4826-bc12-d121a055f545/DdWUNPZxpJ.json" background="#FFFFFF" speed="1" style="width: 200px; height: 200px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+                        <br>
+                        <button
+                        type="button"
+                        class="btn btn-primary"
+                        data-toggle="modal"
+                        data-target="#walletHistoryModal"
+                      >
+                        Wallet history
+                      </button>
+                      </p>
+                      <% }else{ %>
+                        <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/82fa0462-1fe7-4f73-b4e8-b7e7eb0aff75/z8x23pbnQM.json" background="#FFFFFF" speed="1" style="width: 150px; height: 150px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+                        <% } %>
+                        Wallet Balance : ₹<%= userNameforProfile.wallet %>
+                    </div>
+                    <!-- End .card-body -->
+                  </div>
+                  <!-- End .card-dashboard -->
+                </div>
               </div>
               <!-- .End .tab-pane -->
 
@@ -829,7 +1014,7 @@
 
               <div
                 class="tab-pane fade"
-                id="tab-account"
+                id="tab-password"
                 role="tabpanel"
                 aria-labelledby="tab-account-link"
               >
@@ -959,9 +1144,20 @@
 
         if (data.success) {
           $("#changePasswordForm").load("/userProfile #changePasswordForm");
-          successMessageDiv.textContent = data.message;
+          // successMessageDiv.textContent = data.message;
           errorMessageDiv.textContent = "";
           document.getElementById("changePasswordForm").reset();
+
+          iziToast.success({
+                     title: data.message,            
+                     position: 'topRight',
+                     theme: 'orange', 
+                     color: 'white',
+                     backgroundColor: '#79e313'
+                        });
+
+
+
         } else {
           errorMessageDiv.textContent = data.message;
           successMessageDiv.textContent = "";

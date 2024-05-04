@@ -1,6 +1,5 @@
 
 
-
 <style>
     body{
     background:#eee;
@@ -56,10 +55,16 @@ a {
                   <span class="me-3"><%= orderPlacedByTheUser.time %></span>
                   <span class="me-3">#<%= orderPlacedByTheUser.id %></span>
                   <!-- <span class="me-3">Visa -1234</span> -->
-                  <span class="badge rounded-pill bg-info">SHIPPING</span>
+
+
+
+                  <span hidden class="badge rounded-pill bg-info">SHIPPING</span>
+
+
+                  
                 </div>
                 <div class="d-flex">
-                  <button class="btn btn-link p-0 me-3 d-none d-lg-block btn-icon-text"><i class="bi bi-download"></i> <span class="text">Invoice</span></button>
+                  <button class="btn btn-link p-0 me-3 d-none d-lg-block btn-icon-text"><i class="bi bi-download"></i> <span class="text"><a href="/download-invoice/<%= orderPlacedByTheUser.id%>">Invoice</a></span></button>
                   <div class="dropdown">
                     <button class="btn btn-link p-0 text-muted" type="button" data-bs-toggle="dropdown">
                       <i class="bi bi-three-dots-vertical"></i>
@@ -74,8 +79,7 @@ a {
               <table class="table table-borderless">
                 <tbody>
 
-                    <% orderPlacedByThe
-                    User.Products.forEach(product =>{ %>
+                    <% orderPlacedByTheUser.Products.forEach(product =>{ %>
 
                    
                   <tr>
@@ -85,13 +89,69 @@ a {
                           <img src="/adminAssets/imgs/category/<%= product.image[0] %>" alt="" width="35" class="img-fluid">
                         </div>
                         <div class="flex-lg-grow-1 ms-3">
-                          <h6 class="small mb-0"><a href="#" class="text-reset"><%= product.name %></a></h6>
+                          <h6 class="small mb-0"><%= product.productId.name %></h6>
                           <!-- <span class="small">Color: Black</span> -->
                         </div>
                       </div>
                     </td>
-                    <td>1</td>
-                    <td class="text-end">₹.<%= product.price %></td>
+
+                    <td >₹<%=  product?.productId?.offerprice ? product?.productId?.offerprice : product?.productId?.price %></td>
+
+                    <td><%= product.quantity %></td>
+
+
+
+                    
+                    <td><%= product.subTotal %></td>
+                  
+                    <td class="text-end">
+
+                      <% if(product.orderStatus=="placed"){%>
+                                                                    
+                        
+                            <h5 class="fw-normal mb-0">
+                              <a href="#" class="mb-4 btn btn-secondary rounded-pill" onclick="removefromorder('<%=orderPlacedByTheUser._id%>' , '<%=product._id%>','<%= product.orderStatus %>')">Cancel</a>
+                            </h5>
+                            <div class="border-start h-100"></div>
+                          </div>
+                        </div>
+                        <%}%>
+                        <%if(product.orderStatus=="shipped"){%>
+                          <h6 class="text-warning " style="margin-left: 20px; margin-bottom: 30px;" ><%=product.orderStatus%></h6>
+                          
+                            
+                                <h5 class="fw-normal mb-0">
+                                  <a href="#" class="mb-4 mt-0 btn btn-warning rounded-pill" onclick="removefromorder('<%=orderPlacedByTheUser._id%>' , '<%=product._id%>','<%= product.orderStatus %>')">Cancel</a>
+                                </h5>
+                                <div class="border-start h-100"></div>
+                              </div>
+                            </div>
+                          <%}%>
+                          <% if (product.orderStatus == "delivered") { %>
+                            <h6 class="text-success" style="margin-left: 20px; margin-bottom: 30px;"><%= product.orderStatus %></h6>
+                            
+                                    <h5 class="fw-normal mb-0">
+                                        <a href="#" class="mb-4 btn btn-danger" onclick="returnfromorder('<%=orderPlacedByTheUser._id%>' , '<%=product._id%>','<%= product.orderStatus %>')">Return Order</a>
+                                    </h5>
+                                    <div class="border-start h-100"></div>
+                                </div>
+                            </div>
+                        <% } %>
+                        <%if(product.orderStatus=="request cancellation"){%>
+                          <h6 class="text-danger"><%=product.orderStatus%></h6>
+                          <%}%>
+                          <%if(product.orderStatus=="cancelled"){%>
+                            <h6 class="text-danger"><%=product.orderStatus%></h6>
+                            <%}%>
+                            <%if(product.orderStatus=="request return"){%>
+                              <h6 class="text-danger"><%=product.orderStatus%></h6>
+                              <%}%>
+                              <%if(product.orderStatus=="returned"){%>
+                                <h6 class="text-success"><%=product.orderStatus%></h6>
+                                <%}%>
+
+                    </td>
+
                   </tr>
 
                   <% }) %>
@@ -99,19 +159,16 @@ a {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colspan="2">Subtotal</td>
-                    <td class="text-end">₹.<%= orderPlacedByTheUser.total %></td>
+                    <td colspan="4">Subtotal</td>
+                    <td class="text-end">₹<%= orderPlacedByTheUser.total %></td>
                   </tr>
                   <tr>
-                    <td colspan="2">Shipping</td>
+                    <td colspan="4">Shipping</td>
                     <td class="text-end"><%= orderPlacedByTheUser.shipping %></td>
                   </tr>
-                  <tr>
-                    <td colspan="2">Discount</td>
-                    <td class="text-danger text-end">₹0.00</td>
-                  </tr>
+                 
                   <tr class="fw-bold">
-                    <td colspan="2">TOTAL</td>
+                    <td colspan="4">TOTAL</td>
                     <td class="text-end"><%= orderPlacedByTheUser.grandTotal %></td>
                   </tr>
                 </tfoot>
@@ -124,8 +181,8 @@ a {
               <div class="row">
                 <div class="col-lg-6">
                   <h3 class="h6">Payment Method</h3>
-                  <p>Cash on Delivery <br>
-                  Total:₹<%= orderPlacedByTheUser.grandTotal %> <span class="badge bg-warning rounded-pill"><%= orderPlacedByTheUser.paymetnStatus %></span></p>
+                  <p><%= orderPlacedByTheUser.paymentMode %> <br>
+                  Total:₹<%= orderPlacedByTheUser.grandTotal %> <span class="badge bg-secondary rounded-pill"><%= orderPlacedByTheUser.paymentStatus %></span></p>
                 </div>
                 <div class="col-lg-6">
                   <h3 class="h6">Billing address</h3>
@@ -163,17 +220,16 @@ a {
                 <abbr title="Phone">Phone:</abbr>  <%= orderPlacedByTheUser.address.mobile %>
               </address>
             </div>
-            <a
-            href="/"
-            class="btn btn-outline-dark-2 btn-block mb-3"
-            ><span>CONTINUE SHOPPING</span><i class="icon-refresh"></i
-          ></a>
-
-          <a
-          href="/userProfile"
-          class="btn btn-outline-dark-2 btn-block mb-3"
-          ><span>BACK TO PROFILE PAGE</span><i class="icon-refresh"></i
-        ></a>
+            <a href="/" class="btn btn-info btn-block mb-3">
+              <span>CONTINUE SHOPPING</span>
+              <i class="bi bi-arrow-left"></i>
+            </a>
+            
+            <a href="/userProfile" class="btn btn-outline-primary - btn-block mb-3">
+              <span>BACK TO PROFILE PAGE</span>
+              <i class="bi bi-arrow-left"></i>
+            </a>
+            
           </div>
         </div>
       </div>
@@ -183,17 +239,6 @@ a {
 
 
 
-
-<div class="card-footer p-4">
-  <div class="d-flex justify-content-between">
-      <h5 class="fw-normal mb-0">
-          <% orderPlacedByTheUser.Products.forEach(product => { %>
-              <a href="#" class="mb-4" onclick="removefromorder('<%= orderPlacedByTheUser._id %>', '<%= product.productId %>')">Cancel</a>
-          <% }); %>
-      </h5>
-      <div class="border-start h-100"></div>
-  </div>
-</div>
 
 
 
@@ -221,7 +266,7 @@ a {
 
                         .then(response => {
 
-                          console.log('response  is ',response);
+                          console.log('response  is after order change at user profile page , order details',response);
                           
                             if (!response.ok) {
                                 throw new Error('Network response was not ok');
@@ -259,6 +304,58 @@ a {
                 }
             });
         }
+
+
+//===================== return a product from the order ====================
+        function returnfromorder(orderId, proId, orderStatus) {
+        Swal.fire({
+            title: 'Return Order',
+            html: `You are about to request a return for an order with status: <strong>${orderStatus}</strong>.<br>Do you want to proceed?`,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, request return!',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/returnOrder/${orderId}/${proId}`, {
+                    method: 'POST',
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Return request submitted successfully:', data);
+                        // $('#taborders').load('/profile #taborders')
+                      
+    
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Return Request Submitted!',
+                            text: 'Your return request has been submitted successfully.',
+                        }).then(() => {
+                            // page reload or redirect to the return requests page
+                            window.location.reload();
+                            // or window.location.href = '/return-requests'; // Redirect to a specific page
+                        });
+                    })
+                    .catch(error => {
+                        console.error('There was a problem submitting the return request:', error.message);
+    
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'There was a problem submitting the return request. Please try again.',
+                        });
+                    });
+            }
+        });
+    }
+
+
       </script>
 
 

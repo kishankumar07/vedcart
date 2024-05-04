@@ -6,11 +6,18 @@ let Category = require("../model/categoryModel");
 let { orderedDate,orderedTime} = require('../config/timeStamp');
 const Razorpay = require("razorpay");
 const Coupons = require("../model/couponModel")
+const Crypto = require("crypto");
+let moment = require("moment");
 
+//============  Razorpay instance  ==========================
 
-//========================   Razorpay instance   ===============================
-
-var instance = new Razorpay({ key_id: process.env.RazorId, key_secret: process.env.RazorKey });
+var instance = new Razorpay(
+    {
+         key_id: process.env.RazorId,
+          key_secret: process.env.RazorKey
+    }
+);
+//=============================================================
 
 
 const placeTheOrder = async (req, res) => {
@@ -28,10 +35,6 @@ const placeTheOrder = async (req, res) => {
             path: "products.productId",
             model: "Product",
         });
-
-
-
-console.log('this is the cartQuantity :',cartQuantity);
 
 
 
@@ -108,12 +111,6 @@ console.log('this is the cartQuantity :',cartQuantity);
   
   
         
-        console.log('Time at which order was placed:', orderedTime);
-        console.log('Date  at which order was placed:', orderedDate);
-  
-  
-  
-  
   
         const orderData = {
             userId: req.session.userData,
@@ -131,9 +128,9 @@ console.log('this is the cartQuantity :',cartQuantity);
             shipping: shippingCharges,
             grandTotal: grandTotal,
             total: totalWithDiscount,
-           time:orderedTime,
+        //    time:orderedTime,
           //  paymentStatus:'Cash on delivery',
-           date:orderedDate,
+          date: new Date(),
             address: selectedValue,
         };
 
@@ -181,8 +178,6 @@ console.log('this is the cartQuantity :',cartQuantity);
 
         generateRazorpay(orderInstance._id, total).then(async (response) => {
             const savedOrder = await orderInstance.save();
-
-console.log('this is the response after promise:',response)
 
             res.json({ response, total: total, order: savedOrder });
         });
@@ -235,14 +230,7 @@ const razorpay_signature = req.body['payment[razorpay_signature]'];
 let order = req.body['order[orderId]'];
 
 
-console.log('this si the req.body suspect :',razorpay_payment_id)
-console.log('this si the req.body suspect :',razorpay_order_id)
-console.log('this si the req.body suspect :',razorpay_signature)
-console.log('this is the order :',order)
-
-
-
-        const Crypto = require("crypto");
+        
        
         const secret = process.env.RazorKey;
         let hmac = Crypto.createHmac('sha256', secret);
@@ -423,10 +411,13 @@ const loadOrderDetailsPage = async (req, res) => {
     try {
         const orderid = req.query.orderId;
       
-     let orderPlacedByTheUser = await Orders.findOne({_id:orderid})
-    //  console.log('this is the order placed',orderPlacedByTheUser);
+     let orderPlacedByTheUser = await Orders.findOne({_id:orderid}).populate({
+        path:'Products.productId',
+        model:'Product'
+     })
+
      
-      res.render("orderDetails", { orderPlacedByTheUser });
+      res.render("orderDetails", { orderPlacedByTheUser,moment });
 
     } catch (error) {
       console.log(error.message);
@@ -458,7 +449,7 @@ const loadOrderDetailsPage = async (req, res) => {
 
   const cancelOrPlacedOrder = async (req, res) => {
     try {
-        console.log('reached heeree');
+        console.log('the order is going to be cancelled , user took action to cancel the order at the order details view page of the user');
         const orderId = req.query.orderId;
         const productId = req.query.productId;
        
@@ -468,7 +459,7 @@ const loadOrderDetailsPage = async (req, res) => {
 
         const updatedOrder = await Orders.updateOne({
             _id: orderId,
-            'Products.productId': productId
+            'Products._id': productId
 
         },
             {
@@ -486,7 +477,7 @@ console.log('this is the updatedOrder',updatedOrder);
         });
 
     } catch (error) {
-        res.redirect("/error")
+        // res.redirect("/error")
         res.status(500).json({ success: false, message: "Internal server error" });
 
     }
@@ -524,6 +515,166 @@ console.log('this is at the allorder',allOrders);
     }
 };
 
+//==========================  change status of order =================
+
+const changeStatus = async (req, res) => {
+    const { orderId } = req.params;
+    const { status,productId } = req.body;
+    console.log('updation is  going to happen to this status :',status)
+    // console.log("productId",productId);
+
+    try {
+       
+        const updatedOrder = await Orders.findOne({ _id: orderId });
+
+      
+
+        if (updatedOrder) {
+            const product = updatedOrder.Products.find((item) => item._id.toString() === productId);
+        
+console.log('to this specific product of the order, the updation is going to happeen :',product.name);
+
+
+            if (product) {
+                product.orderStatus = status;
+                updatedOrder.orderStatus = status;
+        
+                await updatedOrder.save();
+            
+            }
+        }
+
+
+        const orderData = await Orders.findOne({ _id: orderId });
+        const products = orderData.Products;
+        const userId = orderData.userId;
+
+        let totalAmountofWallet = 0;
+
+        const returnedORCancelProduct = products.find(product => product._id.toString() === productId.toString())
+
+
+console.log('this is the suspect part -----------------------------------:',returnedORCancelProduct)
+
+       if(returnedORCancelProduct){
+         totalAmountofWallet = returnedORCancelProduct.total || 0
+       }
+       
+        
+        console.log("total returned to wallet is :",totalAmountofWallet);
+        
+
+console.log('this is the updated status :',status)
+
+
+        if (status === "returned") {
+                const productId = returnedORCancelProduct.productId;
+                const count = returnedORCancelProduct.quentity;
+
+                await Product.updateOne(
+                    { _id: productId },
+                    {
+                        $inc: {
+                            quentity: count
+                        }
+                    }
+                );
+            
+
+
+            await User.findByIdAndUpdate(
+                { _id: userId },
+                {
+                    $inc: {
+                        wallet: totalAmountofWallet
+                    },
+                    $push: {
+                        wallet_history: {
+                            date: new Date(),
+                            amount: totalAmountofWallet ,
+                            reason: 'order return'
+                        }
+                    }
+                }
+            );
+
+        }else if (status === "cancelled" && orderData.paymentMode !== "Cash on delivery") {
+            
+                const productId = returnedORCancelProduct.productId;
+                const count = returnedORCancelProduct.quentity;
+        
+                await Product.updateOne(
+                    { _id: productId },
+                    {
+                        $inc: {
+                            quentity: count
+                        }
+                    }
+                );
+            
+        
+            await User.findByIdAndUpdate(
+                { _id: userId },
+                {
+                    $inc: {
+                        wallet: totalAmountofWallet
+                    },
+                    $push: {
+                        wallet_history: {
+                            date: new Date(),
+                            amount: totalAmountofWallet,
+                            reason: 'cancel order'
+                        }
+                    }
+                }
+            );
+
+        }
+
+        if (updatedOrder.nModified === 0) {
+            return res.status(404).json({ error: 'Order not found or status already updated' });
+        }
+
+        res.json({ success: true, message: 'Status updated successfully' });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
+//------ return the order after the status was changed to delivered by the admin  ------------------------
+const returnOrder = async (req, res) => {
+    try {
+
+console.log('initiated the return order request at order view page of the user profile')
+
+        const productId = req.params.productId
+        const orderId = req.params.orderId
+        
+
+        const updatedOrder = await Orders.updateOne({
+            _id: orderId,
+            'Products._id': productId
+        },
+            {
+                $set: {
+                    'Products.$.orderStatus': 'request return'
+                }
+            })
+        res.json({
+            success: true,
+            message: "Product Return Request successfully",
+            updatedOrder,
+        });
+        
+    } catch (error) {
+       
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
+
 
 module.exports = {
     placeTheOrder,
@@ -531,5 +682,21 @@ module.exports = {
     loadOrderDetailsPage,
     cancelOrPlacedOrder,
     loadOrder,
-    verifyPayment
+    verifyPayment,
+    changeStatus,
+    returnOrder
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+

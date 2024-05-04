@@ -1,10 +1,11 @@
 let User = require("../model/userModel");
 let Product = require("../model/productModel");
 let Cart = require("../model/cartModel");
+let Offer = require('../model/offerModel');
 let Category = require("../model/categoryModel");
 const Coupons = require("../model/couponModel")
 
-
+// By using optional chaining, you prevent the error from occurring when attempting to access properties of undefined objects. 
 
 
 
@@ -48,7 +49,16 @@ const loadCart = async (req, res) => {
 
 
         //subtotalwithnoshipping charge is the thing at the right most part of the cart page
-          const subtotalWithNoShippingCharge = cartData.products.reduce((total, product) => total + product.totalPrice, 0);
+        const subtotalWithNoShippingCharge = cartData.products.reduce((total, product) => {
+          let totalPrice = 0; // Initialize totalPrice variable here
+          if (product.productId.offerprice) {
+              totalPrice = product.productId.offerprice * product.quantity;
+          } else if (product.productId.price) {
+              totalPrice = product.productId.price * product.quantity;
+          }
+          return total + totalPrice; // Add totalPrice to the total
+      }, 0);
+      
 
 
 let shippingCharges = subtotalWithNoShippingCharge > 500 ? 'free shipping' :'₹40.00'
@@ -105,7 +115,24 @@ let {isBlocked} = await User.findById(userId);
 
 
 
-      const productFound = await Product.findOne({ _id: productId });
+      const productFound = await Product.findOne({ _id: productId })
+      .populate({
+        path:'category',
+        populate:{
+          path:'offer',
+          model:'Offer'
+        }
+      })
+      .populate({
+        path:'offer',
+        model:'Offer'
+      })
+
+
+
+    // console.log('productFound when add to cart :::::::::::::::::::::::::::::::::::',productFound)
+
+
 
       const cart = await Cart.findOne({ userId });
 
@@ -117,6 +144,8 @@ let {isBlocked} = await User.findById(userId);
                 (item) => item.productId.toString() === productId
             );
 
+
+// console.log('this is the existing product index :',existingProductIndex)
 
             //if the product already exists in the cart ??
 
@@ -130,6 +159,8 @@ let {isBlocked} = await User.findById(userId);
 
                 //just add that new product to the existing array
             } else {
+
+        
                 const productPrice = productFound.offerprice || productFound.price
                 const totalPrice = quantity * productPrice
 
@@ -146,6 +177,8 @@ let {isBlocked} = await User.findById(userId);
 
             //if the user has no existing cart ??
         } else {
+
+
             const productPrice = productFound.offerprice || productFound.price
             const totalPrice = quantity * productPrice
 
@@ -157,7 +190,8 @@ let {isBlocked} = await User.findById(userId);
                         quantity: quantity,
                         productPrice: productPrice,
                         totalPrice: totalPrice,   
-                        name: productFound.name                     
+                        name: productFound.name,
+                        
                     },
                 ],
             });
@@ -170,7 +204,7 @@ let {isBlocked} = await User.findById(userId);
         return res.status(400).json({ error: "Invalid product." });
     }
 } catch (error) {
-    console.error(error);
+    console.error('error at addto cart controller',error);
     return res.status(500).json({ error: "Internal server error." });
 }
 };
@@ -232,7 +266,7 @@ const updateCartItemCount = async (req, res) => {
         return res.status(404).json({ success: false, message: "Cart not found" });
     }
 
-    const productToUpdate = existingCart.products.find((proId) => proId.productId.equals(productId));
+    const productToUpdate = existingCart.products.find((proId) => proId.productId.equals(productId))
 
     if (!productToUpdate) {
         return res.status(404).json({ success: false, message: "Product not found in cart" });
@@ -297,7 +331,15 @@ const loadCheckout = async (req, res) => {
   try {
       const userId = req.session.userData;
 
-      const coupon = await Coupons.find({ 'userUsed.used': { $ne: true } });
+      const coupon = await Coupons.find(
+        { status: true, 'userUsed.used': { $ne: true } }, 
+        { couponName: 1, description: 1, minAmount: 1, discount: 1, couponCode: 1, expiryDate: 1, status: 1, userUsed: 1 }
+    );
+    
+
+console.log('coupons available :',coupon)
+
+
 // console.log('this is the user id :',userId)
 const couponCode = req.query.coupon || ''
 
@@ -310,12 +352,35 @@ const couponCode = req.query.coupon || ''
 
     // very important to note that it should be findONe not find
     
-    const cartData = await Cart.findOne({ userId }).populate({
-      path: "products.productId",
-      model: "Product",
-  });
+  //   const cartData = await Cart.findOne({ userId }).populate({
+  //     path: "products.productId",
+  //     model: "Product",
+  // });
+//   const cartData = await Cart.findOne({ userId }).populate({
+//     path: "products.productId",
+//     model: "Product",
+//     populate: {
+//         path: "category",
+//         model:'Category',
+//         populate:{
+//           path:'offer',
+//           model:'Offer'
+//         }
+//     }
+// });
 
-// console.log('this is the cart found at checkout',cartFound)
+
+
+// const Cart = require('./models/Cart');
+
+// Query the cart collection and populate the products with category and offer information
+const cartData = await Cart.findOne({ userId }).populate({
+  path: 'products.productId',
+  model: 'Product',
+});
+
+
+// console.log('cart data at checkout page: ',cartData)
 
     let states = [
       'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 
@@ -349,25 +414,81 @@ const couponCode = req.query.coupon || ''
       
       else {
 
-        // console.log('this worked at checkout the else case :')
-          // const userDetail = await User.findById(userId);
-          
 
-let totalWithoutDiscount = cartData.products.reduce((total,product)=>{
-  const price = product.productId.offerprice || product.productId.price;
-  return total + price * product.quantity;
-},0)
+  
+      // Extract product IDs from cartData
+      const productIds = cartData.products.map(product => product.productId._id);
+
+
+
+
+      // Query Product model to get details of the products in the cart
+      const productsInCart = await Product.find({ _id: { $in: productIds } }).populate({
+        path:'category',
+        populate:{
+          path:'offer',
+        }
+      }).populate({
+        path:'offer'
+      })
+
+
+
+console.log('these are theproducts in cart ;::',productsInCart)
+
+
+// Update cartData with applied offers
+// this part is to show the available offers in that table below the address part
+cartData.products.forEach(cartProduct => {
+  const product = productsInCart.find(product => product._id.equals(cartProduct.productId._id));
+  if (product) {
+      if (product.offer) {
+          cartProduct.appliedOffer = product.offer.name;
+          cartProduct.appliedOfferDiscount = product.offer.discount;
+      } else if (product.category && product.category.offer) {
+          cartProduct.appliedOffer = product.category.offer.name;
+          cartProduct.appliedOfferDiscount = product.category.offer.name;
+      }
+  }
+});
+
+
+
+      // Calculate total price, shipping charges, and grand total
+      let totalWithoutDiscount = productsInCart.reduce((total, product) => {
+          const price = product.offerprice || product.price;
+
+       
+
+          const quantity = cartData.products.find(item => item.productId.equals(product._id)).quantity;
+          return total + price * quantity;
+      }, 0);
 
 let totalWithDiscount = totalWithoutDiscount;
 
 
+
+
+
+console.log('total with discount:',totalWithDiscount);
+
+
+
+
+
+
+let couponNameForDisplay;
+
 //this following thing will work in the case of coupon application, it has nothing to do with the offer
 if (couponCode) {
-  const coupon = await Coupons.findOne({ couponCode });
+  const couponSelected = await Coupons.findOne({ couponCode });
 
-  if (coupon) {
-      const discountAmount = coupon.discount;
+  if (couponSelected) {
+    couponNameForDisplay = couponSelected.couponName;
+      const discountAmount = couponSelected.discount;
       totalWithDiscount -= discountAmount;
+
+      console.log('afterr coupon application this is the total with discoutn :',totalWithDiscount)
   }
 }
 
@@ -376,9 +497,9 @@ let shippingCharges = totalWithDiscount >500 ? 'Free shipping' : '₹40.00'
 
 let grandTotal = shippingCharges === 'Free shipping' ? totalWithDiscount : totalWithDiscount + 40;
 
+console.log('couponname at checkout :',couponNameForDisplay)
 
-
-          res.render("checkout", { coupon,shippingCharges,grandTotal,cartData,userNameforProfile,category,states,totalWithoutDiscount,totalWithDiscount });
+          res.render("checkout", { couponNameForDisplay,couponCode,coupon,shippingCharges,grandTotal,cartData,userNameforProfile,category,states,totalWithoutDiscount,totalWithDiscount });
       }
   } catch (error) {
     console.log('error occured at load checkout page : ',error);
@@ -388,7 +509,8 @@ let grandTotal = shippingCharges === 'Free shipping' ? totalWithDiscount : total
 
 
 
-//Add address in checkoutPage
+
+//=================  Add address in checkoutPage ==============  
 const addAddressAtCheckout = async (req, res) => {
   try {
       const userId = req.session.userData;

@@ -86,14 +86,19 @@ router.delete('/removeaddress/:id', userAuth.isLoggedIn,userAuth.isBlocked,userA
 
 router.get("/orderdetails",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.loadOrderDetailsPage)
   
+
+
+
 router.post('/cancelOrder',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified, orderController.cancelOrPlacedOrder);
 
-
+router.post('/returnOrder/:orderId/:productId',orderController.returnOrder)
 
   
 
+//------------ applying and removing the coupon -------------------------
 router.post("/applyCoupon",userAuth.isLoggedIn,userAuth.isBlocked,couponController.applyCoupon)
 
+router.post('/removeCoupon',userAuth.isLoggedIn,userAuth.isBlocked,couponController.removeCoupon)
 
 
 

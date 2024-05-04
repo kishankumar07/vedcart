@@ -80,6 +80,7 @@ router.get('/categoryList',adminAuth.isLoggedIn,categoryController.categoryList)
 //order part====================================
 router.get("/orders",adminAuth.isLoggedIn,orderController.loadOrder)
 
+router.put('/updateStatus/:orderId',adminAuth.isLoggedIn,orderController.changeStatus)
 
 
 

@@ -101,7 +101,25 @@ addressField: [{
     type: Boolean,
     default: false,
   },
- 
+  createdAt: {
+        type: Date,
+        default: Date.now
+      },
+      wallet:{
+        type:Number,
+        default:0
+    },
+    wallet_history:[{
+        date:{
+            type:Date
+        },
+        amount:{
+            type:Number
+        },
+        reason:{
+            type:String
+        }
+    }],
 
 });
 module.exports=mongoose.model('User',userSchema)
@@ -110,7 +128,4 @@ module.exports=mongoose.model('User',userSchema)
 // In Mongoose, the model name is typically used to determine the collection name in MongoDB. By default, Mongoose will use the lowercase, pluralized version of the model name as the collection name.
 
 // In your case, the model name is "User," and Mongoose will automatically use the pluralized version "users" as the collection name. This behavior is part of Mongoose's conventions.
-
-
-
 

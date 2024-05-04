@@ -32,7 +32,7 @@ const isLoggedOut = (req, res, next) => {
 
 const isBlocked = async (req,res,next)=>{
     try {
-          
+          console.log('req.session.userData check at is_Bloced middleware :',req.session.userData);
         if(req.session.userData){
            let user = await User.findById(req.session.userData)
          if(user.isBlocked == false){
@@ -48,7 +48,7 @@ const isBlocked = async (req,res,next)=>{
         }
 
     }catch(error){
-console.log("is Blocked error",error)
+console.log("error at is_Blocked ",error)
     }
 }
 

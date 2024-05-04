@@ -228,6 +228,31 @@ console.log('this is the already used coupon:',alreadyUsed)
   };
 
 
+//=================== remove the applied coupon ----------------------
+const removeCoupon = async (req, res) => {
+    try {
+        const userId = req.session.userData;
+
+        // Update the coupon document to mark it as not used by the user
+        const result = await Coupon.updateOne(
+            { "userUsed.userid": userId },
+            { $pull: { userUsed: { userid: userId } } } // Remove the user from the userUsed array
+        );
+
+console.log('result after remove coupon :',result)
+
+        if (result) {
+            res.json({ success: 'Coupon removed' });
+        } else {
+            res.json({ error: 'Coupon not found or already removed' });
+        }
+    } catch (err) {
+        console.error('Error:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+
 module.exports = {
     applyCoupon,
     loadAddCoupon,
@@ -235,7 +260,8 @@ module.exports = {
     addCouponDetails,
     loadEditCoupon,
     editCoupon,
-    deleteCoupon
+    deleteCoupon,
+    removeCoupon
 }
 
 
