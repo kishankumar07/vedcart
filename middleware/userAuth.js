@@ -18,8 +18,8 @@ const isLoggedIn = (req, res, next) => {
 
 
 const isLoggedOut = (req, res, next) => {
-
-    if (req.session.userData) {
+console.log('isLoggedOut middleware worked and value at session is ',req.session.userData)
+    if (req.session.userData === 'undefined') {
     
         res.redirect('/')
     } else {
@@ -32,12 +32,14 @@ const isLoggedOut = (req, res, next) => {
 
 const isBlocked = async (req,res,next)=>{
     try {
-          console.log('req.session.userData check at is_Bloced middleware :',req.session.userData);
-        if(req.session.userData){
+         
+        if(req.session?.userData){
            let user = await User.findById(req.session.userData)
-         if(user.isBlocked == false){
+         if(user?.isBlocked == false){
+            // console.log('req.session.userData check at is_Bloced middleware and is not blocked:');
             next();
         }else{
+            // console.log('user is blocked and session is kept as null ')
             req.session.userData=null;
 
             

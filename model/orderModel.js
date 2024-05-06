@@ -20,6 +20,9 @@ const ordersSchema = mongoose.Schema({
       quantity: {
         type: Number,
       },
+      offerDiscount: {
+        type: Number,
+      },
       subTotal: {
         type: Number,
       },
@@ -61,6 +64,11 @@ const ordersSchema = mongoose.Schema({
   address: {
     type: Object,
   },
+  couponDiscount: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Coupon",
+  },
+
 },
 { timestamps: true }
 );

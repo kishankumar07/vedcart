@@ -2,7 +2,7 @@
 let path = require('path');
 let User = require('../model/userModel');
 let adminAuth = require('../middleware/adminAuth');
-
+const Orders = require("../model/orderModel");
 
 //===============Admin Login==========================
 let adminLogin = async(req,res)=>{
@@ -155,7 +155,185 @@ const userField = async(req,res)=>{
         }
       };
       
+
+//-------------- sales report ---------------------------
+let salesReport = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1; // Current page number
+        const limit = parseInt(req.query.limit) || 10; // Number of orders per page
+
+        const totalOrders = await Orders.countDocuments(); // Total number of orders
+        const totalPages = Math.ceil(totalOrders / limit); // Calculate total pages
+
+        const skip = (page - 1) * limit; // Calculate number of documents to skip
+
+        
+        // Fetch orders for the current page
+        const orders = await Orders.aggregate([
+            {
+                $project: {
+                    userId: 1,
+                    total: 1,
+                    shipping: 1,
+                    grandTotal: 1,
+                    paymentMode: 1,
+                    paymentStatus: 1,
+                    date: 1,
+                    address: 1,
+                    deliveredProducts: {
+                        $filter: {
+                            input: "$Products",
+                            as: "product",
+                            cond: { $eq: ["$$product.orderStatus", "delivered"] }
+                        }
+                    }
+                }
+            },
+            {
+                $match: { "deliveredProducts": { $ne: [] } }
+            },
+            {
+                $skip: skip
+            },
+            {
+                $limit: limit
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "user"
+                }
+            },
+            {
+                $addFields: {
+                    user: { $arrayElemAt: ["$user", 0] }
+                }
+            },
+            {
+                $project: {
+                    userId: 0
+                }
+            }
+        ]);
+
+// console.log('orders at the sales report page :',orders)
+
+
+        res.render('salesReport', { orders, totalPages, currentPage: page, limit });
+    } catch (error) {
+        console.error('error at loading the sales report',error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+  
     
+//--------------- custom date sort --------------------------------
+// const customSort = async (req, res) => {
+//     try {
+
+//         console.log('reached hereeeeeeeeeeeeeeee')
+//         const { startDate, endDate } = req.body;
+
+//         // Convert start and end dates to JavaScript Date objects
+//         const startDateObj = new Date(startDate);
+//         startDateObj.setHours(0, 0, 0, 0); // Set time to start of the day
+//         const endDateObj = new Date(endDate);
+//         endDateObj.setHours(23, 59, 59, 999); // Set time to end of the day
+
+//         // Fetch orders based on the custom date range
+//          const orders = await Orders.find({
+//             date: { $gte: startDateObj, $lte: endDateObj },
+//             "Products.orderStatus": "delivered"
+//         }).populate({
+//             path: 'userId',
+//             select: 'name email'
+//         });
+
+
+//         res.status(200).json(orders);
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ error: 'Internal Server Error' });
+//     }
+// };
+
+    const customSort = async (req, res) => {
+        try {
+            console.log('reacheddd================================')
+            const { date } = req.query;
+            let orders;
+    
+            switch (date) {
+                case 'today':
+                    orders = await Orders.find({
+                        "Products.orderStatus": "delivered",
+                        date: {
+                            $gte: new Date().setHours(0, 0, 0, 0), // Start of today
+                            $lt: new Date().setHours(23, 59, 59, 999) // End of today
+                        }
+                    });
+                    break;
+                case 'week':
+                    const currentDate = new Date();
+                    const startOfWeek = new Date(currentDate);
+                    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay()); // Set to the first day of the week (Sunday)
+                    startOfWeek.setHours(0, 0, 0, 0);
+    
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6); // Set to the last day of the week (Saturday)
+                    endOfWeek.setHours(23, 59, 59, 999);
+    
+                    orders = await Orders.find({
+                        "Products.orderStatus": "delivered",
+                        date: {
+                            $gte: startOfWeek,
+                            $lt: endOfWeek
+                        }
+                    });
+                    break;
+                case 'month':
+                    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59, 999);
+    
+                    orders = await Orders.find({
+                        "Products.orderStatus": "delivered",
+                        date: {
+                            $gte: startOfMonth,
+                            $lt: endOfMonth
+                        }
+                    });
+                    break;
+                case 'year':
+                    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+                    const endOfYear = new Date(new Date().getFullYear(), 11, 31, 23, 59, 59, 999);
+    
+                    orders = await Orders.find({
+                        "Products.orderStatus": "delivered",
+                        date: {
+                            $gte: startOfYear,
+                            $lt: endOfYear
+                        }
+                    });
+                    break;
+                default:
+                    // Fetch all orders
+                    orders = await Orders.find({ "Products.orderStatus": "delivered" });
+            }
+    
+// console.log('orders -------------',orders)
+
+
+            res.status(200).json(orders);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    };
+    
+
 
 
 module.exports = {
@@ -166,7 +344,9 @@ module.exports = {
     userField,
     logout,
     userField,
-    toggleBlockStatus
+    toggleBlockStatus,
+    salesReport,
+    customSort,
 }
 
 

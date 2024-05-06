@@ -24,8 +24,9 @@ router.get('/users',adminAuth.isLoggedIn,adminController.userField);
 router.get('/searchUser', adminAuth.isLoggedIn, adminController.loadSearchQuery);
 router.post('/toggleBlock',adminAuth.isLoggedIn,adminController.toggleBlockStatus)
 
+router.get('/salesReport',adminAuth.isLoggedIn,adminController.salesReport)
 
-
+router.post('/customSort',adminAuth.isLoggedIn,adminController.customSort)
 //=========product part============================
 
 

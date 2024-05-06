@@ -40,7 +40,7 @@ a {
     <div class="container">
       <!-- Title -->
       <div class="d-flex justify-content-between align-items-center py-3">
-        <h2 class="h5 mb-0"><a href="#" class="text-muted"></a> Order #<%= orderPlacedByTheUser.id %></h2>
+        <h2 class="h5 mb-0"><a href="#" class="text-muted"></a> Order #<%= orderPlacedByTheUser?.id %></h2>
       </div>
     
       <!-- Main content -->
@@ -51,9 +51,10 @@ a {
             <div class="card-body">
               <div class="mb-3 d-flex justify-content-between">
                 <div>
-                  <span class="me-3"><%= orderPlacedByTheUser.date %></span>
-                  <span class="me-3"><%= orderPlacedByTheUser.time %></span>
-                  <span class="me-3">#<%= orderPlacedByTheUser.id %></span>
+                  
+                  <span class="me-3"><%= moment(orderPlacedByTheUser.date).format('DD-MM-YYYY') %></span>                
+                  <span class="me-3"><%= moment(orderPlacedByTheUser.time).format('HH:mm:ss') %></span>
+                  <span class="me-3">#<%= orderPlacedByTheUser?.id %></span>
                   <!-- <span class="me-3">Visa -1234</span> -->
 
 
@@ -64,7 +65,7 @@ a {
                   
                 </div>
                 <div class="d-flex">
-                  <button class="btn btn-link p-0 me-3 d-none d-lg-block btn-icon-text"><i class="bi bi-download"></i> <span class="text"><a href="/download-invoice/<%= orderPlacedByTheUser.id%>">Invoice</a></span></button>
+                  <button class="btn btn-link p-0 me-3 d-none d-lg-block btn-icon-text"><i class="bi bi-download"></i> <span class="text"><a href="/download-invoice/<%= orderPlacedByTheUser?.id%>">Invoice</a></span></button>
                   <div class="dropdown">
                     <button class="btn btn-link p-0 text-muted" type="button" data-bs-toggle="dropdown">
                       <i class="bi bi-three-dots-vertical"></i>
@@ -79,7 +80,7 @@ a {
               <table class="table table-borderless">
                 <tbody>
 
-                    <% orderPlacedByTheUser.Products.forEach(product =>{ %>
+                    <% orderPlacedByTheUser?.Products.forEach(product =>{ %>
 
                    
                   <tr>
@@ -102,7 +103,7 @@ a {
 
 
                     
-                    <td><%= product.subTotal %></td>
+                    <td>₹<%= product.subTotal %></td>
                   
                     <td class="text-end">
 
@@ -160,16 +161,16 @@ a {
                 <tfoot>
                   <tr>
                     <td colspan="4">Subtotal</td>
-                    <td class="text-end">₹<%= orderPlacedByTheUser.total %></td>
+                    <td class="text-end">₹<%= orderPlacedByTheUser?.total %></td>
                   </tr>
                   <tr>
                     <td colspan="4">Shipping</td>
-                    <td class="text-end"><%= orderPlacedByTheUser.shipping %></td>
+                    <td class="text-end"><%= orderPlacedByTheUser?.shipping %></td>
                   </tr>
                  
                   <tr class="fw-bold">
                     <td colspan="4">TOTAL</td>
-                    <td class="text-end"><%= orderPlacedByTheUser.grandTotal %></td>
+                    <td class="text-end"><%= orderPlacedByTheUser?.grandTotal %></td>
                   </tr>
                 </tfoot>
               </table>
@@ -181,16 +182,16 @@ a {
               <div class="row">
                 <div class="col-lg-6">
                   <h3 class="h6">Payment Method</h3>
-                  <p><%= orderPlacedByTheUser.paymentMode %> <br>
-                  Total:₹<%= orderPlacedByTheUser.grandTotal %> <span class="badge bg-secondary rounded-pill"><%= orderPlacedByTheUser.paymentStatus %></span></p>
+                  <p><%= orderPlacedByTheUser?.paymentMode %> <br>
+                  Total:₹<%= orderPlacedByTheUser?.grandTotal %> <span class="badge bg-secondary rounded-pill"><%= orderPlacedByTheUser?.paymentStatus %></span></p>
                 </div>
                 <div class="col-lg-6">
                   <h3 class="h6">Billing address</h3>
                   <address>
-                    <strong><%= orderPlacedByTheUser.address.name %></strong><br>
-                    <%= orderPlacedByTheUser.address.addressDetails %>
+                    <strong><%= orderPlacedByTheUser?.address.name %></strong><br>
+                    <%= orderPlacedByTheUser?.address?.addressDetails %>
                     <br>
-                    <abbr title="Phone">Phone:</abbr>₹.<%= orderPlacedByTheUser.address.mobile %>
+                    <abbr title="Phone">Phone:</abbr>₹.<%= orderPlacedByTheUser?.address?.mobile %>
                   </address>
                 </div>
               </div>
@@ -214,10 +215,10 @@ a {
               <hr>
               <h3 class="h6">Address</h3>
               <address>
-                <strong><%= orderPlacedByTheUser.address.name %></strong><br>
-                <%= orderPlacedByTheUser.address.addressDetails %>
+                <strong><%= orderPlacedByTheUser?.address.name %></strong><br>
+                <%= orderPlacedByTheUser?.address.addressDetails %>
                 <br>
-                <abbr title="Phone">Phone:</abbr>  <%= orderPlacedByTheUser.address.mobile %>
+                <abbr title="Phone">Phone:</abbr>  <%= orderPlacedByTheUser?.address.mobile %>
               </address>
             </div>
             <a href="/" class="btn btn-info btn-block mb-3">

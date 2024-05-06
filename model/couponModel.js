@@ -49,7 +49,7 @@ let couponSchema = mongoose.Schema({
         );
       });
       
-      module.exports = mongoose.model('Coupon',couponSchema)
+    //   module.exports = mongoose.model('Coupon',couponSchema)
 
 module.exports = mongoose.model('Coupon',couponSchema)
 

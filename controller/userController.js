@@ -142,8 +142,9 @@ console.log('user successfully logged at verify user : sessin :',req.session.use
       return res.render('userSignin', { message: req.flash('er') });
     }
   } catch (error) {
+    console.log('error at verify login ,:',error)
     res.redirect("/error")
-    return res.status(500).send('Internal Server Error');
+    
   }
 };
 

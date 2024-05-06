@@ -4,22 +4,22 @@ let mongoose = require("mongoose");
 let userSchema = new mongoose.Schema({
   name: {
     type: String,
-    require: true,
+    required: true,
   },
   email: {
     type: String,
-    require: true,
+    required: true,
   },
   mobile: {
     type: Number,
-    require: true,
+    // require: true,
   },
   password: {
    
       type: String,
-      // required: function () {
-      //   return !this.googleUser; // Password is required if user is not created via Google
-      // },
+      required: function () {
+        return !this.googleUser; // Password is required if user is not created via Google
+      },
   
 },
 

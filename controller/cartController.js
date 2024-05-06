@@ -28,7 +28,7 @@ const loadCart = async (req, res) => {
 
       if (!cartData) {
 
-        console.log('cart page loaded with no cart data')
+        console.log('cart page loaded with no cart data 1st case')
           res.render("cart", { cartData: { products: [] },userNameforProfile,category });
           // res.render("cart", { userNameforProfile,category });
 
@@ -77,7 +77,7 @@ let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoS
           res.render("cart", { userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock });
 
       } else {
-        console.log('cart page loaded with no cart data')
+        console.log('cart page loaded with no cart data else case')
           res.render("cart", { cartData,userNameforProfile,category });
       }
   } catch (error) {

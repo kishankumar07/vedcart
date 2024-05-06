@@ -130,8 +130,12 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
   try {
     console.log('here at callback google');
       // Retrieve the Google user data stored in req.user
+      //by the way this is same as 
       const googleUserData = req.user;
       
+console.log('this is the req.user :',googleUserData);
+
+
       // Find or create a local user based on email
       let user = await User.findOne({ email: googleUserData.email });
       console.log('this is the user data at google auth route: ',user);
@@ -153,7 +157,7 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
       req.session.userData = user;
 
 
-      console.log('user successfully logged at google auth and this is present in the session',req.session.user);
+      console.log('user successfully logged at google auth and this is present in the session',req.session.userData);
 
 
       // Redirect to home page

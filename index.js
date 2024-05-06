@@ -45,12 +45,14 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    passReqToCallback: true
+    passReqToCallback: true 
+}, 
 
-
-    
-}, async function (req, accessToken, refreshToken, profile, cb) {
+async function (req, accessToken, refreshToken, profile, cb) {
     try {
+
+console.log('profile at google auth:',profile)
+
         // Search for the user in the database based on Google profile ID
         let googleUser = await GoogleSignIn.findOne({ googleId: profile.id });
         if (!googleUser) {
@@ -61,6 +63,8 @@ passport.use(new GoogleStrategy({
                 email: profile.emails[0].value
             });
             await newGoogleUser.save();
+        }else{
+           return res.redirect('/');
         }
 
         // Check if the user already exists in the User model
@@ -70,9 +74,11 @@ passport.use(new GoogleStrategy({
             user = new User({
                 name: profile.displayName,
                 email: profile.emails[0].value,
-                googleUser: profile.id // Reference the Google user ID
+                googleUser: profile.id,
+                isVerified:true, // Reference the Google user ID
             });
-            await user.save();
+           let savedUser =  await user.save();
+           console.log('saved User at google auth:',savedUser);
         }
 
         // Return the user

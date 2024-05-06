@@ -27,7 +27,7 @@ const placeTheOrder = async (req, res) => {
         const { couponCode,paymentMethod,selectedValue } = req.body;
   
         console.log('payment method selected is :',paymentMethod);
-        console.log('this is the coupon code :',couponCode);
+        // console.log('this is the coupon code :',couponCode);
 
 
         //to check the cart quantity , whether less than the available stock
@@ -58,14 +58,18 @@ const placeTheOrder = async (req, res) => {
         const products = await Promise.all(cart.products.map(async (cartProduct) => {
   
             //full doc of the product is got by searching  for its product id
+
+
             const productDetails = await Product.findById(cartProduct.productId);
   
+            let offerDiscount = productDetails?.offerprice - productDetails.price;
+
             //actual price of the product
             const priceProduct = productDetails.offerprice || productDetails.price
   
             //this is the subtotal of product , actual price of product multiplied with its quantity in the cart
             const productSubTotal = priceProduct * cartProduct.quantity;
-  
+            
             return {
                 productId: cartProduct.productId,
                 name: productDetails.name,
@@ -73,6 +77,7 @@ const placeTheOrder = async (req, res) => {
                 quantity: cartProduct.quantity,
                 subTotal: productSubTotal,
                 orderStatus: cartProduct.status,
+                discount:offerDiscount,
                 image: productDetails.images,
                 reason: cartProduct.cancellationReason,
             };
@@ -86,15 +91,22 @@ const placeTheOrder = async (req, res) => {
   
   
         let totalWithDiscount = totalOfSubTotalsWithoutDiscount;
-  
+  let discountAmount;
+
+
+console.log('this is the coupon code :',couponCode)
+
         if (couponCode) {
           const coupon = await Coupons.findOne({ couponCode });
         
+console.log('this is the coupon at placeOrder:',coupon)
+
+
           if (coupon) {
 
               if (coupon && coupon.expiryDate >= currentDate && coupon.minAmount <= totalWithDiscount) {
 
-                  const discountAmount = coupon.discountAmount;
+                   discountAmount = coupon.discountAmount;
                   totalWithDiscount -= discountAmount;
       
                   coupon.userUsed.push({ userId, used: true });
@@ -103,7 +115,7 @@ const placeTheOrder = async (req, res) => {
           }
       }
   
-    
+    console.log('discount amount at place order::----------',discountAmount)
 
         let shippingCharges = totalWithDiscount >500 ? 'free delivery' : '₹40.00'
   
@@ -122,11 +134,13 @@ const placeTheOrder = async (req, res) => {
                 subTotal: product.subTotal,            
                 orderStatus: product.orderStatus,
                 image: product.image,
+                offerDiscount:product.discount,
                 reason: product.reason,
             })),
             paymentMode: paymentMethod,
             shipping: shippingCharges,
             grandTotal: grandTotal,
+            couponDiscount:discountAmount,
             total: totalWithDiscount,
         //    time:orderedTime,
           //  paymentStatus:'Cash on delivery',
@@ -136,7 +150,7 @@ const placeTheOrder = async (req, res) => {
 
         const orderInstance = new Orders(orderData);
   
-  console.log('order saved at the database is : ',orderInstance)
+  console.log('order saved at the database is : ',orderInstance.couponDiscount)
   
   
         if (paymentMethod === "Cash on delivery") {
@@ -163,6 +177,7 @@ const placeTheOrder = async (req, res) => {
   
             res.json({ success: true, order: savedOrder });
           } catch (error) {
+            console.log('error at cod placing :',error)
               res.status(500).json({ success: false, message: 'OD not working properly.' });
           }
       }  
@@ -181,10 +196,55 @@ const placeTheOrder = async (req, res) => {
 
             res.json({ response, total: total, order: savedOrder });
         });
+    }else if (paymentMethod === "wallet") {
+        try {
+            orderInstance.paymentStatus = "wallet"
+
+            const user=await User.findById(req.session?.userData)
+            if( user.wallet < grandTotal){
+                return res.json({ success: false, message: 'Insufficient wallet balance' });
+            }
+            const savedOrder = await orderInstance.save();
+
+            await Cart.deleteOne({ userId: req.session.userData });
+
+            for (let i = 0; i < cart.products.length; i++) {
+                const productId = cart.products[i].productId;
+                const count = cart.products[i].quantity;
+
+                await Product.updateOne({
+                    _id: productId
+                }, {
+                    $inc: {
+                        quantity: -count
+                    }
+                });
+            }
+
+            await User.updateOne({
+                _id: req.session.userData
+            }, {
+                $inc: {
+                    wallet: -grandTotal
+                },
+                $push: {
+                    wallet_history: {
+                        date: new Date(),
+                        amount: `-${grandTotal}`,
+                        reason: 'ordered with wallet'
+                    }
+                }
+            });
+
+            res.json({ success: true, order: savedOrder });
+        } catch (error) {
+            console.error('Wallet order error:', error);
+            res.status(500).json({ success: false, message: 'Wallet order error' });
+        }
     }
   
   
-  //wallet part is not done----------------------
+
   
         
     } catch (error) {
@@ -449,12 +509,12 @@ const loadOrderDetailsPage = async (req, res) => {
 
   const cancelOrPlacedOrder = async (req, res) => {
     try {
-        console.log('the order is going to be cancelled , user took action to cancel the order at the order details view page of the user');
+        console.log('at cancelOrPlacedOrder reached');
         const orderId = req.query.orderId;
         const productId = req.query.productId;
        
-        console.log('thsi i s the orderId',orderId);
-        console.log('this is the productis',productId);
+        console.log('thsi is the orderId',orderId);
+        console.log('this is the productid',productId);
 
 
         const updatedOrder = await Orders.updateOne({
@@ -557,7 +617,7 @@ console.log('to this specific product of the order, the updation is going to hap
 console.log('this is the suspect part -----------------------------------:',returnedORCancelProduct)
 
        if(returnedORCancelProduct){
-         totalAmountofWallet = returnedORCancelProduct.total || 0
+         totalAmountofWallet = returnedORCancelProduct.subTotal || 0
        }
        
         
@@ -569,13 +629,13 @@ console.log('this is the updated status :',status)
 
         if (status === "returned") {
                 const productId = returnedORCancelProduct.productId;
-                const count = returnedORCancelProduct.quentity;
+                const count = returnedORCancelProduct.quantity;
 
                 await Product.updateOne(
                     { _id: productId },
                     {
                         $inc: {
-                            quentity: count
+                            quantity: count
                         }
                     }
                 );
@@ -601,13 +661,13 @@ console.log('this is the updated status :',status)
         }else if (status === "cancelled" && orderData.paymentMode !== "Cash on delivery") {
             
                 const productId = returnedORCancelProduct.productId;
-                const count = returnedORCancelProduct.quentity;
+                const count = returnedORCancelProduct.quantity;
         
                 await Product.updateOne(
                     { _id: productId },
                     {
                         $inc: {
-                            quentity: count
+                            quantity: count
                         }
                     }
                 );

@@ -782,3 +782,153 @@ function convertDateFormat(startDate,endDate) {
 
 
 
+// salesReport.js
+
+async function customSortOrders() {
+  try {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      const response = await fetch('/admin/customSort', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ startDate, endDate })
+      });
+
+      const data = await response.json();
+      populateTable(data);
+  } catch (error) {
+      console.error(error.message);
+  }
+}
+
+function populateTable(data) {
+  const tableBody = document.querySelector('tbody');
+  tableBody.innerHTML = ''; // Clear previous data in the table body
+
+  data.forEach(order => {
+      tableBody.innerHTML += `
+          <tr>
+              <td class="text-center">
+                  <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="transactionCheck02" />
+                      <label class="form-check-label" for="transactionCheck02"></label>
+                  </div>
+              </td>
+              <td><a href="#" class="fw-bold">#SK${order._id}</a></td>
+              <td>${order.userId.name}</td>
+              <td>${new Date(order.date).toLocaleDateString('en-US')}</td>
+              <td>$${order.total}</td>
+              <td>
+                  <span class="badge badge-pill badge-soft-success">${order.paymentStatus}</span>
+              </td>
+              <td><i class="material-icons md-payment font-xxl text-muted mr-5"></i> ${order.paymentMode}</td>
+              <td hidden>
+                  <a href="#" class="btn btn-xs"> View details</a>
+              </td>
+          </tr>
+      `;
+  });
+}
+
+// Attach an event listener to a button or form submission to trigger the custom sorting
+document.getElementById('customSortBtn').addEventListener('click', customSortOrders);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Modify the searchProduct function to store the search query
+function searchProduct() {
+  const searchInput = document.getElementById('searchInput').value;
+  axios.get(`/loadProductSearchQuery?search=${searchInput}`)
+    .then(response => {
+     
+      const searchResults = {
+          query: searchInput,
+          products: response.data.products
+      };
+     
+      updateProductListing(searchResults);
+    })
+    .catch(error => {
+      console.error('Error fetching search results:', error);
+    });
+}
+
+
+function updateProductListing(searchResults) {
+
+}
+
+
+function sortProducts(input) {
+  const filterValue = input.value;
+  const searchQuery = localStorage.getItem('searchQuery'); 
+  if (searchQuery) {
+      window.location.href = `/shop?search=${searchQuery}&filter=${filterValue}`;
+  } else {
+      window.location.href = `/shop?filter=${filterValue}`;
+  }
+}// Function to handle search product functionality
+function searchProduct() {
+  const searchInput = document.getElementById('searchInput').value;
+  axios.get(`/loadProductSearchQuery?search=${searchInput}`)
+    .then(response => {
+ 
+      const searchResults = {
+          query: searchInput,
+          products: response.data.products
+      };
+   
+      updateProductListing(searchResults);
+    })
+    .catch(error => {
+      console.error('Error fetching search results:', error);
+    });
+}
+
+
+function updateProductListing(searchResults) {
+ 
+}
+
+
+function sortProducts(input) {
+  const filterValue = input.value;
+  const searchQuery = localStorage.getItem('searchQuery'); // Retrieve the search query from localStorage
+  if (searchQuery) {
+      window.location.href = `/shop?search=${searchQuery}&filter=${filterValue}`;
+  } else {
+      window.location.href = `/shop?filter=${filterValue}`;
+  }
+}
+
+// Function to handle selecting a category
+function selectCategory(categoryId) {
+  const searchQuery = localStorage.getItem('searchQuery'); // Retrieve the search query from localStorage
+  if (searchQuery) {
+      window.location.href = `/shop?search=${searchQuery}&category=${categoryId}`;
+  } else {
+      window.location.href = `/shop?category=${categoryId}`;
+  }
+}
+
+

@@ -1,0 +1,182 @@
+<%- include('./layouts/header.ejs')%>
+
+<section>
+
+<div class="card mb-4">
+    <header class="card-header">
+        <h4 class="card-title">Sales report</h4>
+        <div class="row align-items-center">
+            <div class="col-md-3 col-12 me-auto mb-md-0 mb-3">
+                <div class="custom_select">
+                    <select id="intervalSelect" class="form-select">
+                        <option selected>Select </option>
+                        <option value="day">Day</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                        
+                    </select>
+                </div><br><br>
+                <div>
+                    
+                </div>
+            </div>
+
+            <div class="col-md-2 col-6">
+                <h6>Start date</h6>
+                <input type="date" class="form-control" id="startDate" required>
+            </div>
+            <div class="col-md-2 col-6">
+                <h6>End date</h6>
+                <input type="date" class="form-control" id="endDate" required>
+            </div>
+            <div class="col-md-2 col-6">
+                <button id="customSortBtn" class="btn btn-primary mt-4">Sort</button>
+            </div>
+        </div>
+    </header>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table align-middle table-nowrap mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center">Order Id</th>
+                        <th>Name</th>
+                        <th>Address Details</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Payment Mode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orders.forEach(order => { %>
+                        <tr>
+                            <td><a href="#" class="fw-bold"></a></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td><span class="badge badge-pill badge-soft-success"></span></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <!-- table-responsive end// -->
+    </div>
+</div>
+<div hidden class="pagination-area mt-15 mb-50">
+    <!-- Pagination -->
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-start">
+            <% for (let i = 1; i <= totalPages; i++) { %>
+                <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                    <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+                </li>
+            <% } %>
+        </ul>
+    </nav>
+</div>
+<div class="btn-group">
+    <button type="button" class="btn btn-primary" onclick="downloadPDF('tableContent')" style="margin-right: 10px;">Download PDF</button>
+    <button type="button" class="btn btn-primary" onclick="downloadExcel('tableContent')">Download Excel</button>
+</div>
+</section>
+
+<script>
+    // salesReport.js
+
+    async function customSortOrders() {
+        try {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const interval = document.getElementById('intervalSelect').value;
+
+            const response = await fetch('/admin/customSort', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ startDate, endDate, interval })
+            });
+
+            const data = await response.json();
+
+            console.log('response :',data)
+            populateTable(data);
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    function populateTable(data) {
+        const tableBody = document.querySelector('tbody');
+        tableBody.innerHTML = ''; // Clear previous data in the table body
+
+        data.forEach(order => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td><a href="#" class="fw-bold">${order._id}</a></td>
+                    <td>${order.address.name}</td>
+                    <td>${order.address.addressDetails}</td>
+                    <td>${new Date(order.date).toLocaleDateString('en-US')}</td>
+                    <td>₹${order.grandTotal}</td>
+                    <td><span class="badge badge-pill badge-soft-success">${order.paymentStatus}</span></td>
+                </tr>
+            `;
+        });
+    }
+
+    // Attach an event listener to a button or form submission to trigger the custom sorting
+    document.getElementById('customSortBtn').addEventListener('click', customSortOrders);
+
+
+    function downloadExcel(divId) {
+        const table = document.getElementById(divId);
+        const rows = table.getElementsByTagName('tr');
+        const data = [];
+
+        // Extract data from table
+        for (const row of rows) {
+            const rowData = [];
+            const cells = row.getElementsByTagName('td');
+            for (const cell of cells) {
+                rowData.push(cell.innerText.trim());
+            }
+            data.push(rowData);
+        }
+
+        // Convert data to Excel format
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sales Report');
+        
+        // Save Excel file
+        XLSX.writeFile(wb, 'sales_report.xlsx');
+    }
+
+
+
+
+</script>
+
+
+
+<footer class="main-footer font-xs">
+  
+    </footer>
+    </main>
+    <script src="/adminAssets/js/vendors/jquery-3.6.0.min.js"></script>
+    <script src="/adminAssets/js/vendors/bootstrap.bundle.min.js"></script>
+    <script src="/adminAssets/js/vendors/select2.min.js"></script>
+    <script src="/adminAssets/js/vendors/perfect-scrollbar.js"></script>
+    <script src="/adminAssets/js/vendors/jquery.fullscreen.min.js"></script>
+    <script src="/adminAssets/js/vendors/chart.js"></script>
+    <!-- Main Script -->
+    <script src="/adminAssets/js/main.js?v=1.1" type="text/javascript"></script>
+    <script src="/adminAssets/js/custom-chart.js" type="text/javascript"></script>
+    <script>
+    
+    </script>
+    </body>
+    </html>
