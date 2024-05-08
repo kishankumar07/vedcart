@@ -1108,6 +1108,120 @@ const removeAddress = async (req, res) => {
 
 
 
+//-------------- shop page new loading =======================
+
+const ITEMS_PER_PAGE = 8; // Number of items per page
+
+const getPaginationParams = (totalItems, currentPage) => {
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const hasNextPage = currentPage < totalPages;
+  const hasPrevPage = currentPage > 1;
+  return { totalPages, hasNextPage, hasPrevPage };
+};
+
+const applyPagination = (query, page) => {
+  const skip = (page - 1) * ITEMS_PER_PAGE;
+  return query.skip(skip).limit(ITEMS_PER_PAGE);
+};
+
+let shopPageNew = async (req, res) => {
+  try {
+    const user = req.session.userData;
+    const userNameforProfile = await User.findById(user);
+    const category = await Category.find({ status: { $ne: 'blocked' } });
+
+    let filters = { status: { $ne: 'blocked' }, quantity: { $gt: 0 } };
+
+    // Apply category filter if present in query
+    if (req.query.category) {
+      filters.category = req.query.category;
+    }
+
+    // Apply search query if present in query
+    if (req.query.search) {
+      filters.name = { $regex: req.query.search, $options: 'i' }; // Case-insensitive search by product name
+    }
+
+    // Declare and initialize productQuery
+    let productQuery = Product.find(filters)
+      .populate({
+        path: 'category',
+        populate: {
+          path: 'offer',
+          match: {
+            startingDate: { $lte: new Date() },
+            endDate: { $gte: new Date() }
+          }
+        }
+      })
+      .populate({
+        path: 'offer',
+        match: {
+          startingDate: { $lte: new Date() },
+          endDate: { $gte: new Date() }
+        }
+      });
+
+      
+    // Apply price range filter if present in query
+    if (req.query.price) {
+      const priceRange = req.query.price;
+      if (priceRange === 'low-to-high') {
+        productQuery = productQuery.sort({ price: 1 }); // Sort in ascending order by price
+      } else if (priceRange === 'high-to-low') {
+        productQuery = productQuery.sort({ price: -1 }); // Sort in descending order by price
+      }
+    }
+
+    // Apply sort filter if present in query
+if (req.query.sort) {
+  const sortOption = req.query.sort;
+  if (sortOption === 'nameAsc') {
+
+console.log('a-z sorting worked----------------------------------------')
+
+    productQuery = productQuery.sort({ name: 1 }); // Sort in ascending order by name
+  } else if (sortOption === 'nameDesc') {
+
+console.log('z-a sorting worked=======================================')
+
+    productQuery = productQuery.sort({ name: -1 }); // Sort in descending order by name
+  } else if (sortOption === 'date') {
+    productQuery = productQuery.sort({ createdAt: -1 }); // Sort in descending order by creation date
+  }
+}
+
+
+    const totalProducts = await Product.countDocuments(filters);
+    const currentPage = +req.query.page || 1;
+    const { totalPages, hasNextPage, hasPrevPage } = getPaginationParams(totalProducts, currentPage);
+
+    const product = await applyPagination(productQuery, currentPage).exec();
+
+    // console.log('products data at new shop page :', product);
+
+    let updatedProducts = await updatedProductsDiscount(product);
+
+    res.render('testPageForShop', {
+      userNameforProfile,
+      category,
+      product: updatedProducts,
+      pagination: {
+        currentPage,
+        totalPages,
+        hasNextPage,
+        hasPrevPage
+      },
+      query: req.query // Pass the query parameters to the template
+    });
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Failed to fetch products' });
+  }
+};
+
+
+
 
 
 module.exports = {
@@ -1131,13 +1245,8 @@ module.exports = {
   addAddressatProfile,
   editAddress,
   removeAddress,
-  
+  shopPageNew
 };
-
-
-
-
-
 
 
 

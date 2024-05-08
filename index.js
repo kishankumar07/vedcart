@@ -112,6 +112,20 @@ app.use('/',userRoute)
 app.use('/admin',adminRoute)
 
 
+app.use((req, res, next) => {
+    // Determine if the request is for an admin route
+    const isAdminRoute = req.originalUrl.startsWith('/admin');
+
+    // Render the appropriate error page based on the route type
+    if (isAdminRoute) {
+        // Send the admin 404 error page
+        res.status(404).sendFile(path.join(__dirname, 'public','errorPages', 'admin_404.html'));
+    } else {
+        // Send the user 404 error page
+        res.status(404).sendFile(path.join(__dirname, 'public','errorPages', 'user_404.html'));
+    }
+});
+
 
 
 

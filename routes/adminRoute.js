@@ -9,8 +9,8 @@ let offerController = require('../controller/offerController')
 let categoryController = require('../controller/categoryController');
 let orderController = require('../controller/orderController');
 let couponController = require('../controller/couponController');
-let {upload} = require('../multer/multer');
-
+let {upload,bannerUpload} = require('../multer/multer');
+let bannerController = require('../controller/bannerController')
 router.set('view engine','ejs');
 router.set('views',path.join(__dirname,'../views/admin'));
 
@@ -131,10 +131,24 @@ router.delete('/deleteCoupon/:id',couponController.deleteCoupon)
 
 
 
-// router.use((req, res, next) => {
-//     console.log('Request to non-existent route:', req.path);
-//     res.status(404).render('error404'); // Assuming you have a 404.ejs template for your error page
-//   });
+
+//-------------  banner management ------------------------------
+
+router.get("/banner",bannerController.loadBanner)
+
+router.get("/addBanner",bannerController.loadAddBanner)
+
+router.get('/editBanner',bannerController.loadEditBanner)
+
+router.post("/addBanner",bannerUpload.single('image'),bannerController.addBannerDetails)
+
+router.delete('/deleteImage', bannerController.editImageDelete);
+
+router.post("/editBanner/:id", bannerUpload.single('image'), bannerController.editBannerDetails);
+
+router.patch('/changeStatus',bannerController.toggleListUnlistBanner)
+
+router.delete('/deleteBanner',bannerController.deleteBanner)
 
 
 

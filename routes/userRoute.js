@@ -38,6 +38,9 @@ router.get('/signout',userController.signout);
 
 
 router.get("/shop", userController.shopPage);
+
+router.get("/shopNew", userController.shopPageNew);
+
 router.get("/productPage", userController.aProductPage);
 router.get('/loadProductSearchQuery',loadProductSearchQuery)
 
@@ -170,11 +173,18 @@ console.log('this is the req.user :',googleUserData);
 });
 
 
-//================== route for error 404 middleware -------------------------
-// router.use((req, res, next) => {
-//     res.status(404).render('error404'); // Assuming you have a 404.ejs template for your error page
-//   });
-  
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 module.exports = router;

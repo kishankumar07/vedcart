@@ -1,0 +1,202 @@
+<%- include('./layouts/header') %>
+
+
+
+
+            <section class="content-main">
+                <div class="content-header">
+                    <div>
+                        <h2 class="content-title card-title">Banner</h2>            
+                    </div>
+                    <div>
+                        <a href="/admin/addBanner" class="btn btn-md rounded font-sm">Create Banner</a>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <header class="card-header">
+                        <div class="row gx-3">
+                            <div class="col-lg-4 col-md-6 me-auto">
+                                <input type="text" placeholder="Search..." class="form-control" />
+                            </div>
+                            <div class="col-lg-2 col-6 col-md-3">
+                                <select class="form-select">
+                                    <option>Status</option>
+                                    <option>Active</option>
+                                    <option>Disabled</option>
+                                    <option>Show all</option>
+                                </select>
+                            </div>
+                            
+                        </div>
+                    </header>
+                    <!-- card-header end// -->
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>S.no</th>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Description</th>
+                                        <th scope="col">Image</th>
+                                        <th scope="col">Location</th>                       
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col" class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if(bannerFound.length !==0) {%>
+                                    <% bannerFound.forEach((banner,index)=>{ %>
+                                        
+                                       
+                                    <tr>
+                                        <td><%= index + 1 %></td>
+                                        <td><b><%= banner.title %></b></td>
+                                        <td><%= banner.description %></td>
+                                        <td>                                        
+                                                <img src="/uploads/banners/<%= banner.image[0] %>" alt="Product Image" width="80"
+                                                    height="50">
+                                           
+                                          </td>
+                                        <td><%= banner.location %></td>
+                                        <td><%= moment(banner.date).format('DD-MM-YYYY')%></td>
+                                        <td>
+                                            <% if(banner.status === true) {%>
+                                                <span class="badge rounded-pill alert-success"> Active </span>
+                                                <% }else{ %>
+                                                    <span class="badge rounded-pill alert-danger"> Blocked </span>
+                                                    <% } %>
+
+
+                                           
+                                        </td>
+                                       
+                                        <td class="text-end">
+                                            
+                                            <div class="dropdown">
+                                                <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm"> <i class="material-icons md-more_horiz"></i> </a>
+                                                <div class="dropdown-menu">
+                                                    
+                                   
+                                                        <a href="#" onclick="toggleBannerStatus('<%= banner.id %>','<%= banner.status %>')" class="dropdown-item text-<%= banner.status === true ? 'danger':'success' %>">
+                                                            <%= banner.status === true ? 'Unlist':'List' %>
+                                                            </a>
+                                                                                                
+                                                            
+                                                    <a class="dropdown-item" href="/admin/editBanner?id=<%= banner._id %>">Edit </a>
+                                                    <a onclick="deleteBanner('<%= banner.id %>')" class="dropdown-item text-danger" href="#">Delete</a>
+                                                </div>
+                                            </div>
+                                            <!-- dropdown //end -->
+                                        </td>
+                                    </tr>
+                                        
+                               <% }) %>
+                                    <% }else{ %>
+                                        <td colspan="7">No banner found</td>
+                                        <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- table-responsive //end -->
+                    </div>
+                    <!-- card-body end// -->
+                </div>
+                <!-- card end// -->
+                <div class="pagination-area mt-15 mb-50">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-start">
+                            <% for (let i = 1; i <= totalPages; i++) { %>
+                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                    <a class="page-link" href="/banner?page=<%= i %>"><%= i %></a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                </div>
+                
+            </section>
+            <!-- content-main end// -->
+
+
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function toggleBannerStatus(bannerId, currentStatus) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: `Do you want to ${currentStatus === 'true' ? 'false' : 'true'} this banner?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/changeStatus?id=${bannerId}`, {
+                method: 'PATCH'
+            }).then(response => {
+                if (response.redirected) {
+                    window.location.href = '/admin/banner';
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    });
+}
+
+//----------------------- deleting the banner ---------------------------------
+async function deleteBanner(bannerId) {
+                    try {
+                        const shouldDelete = await Swal.fire({
+                            title: 'Are you sure?',
+                            text: 'You won\'t be able to revert this!',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Yes, delete it!'
+                        });
+
+                        if (shouldDelete.isConfirmed) {
+                            const response = await fetch(`/admin/deleteBanner?id=${bannerId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            if (response.ok) {
+                                await Swal.fire({
+                                    icon: 'success',
+                                    title: 'Banner deleted successfully!',
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                console.error('Error deleting banner');
+                            }
+                        }
+                    } catch (error) {
+                        console.error(error.message);
+                    }
+                }
+
+
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+            <%- include('./layouts/footer') %>

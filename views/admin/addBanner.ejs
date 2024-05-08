@@ -1,0 +1,195 @@
+<%- include('./layouts/header') %>
+
+
+
+
+            <section class="content-main">
+                <div class="row">
+                    <div class="col-9">
+                        <div class="content-header">
+                            <h2 class="content-title">Add New Banner</h2>
+                           
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card mb-4">
+                            
+                            <div class="card-body">
+                                <form id="bannerForm" enctype="multipart/form-data">
+                                    <div class="mb-4">
+                                        <label for="product_name" class="form-label">Title</label>
+                                        <input type="text" placeholder="Type here" class="form-control" id="title" name="title"/>
+                                        <div class="error-message text-danger" id="title-error"></div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label"> Description</label>
+                                        <textarea name="description" id="description" placeholder="Type here" class="form-control" rows="4"></textarea>
+                                        <div class="error-message text-danger" id="description-error"></div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label">Date </label>
+                                
+                                        <input type="date" id="date" name="date" class="form-control">
+        
+                                        <div class="error-message text-danger" id="date-error"></div>
+                                    </div>
+                                    <br>
+                                    <div class="row">
+                                        <div class="col-lg-4">
+                                            <div class="mb-4">
+                                                <label class="form-label">Location</label>
+                                                <select id="location" class="form-select">
+                                                    <option value="" disabled>Select your location</option>
+                                                    <% location.forEach(state => { %>
+                                                        <option value="<%= state %>"><%= state %></option>
+                                                    <% }); %>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                       
+                                    </div>
+                                  <br><br>  <hr>
+                                    <div class="mb-4">
+                                        <label class="form-label">Media</label>
+                                        <div class="input-upload">
+                                            <img src="/adminAssets/imgs/theme/upload.svg" alt="" />
+                                            <input class="form-control" type="file" id="mediaFile" name="image">
+                                        </div>
+                                        <div class="error-message text-danger" id="mediaFile-error"></div>
+                                    </div>
+                                    <div>
+                               
+                                        <button type="submit" id="publishButton" class="btn btn-md rounded font-sm hover-up">Publish</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- card end// -->
+                       
+                        <!-- card end// -->
+                    </div>
+                   
+                </div>
+            </section>
+
+
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById("bannerForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        // Reset error messages
+        document.querySelectorAll('.error-message').forEach(function(el) {
+            el.textContent = '';
+        });
+
+        // Get form inputs
+        const title = document.getElementById("title").value.trim();
+        const description = document.getElementById("description").value.trim();
+        const date = document.getElementById("date").value.trim(); 
+       
+        const mediaFile = document.getElementById("mediaFile").files[0];
+
+
+
+
+        let isValid = true; // Flag to track overall form validity
+
+
+
+
+
+        // Validate title
+        if (title === "") {
+            document.getElementById("title-error").textContent = "Title is required";
+             isValid = false;
+        }
+
+        // Validate description
+        if (description === "") {
+            document.getElementById("description-error").textContent = "Description is required";
+            isValid = false;
+        }
+
+        // Validate date
+        if (date === "") { // Check if date is empty
+            document.getElementById("date-error").textContent = "Date is required";
+            isValid = false;
+        } else {
+            const currentDate = new Date();
+            const selectedDate = new Date(date);
+            if (selectedDate <= currentDate) {
+                document.getElementById("date-error").textContent = "Date must be today or in the future";
+                isValid = false;
+            }
+        }
+
+       
+
+        // Validate media file
+        if (!mediaFile) {
+            document.getElementById("mediaFile-error").textContent = "Image is required";
+            isValid = false;
+        }
+
+
+        if (!isValid) {
+            return; // Exit if form is invalid
+        }
+        // Create FormData object and submit form
+        const formData = new FormData(this);
+        formData.append("location", document.getElementById("location").value);
+
+        fetch("/admin/addBanner", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json(); // Parse response body as JSON
+            })
+            .then(data => {
+                // Handle success response
+                Swal.fire({
+                    title: 'Banner created successfully',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Reload the page or perform any other action
+                        window.location.href = '/admin/banner';
+                    }
+                });
+                // Optionally, you can redirect or show a success message
+            })
+            .catch(error => {
+                // Handle error
+                console.error("Error submitting data:", error);
+                // Optionally, you can display an error message to the user
+            });
+    });
+</script>
+
+
+            <!-- content-main end// -->
+            <%- include('./layouts/footer') %>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            

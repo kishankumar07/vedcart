@@ -20,9 +20,7 @@ const ordersSchema = mongoose.Schema({
       quantity: {
         type: Number,
       },
-      offerDiscount: {
-        type: Number,
-      },
+     
       subTotal: {
         type: Number,
       },

@@ -845,90 +845,67 @@ document.getElementById('customSortBtn').addEventListener('click', customSortOrd
 
 
 
+const addBannerDetails = async (req, res) => {
+  try {
+      console.log('this is the req.body at the addBanner :', req.body);
+      const image = req.file.filename; // Get the filename from req.file
 
+      console.log('image got at c ::', image);
 
+      const { title, description, date, location } = req.body;
 
+      const newBanner = new Banner({
+          title,
+          description,
+          location,
+          date,
+          image: image // Assign the filename to the image field
+      });
 
+      let values = await newBanner.save();
+      console.log('values stored at db :', values);
 
+      const promises = [image].map(async (filename) => {
+          const originalImagePath = path.join(__dirname, '../public/uploads', filename);
+          const resizedPath = path.join(__dirname, '../public/uploads', 'resized_Banner' + filename);
 
+          await sharp(originalImagePath)
+              .resize(1920, 900)
+              .toFile(resizedPath);
+      });
 
-
-
-
-// Modify the searchProduct function to store the search query
-function searchProduct() {
-  const searchInput = document.getElementById('searchInput').value;
-  axios.get(`/loadProductSearchQuery?search=${searchInput}`)
-    .then(response => {
-     
-      const searchResults = {
-          query: searchInput,
-          products: response.data.products
-      };
-     
-      updateProductListing(searchResults);
-    })
-    .catch(error => {
-      console.error('Error fetching search results:', error);
-    });
-}
-
-
-function updateProductListing(searchResults) {
-
-}
-
-
-function sortProducts(input) {
-  const filterValue = input.value;
-  const searchQuery = localStorage.getItem('searchQuery'); 
-  if (searchQuery) {
-      window.location.href = `/shop?search=${searchQuery}&filter=${filterValue}`;
-  } else {
-      window.location.href = `/shop?filter=${filterValue}`;
+      await Promise.all(promises);
+  } catch (error) {
+      console.log('error at banner addition :', error);
+      res.status(500).send("Internal Server Error");
   }
-}// Function to handle search product functionality
-function searchProduct() {
-  const searchInput = document.getElementById('searchInput').value;
-  axios.get(`/loadProductSearchQuery?search=${searchInput}`)
-    .then(response => {
- 
-      const searchResults = {
-          query: searchInput,
-          products: response.data.products
-      };
-   
-      updateProductListing(searchResults);
-    })
-    .catch(error => {
-      console.error('Error fetching search results:', error);
-    });
-}
+};
 
 
-function updateProductListing(searchResults) {
- 
-}
 
 
-function sortProducts(input) {
-  const filterValue = input.value;
-  const searchQuery = localStorage.getItem('searchQuery'); // Retrieve the search query from localStorage
-  if (searchQuery) {
-      window.location.href = `/shop?search=${searchQuery}&filter=${filterValue}`;
-  } else {
-      window.location.href = `/shop?filter=${filterValue}`;
+
+
+
+
+
+
+if (date === "") { // Check if date is empty
+  document.getElementById("date-error").textContent = "Date is required";
+  isValid = false;
+} else {
+  const currentDate = new Date();
+  const selectedDate = new Date(date);
+  if (selectedDate < currentDate) {
+      document.getElementById("date-error").textContent = "Date must be today or in the future";
+      isValid = false;
   }
 }
 
-// Function to handle selecting a category
-function selectCategory(categoryId) {
-  const searchQuery = localStorage.getItem('searchQuery'); // Retrieve the search query from localStorage
-  if (searchQuery) {
-      window.location.href = `/shop?search=${searchQuery}&category=${categoryId}`;
-  } else {
-      window.location.href = `/shop?category=${categoryId}`;
-  }
-}
+
+
+
+
+
 
 

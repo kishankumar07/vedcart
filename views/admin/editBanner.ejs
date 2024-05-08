@@ -1,0 +1,150 @@
+<%- include('./layouts/header') %>
+
+<section class="content-main">
+    <div class="row">
+        <div class="col-9">
+            <div class="content-header">
+                <h2 class="content-title">Edit Banner</h2>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="itemForm" action="/admin/editBanner/<%= banner._id %>" method="POST" enctype="multipart/form-data">
+                        <div class="mb-4">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" placeholder="Type here" class="form-control" value="<%= banner.title %>" id="title" name="title"/>
+                            <div class="error-message text-danger" id="title-error"></div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label"> Description</label>
+                            <textarea name="description"  id="description" placeholder="Type here" class="form-control" rows="4"><%= banner.description %></textarea>
+                            <div class="error-message text-danger" id="description-error"></div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Date</label>
+                            <input value="<%= moment(banner.date).format('YYYY-MM-DD') %>" type="date" id="date" name="date" class="form-control">
+                            <div class="error-message text-danger" id="date-error"></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <div class="mb-4">
+                                    <label class="form-label">Location</label>
+                                    <select id="location" name="location" class="form-select">
+                                        <option value="" disabled>Select your location</option>
+                                        <% location.forEach(state => { %>
+                                            <option value="<%= state %>" <%= banner.location === state ? 'selected' : '' %>><%= state %></option>
+                                        <% }); %>
+                                    </select>
+                                    <div class="error-message text-danger" id="location-error"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Current Image</label>
+                            <% if(banner.image.length !==0) {%>
+                                <div class="input-upload">
+                                    <img src="/uploads/banners/<%= banner.image[0] %>" class="img-thumbnail" style="max-width: 250px; max-height: 250px;">
+                                    <br>
+                                    <div class="mb-4">
+                                        <div class="d-flex align-items-center justify-content-between mb-2">
+                                            <div class="d-flex align-items-center">
+                                                <img src="/uploads/banners/<%= banner.image[0] %>" alt="Banner Image" style="width: 70px; height: 50px; margin-right: 10px;">
+                                                <span><%= banner.image[0] %></span>
+                                            </div>
+                                            <a href="#" onclick="confirmDelete('<%= banner._id %>', '<%= banner.image %>')" class="btn btn-danger btn-sm">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>
+                            <input class="form-control" type="file" id="mediaFile" name="image" required="false">
+                            <div class="error-message text-danger" id="mediaFile-error"></div>
+                        </div>
+                        <div>
+                            <button type="button" id="publishButton" class="btn btn-md rounded font-sm hover-up">Publish</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.getElementById("publishButton").addEventListener("click", function() {
+        // Reset error messages
+        document.querySelectorAll('.error-message').forEach(function(el) {
+            el.textContent = '';
+        });
+
+        // Get form inputs
+        const title = document.getElementById("title").value.trim();
+        const description = document.getElementById("description").value.trim();
+        const date = document.getElementById("date").value;
+        const location = document.getElementById("location").value;
+        const mediaFile = document.getElementById("mediaFile").files[0];
+
+        // Validate title
+        if (title === "") {
+            document.getElementById("title-error").textContent = "Title is required";
+            return;
+        }
+
+        // Validate description
+        if (description === "") {
+            document.getElementById("description-error").textContent = "Description is required";
+            return;
+        }
+
+        // Validate date
+        const currentDate = new Date();
+        const selectedDate = new Date(date);
+        if (selectedDate < currentDate) {
+            document.getElementById("date-error").textContent = "Date must be today or in the future";
+            return;
+        }
+
+        // Validate location
+        if (location === "") {
+            document.getElementById("location-error").textContent = "Location is required";
+            return;
+        }
+
+        // If all validations pass, submit the form
+        document.getElementById("itemForm").submit();
+    });
+
+    function confirmDelete(bannerId, image) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You will not be able to recover this image!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/admin/deleteImage?bannerId=${bannerId}&image=${image}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        Swal.fire('Deleted!', 'Your image has been deleted.', 'success').then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        console.error('Delete request failed with status:', response.status);
+                        Swal.fire('Error!', 'Failed to delete the image.', 'error');
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire('Error!', 'Failed to delete the image.', 'error');
+                });
+            }
+        });
+    }
+</script>
+
+<%- include('./layouts/footer') %>
