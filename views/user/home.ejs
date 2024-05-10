@@ -28,43 +28,18 @@
 
         <main class="main">
             <div class="intro-slider-container">
-                <div class="intro-slider owl-carousel owl-simple owl-nav-inside" data-toggle="owl" data-owl-options='{
-                        "nav": false,
-                        "responsive": {
-                            "992": {
-                                "nav": true
-                            }
-                        }
-                    }'>
-                    <div class="intro-slide" style="background-image: url(/userAssets/home/assets/images/demos/demo-13/slider/banner1.jpg);">
-                        <div class="container intro-content">
-                           <!-- some portion removed here, banner text -->
-                        </div><!-- End .container intro-content -->
-                    </div><!-- End .intro-slide -->
-
-                    <div class="intro-slide" style="background-image: url(/userAssets/home/assets/images/demos/demo-13/slider/banner2.webp);">
-                        <div class="container intro-content">
-                          
-                        </div><!-- End .container intro-content -->
-                    </div><!-- End .intro-slide -->
-
-
-                    <div class="intro-slide" style="background-image: url(/userAssets/home/assets/images/demos/demo-13/slider/banner3.jpg);">
-                        <div class="container intro-content">
-                           
-                        </div><!-- End .container intro-content -->
-                    </div><!-- End .intro-slide -->
-
-
-                    <div class="intro-slide" style="background-image: url(/userAssets/home/assets/images/demos/demo-13/slider/banner5.webp);">
-                        <div class="container intro-content">
-                           
-                        </div><!-- End .container intro-content -->
-                    </div><!-- End .intro-slide -->
+                <div class="intro-slider owl-carousel owl-simple owl-nav-inside" data-toggle="owl" data-owl-options='{"nav": false, "responsive": {"992": {"nav": true}}}'>
+                    <% banner.forEach(bannerItem => { %>
+                        <div class="intro-slide" style="background-image: url('/uploads/banners/<%= bannerItem.image %>')">
+                            <div class="container intro-content">
+                                <!-- Banner text content can go here -->
+                            </div><!-- End .container intro-content -->
+                        </div><!-- End .intro-slide -->
+                    <% }); %>
                 </div><!-- End .owl-carousel owl-simple -->
-
                 <span class="slider-loader"></span><!-- End .slider-loader -->
             </div><!-- End .intro-slider-container -->
+            
 
             <div class="mb-4"></div><!-- End .mb-2 -->
 
@@ -78,7 +53,7 @@
                         <% if(category.length>0) {%>
                             <% for(let i=0;i< category.length;i++) {%>
                                     <div class="col-6 col-sm-4 col-lg-2">
-                            <a href="category.html" class="cat-block">
+                            <a href="#" class="cat-block">
                                 <figure>
                                     <span>
                                         <img src="/adminAssets/imgs/category/<%= category[i].image %>" alt="Category image">
@@ -239,7 +214,7 @@
 
                                             <div class="product-action-vertical">
 
-                                                <a href="#" onclick="wishList(event,'<%= product[i]._id %>', '<%= user %>')" class="btn-product-icon btn-wishlist btn-expandable">
+                                                <a href="#" onclick="wishList('<%= product[i]._id %>', '<%= user %>');return false" class="btn-product-icon btn-wishlist btn-expandable">
                                                     <span>Add to Wishlist</span>
                                                   </a>
                                                   
@@ -889,8 +864,8 @@ else{
 
 
 
-    function wishList(event,productId,userId){
-        event.preventDefault(); // Prevent default anchor tag behavior
+    function wishList(productId,userId){
+        // event.preventDefault(); // Prevent default anchor tag behavior
 
   // console.log('this is the user id at wishlist addition :',userId);
   // console.log('this is the product id at wishlist add : ',productId);

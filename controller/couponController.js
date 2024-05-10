@@ -199,9 +199,9 @@ console.log('this is the coupon found :',coupon)
 
       if (coupon) {
           const alreadyUsed = coupon.userUsed.some((user) => user.userid.toString() === userId && user.used === true);
-      
-
-console.log('this is the already used coupon:',alreadyUsed)
+          
+           
+           console.log('this is the already used coupon:',alreadyUsed)
 
           if (!alreadyUsed) {
 

@@ -117,65 +117,46 @@ const loadProductSearchQuery = async (req, res) => {
 //creating new product========================
 const createProduct = async (req, res) => {
   try {
-    const { name } = req.body;
-    const productData = req.body;
+    const { productName, productDesc, productPrice, productQty, productCat, productBrand, date } = req.body;
 
-    const productExist = await Product.findOne({ name });
+// console.log('this is the formdata :',req.body)
+// console.log('req.body is :',req.body)
+// console.log('images received : ',req?.files || req?.file)
+
+    // Check if product with the same name already exists
+    const productExist = await Product.findOne({ name: productName });
 
     if (!productExist) {
-      const images = [];
-
-      // Check if there are uploaded files
-      if (req.files && req.files.length > 0) {
-        for (let i = 0; i < req.files.length; i++) {
-          const imagePath = req.files[i].filename;
-          images.push(imagePath);
-        }
-      } 
-
-      // Handle cropped images
-      const croppedImageData1 = req.body.croppedImageData1;
-      const croppedImageData2 = req.body.croppedImageData2;
-      const croppedImageData3 = req.body.croppedImageData3;
-
-      // Push cropped image data to the images array
-      if (croppedImageData1) {
-        images.push(croppedImageData1);
-      }
-      if (croppedImageData2) {
-        images.push(croppedImageData2);
-      }
-      if (croppedImageData3) {
-        images.push(croppedImageData3);
-      }
-
-console.log('thse are the imaes : ',images)
-
-
+      // Create new product
       const newProduct = new Product({
-        name: productData.name,
-        description: productData.description,
-        brand: productData.brand,
-        price: productData.price,
-        date: productData.date,
-        quantity: productData.quantity,
-        category: productData.category,
-        images: images,
+        name: productName,
+        description: productDesc,
+        price: productPrice,
+        quantity: productQty,
+        category: productCat,
+        brand: productBrand,
+        date: date,
+        images: req.files.map(file => file.filename) // Assuming req.files contains uploaded images
       });
 
+      // Save the product to the database
       await newProduct.save();
 
-      res.redirect("/admin/product");
+     return res.status(200).json(true)
+      
     } else {
+      // Product already exists
       console.log("Product already exists.");
-      req.flash("message", "Product already exists.");
-      res.redirect("/admin/addProduct");
+      return  res.status(505).json(false,{message:'product already exists'})
+     
     }
   } catch (error) {
-    console.log("Error happened in createProduct function", error);
+    // Handle errors
+    console.log("Error occurred in createProduct function:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
 
 
 //delete product====================
@@ -184,11 +165,11 @@ const deleteProduct = async (req, res) => {
     const id = req.query.id;
     const product = await Product.findByIdAndDelete(id);
     if (!product) {
-      return res.status(404).send({ message: "Product not found" });
+      return res.redirect('/error')
     }
     res.redirect("/admin/product");
   } catch (error) {
-    console.log("deleteProduct error");
+    console.log("deleteProduct error",error);
   }
 };
 
@@ -215,7 +196,8 @@ const editProduct = async (req, res) => {
     if (product) {
       res.render("editProduct", { product, category, moment });
     } else {
-      res.status(404).send("Product not found");
+      console.log('product not found for admin edit product')
+      res.redirect('/error');
     }
   } catch (error) {
     console.log("Error occurred in editProduct function", error);
@@ -257,36 +239,49 @@ const productEdited = async (req, res) => {
     const id = req.body.id;
     const productData = req.body;
 
-    console.log("this is the productDatas imagess :", productData.images);
 
-    console.log("this is the existing images", req.body.existingImages);
+console.log('this is the id :',id)
+
+   
 
     console.log("product data at body rec : ", productData);
 
-    let existingImages = req.body.existingImages;
+    // Parse existingImages JSON string to get the array of existing image URLs
+    const existingImages = JSON.parse(productData.existingImages);
+
+// Extract filenames from image URLs
+const imageFilenames = existingImages.map(imageUrl => {
+  // Split the URL by '/' to get the filename
+  const parts = imageUrl.split('/');
+  // Return the last part (filename)
+  return parts[parts.length - 1];
+});
+
+console.log('image filenames are:', imageFilenames);
+
+
 
     let updateData = {
-      name: productData.name,
-      description: productData.description,
-      brand: productData.brand,
-
-      price: productData.price,
+      name: productData.productName,
+      description: productData.productDesc,
+      brand: productData.productBrand,
+      price: productData.productPrice,
       date: productData.date,
-      quantity: productData.quantity,
-
-      category: productData.category.id,
+      quantity: productData.productQty,
+      category: productData.productCat,
     };
+
 
     // Handle existing images
     // Ensure it's an array
 
-    if (existingImages && existingImages.length > 0) {
-      updateData.images = existingImages;
+    if (imageFilenames && imageFilenames.length > 0) {
+      updateData.images = imageFilenames;
     }
 
     // Handle image upload
     if (req.files && req.files.length > 0) {
-      newFilesToPush = req.files.map((file) => file.filename);
+      const newFilesToPush = req.files.map((file) => file.filename);
       updateData.images = [...(updateData.images || []), ...newFilesToPush];
     }
 
@@ -294,7 +289,10 @@ const productEdited = async (req, res) => {
       new: true,
     });
 
-    res.redirect("/admin/product");
+console.log('this is the updaetdProduct at the database: ',updatedProduct)
+
+
+   res.status(200).json(true);
   } catch (error) {
     console.log("Error occurred in productEdited function", error);
     res.redirect("/error");

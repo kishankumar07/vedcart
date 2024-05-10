@@ -30,13 +30,13 @@ router.post('/customSort',adminAuth.isLoggedIn,adminController.customSort)
 //=========product part============================
 
 
-router.get('/product',adminAuth.isLoggedIn,productController.productListPage);
+router.get('/product',productController.productListPage);
 
-router.get('/addProduct',adminAuth.isLoggedIn,productController.loadAddProduct)
+router.get('/addProduct',productController.loadAddProduct)
 
 router.get('/searchProduct', productController.loadProductSearchQuery);
 
-router.get('/editProduct',adminAuth.isLoggedIn,productController.editProduct);
+router.get('/editProduct',productController.editProduct);
 
 
 router.post('/createProduct',adminAuth.isLoggedIn,upload.array('images', 4),productController.createProduct);

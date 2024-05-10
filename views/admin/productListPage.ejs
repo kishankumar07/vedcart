@@ -181,7 +181,7 @@
                         <a
                           onclick="confirmDelete('<%= product.id %>')"
                           class="dropdown-item text-danger"
-                          href=""
+                          href="#"
                           >Delete</a
                         >
                       </div>
@@ -515,18 +515,29 @@ if(flag === String(1)){
                 body: JSON.stringify({ productId })
             });
             if (response.ok) {
-                const responseData = await response.json();
-
-                const isConfirmed = await Swal.fire({
-                title: 'Updated Successfully',
-                icon: 'success',
-                confirmButtonText: 'OK',
-            });
-
-            if (isConfirmed.value) {
-                window.location.reload();
-            }      
+  // Display a toast notification for successful update
+  const Toast = Swal.mixin({
+      toast: true,
+      position: "bottom",
+      showConfirmButton: true, // Show the OK button
+      confirmButtonText: "OK",
+      didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
       }
+  });
+
+  Toast.fire({
+      icon: "success",
+      title: "Updated Successfully"
+  }).then((result) => {
+      if (result.isConfirmed) {
+          // Reload the page after the user clicks OK
+          window.location.reload();
+      }
+  });
+}
+
 }
 
 else{

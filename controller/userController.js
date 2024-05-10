@@ -10,6 +10,7 @@ let Category = require("../model/categoryModel");
 let Product = require("../model/productModel");
 let Wishlist = require("../model/wishListModel");
 const Orders = require("../model/orderModel");
+let Banner = require('../model/bannerModel');
 
 //===========error- 500=======================
 
@@ -42,6 +43,10 @@ const loadIndex = async (req, res) => {
 
     let category = await Category.find({ status: "active" });
 
+let banner = await Banner.find();
+
+    console.log('banner found at load index :',banner);
+    
     const productData = await Product.find({
       status: { $ne: "blocked" },
       quantity: { $ne: 0 }
@@ -63,14 +68,18 @@ const loadIndex = async (req, res) => {
     }
   }).limit(7)
 
+
+  //with this condition the unlisted categories product wont be displayed
   const product = productData.filter((product) => product.category.status !== "blocked")
 
+
+  //planning a field for upcoming products
 let upcomingProducts = await Product.find({date:{$gt:new Date()}
 })
 
 
     
-    res.render("home", { userNameforProfile, user, category, product,upcomingProducts });
+    res.render("home", { userNameforProfile, user,banner, category, product,upcomingProducts });
   } catch (error) {
     console.log("Error happens in userController loadIndex function:", error);
   }
@@ -504,7 +513,7 @@ const updatedProductsDiscount = async (products) => {
 
 
 //=============shop list page======================
-let shopPage = async (req, res) => {
+let shopPages = async (req, res) => {
   try {
     const user = req.session.userData;
     const userNameforProfile = await User.findById(user);
@@ -1108,7 +1117,7 @@ const removeAddress = async (req, res) => {
 
 
 
-//-------------- shop page new loading =======================
+//-------------- shop page  =========================================
 
 const ITEMS_PER_PAGE = 8; // Number of items per page
 
@@ -1124,12 +1133,23 @@ const applyPagination = (query, page) => {
   return query.skip(skip).limit(ITEMS_PER_PAGE);
 };
 
-let shopPageNew = async (req, res) => {
+let shopPage = async (req, res) => {
   try {
     const user = req.session.userData;
     const userNameforProfile = await User.findById(user);
     const category = await Category.find({ status: { $ne: 'blocked' } });
 
+//----------   ------- [banner part] -----   ----------
+    const banners = await Banner.find(); // Fetch active banners
+let arr =[];
+banners.forEach(x=>{
+  arr.push( x.image[0])
+})
+console.log('banners found  is :',arr)
+//-------------------- [banner part] ------------------
+
+
+// out of stock products wont be displayed right now
     let filters = { status: { $ne: 'blocked' }, quantity: { $gt: 0 } };
 
     // Apply category filter if present in query
@@ -1202,9 +1222,11 @@ console.log('z-a sorting worked=======================================')
 
     let updatedProducts = await updatedProductsDiscount(product);
 
-    res.render('testPageForShop', {
+    res.render('shopPage', {
       userNameforProfile,
       category,
+      user,
+      banners: arr[0],
       product: updatedProducts,
       pagination: {
         currentPage,
@@ -1234,7 +1256,7 @@ module.exports = {
   verifyOTP,
   resendOTP,
   signout,
-  shopPage,
+  shopPages,
   aProductPage,
   wishList,
   addProductToWishList,
@@ -1245,7 +1267,7 @@ module.exports = {
   addAddressatProfile,
   editAddress,
   removeAddress,
-  shopPageNew
+  shopPage
 };
 
 

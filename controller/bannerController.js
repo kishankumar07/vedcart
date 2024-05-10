@@ -91,8 +91,11 @@ const addBannerDetails = async (req, res) => {
 
         // Resize the image using Sharp
         await sharp(originalImagePath)
-            .resize(1920, 900)
-            .toFile(resizedPath);
+    .resize(1920, 900)
+    .jpeg({ quality: 90 }) // Adjust quality as needed
+    .toFile(resizedPath);
+
+
 
         // Create a new Banner object with the resized image path
         const newBanner = new Banner({

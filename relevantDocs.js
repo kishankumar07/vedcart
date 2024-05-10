@@ -845,41 +845,83 @@ document.getElementById('customSortBtn').addEventListener('click', customSortOrd
 
 
 
-const addBannerDetails = async (req, res) => {
-  try {
-      console.log('this is the req.body at the addBanner :', req.body);
-      const image = req.file.filename; // Get the filename from req.file
 
-      console.log('image got at c ::', image);
+document.addEventListener("DOMContentLoaded", function() {
+  // Your script here
 
-      const { title, description, date, location } = req.body;
+  //---------- cropper.js ------------------------------
+  let addProducts = document.getElementById('addProductsPage');
+  if (addProducts) {
+      // Other code remains the same
 
-      const newBanner = new Banner({
-          title,
-          description,
-          location,
-          date,
-          image: image // Assign the filename to the image field
+      function enableSubmitButton() {
+          // Check if all necessary fields are filled and images are cropped
+          let allFieldsFilled = productName.value && productDesc.value && productPrice.value && productQty.value && productBrand.value && date.value;
+          let imagesCropped = croppedDataArray.length > 0;
+
+          // Enable submit button if all fields are filled and images are cropped
+          submitForm.disabled = !(allFieldsFilled && imagesCropped);
+
+          // Display error messages for empty fields
+          if (!productName.value) {
+              document.getElementById('name-error').innerText = 'Product name is required';
+          } else {
+              document.getElementById('name-error').innerText = '';
+          }
+
+          if (!productDesc.value) {
+              document.getElementById('description-error').innerText = 'Description is required';
+          } else {
+              document.getElementById('description-error').innerText = '';
+          }
+
+          if (!productPrice.value) {
+              document.getElementById('price-error').innerText = 'Price is required';
+          } else {
+              document.getElementById('price-error').innerText = '';
+          }
+
+          if (!productQty.value) {
+              document.getElementById('quantity-error').innerText = 'Quantity is required';
+          } else {
+              document.getElementById('quantity-error').innerText = '';
+          }
+
+          if (!productBrand.value) {
+              document.getElementById('brand-error').innerText = 'Brand name is required';
+          } else {
+              document.getElementById('brand-error').innerText = '';
+          }
+
+          if (!date.value) {
+              document.getElementById('date-error').innerText = 'Date is required';
+          } else {
+              document.getElementById('date-error').innerText = '';
+          }
+
+          if (!document.querySelector('input[name="productCat"]:checked')) {
+              document.getElementById('category-error').innerText = 'Please select a category';
+          } else {
+              document.getElementById('category-error').innerText = '';
+          }
+
+          if (croppedDataArray.length === 0) {
+              document.getElementById('image-error').innerText = 'Please crop at least one image';
+          } else {
+              document.getElementById('image-error').innerText = '';
+          }
+      }
+
+      // Add event listeners to input fields to check for changes
+      let inputFields = [productName, productDesc, productPrice, productQty, productBrand, date];
+      inputFields.forEach(field => {
+          field.addEventListener('input', enableSubmitButton);
       });
 
-      let values = await newBanner.save();
-      console.log('values stored at db :', values);
-
-      const promises = [image].map(async (filename) => {
-          const originalImagePath = path.join(__dirname, '../public/uploads', filename);
-          const resizedPath = path.join(__dirname, '../public/uploads', 'resized_Banner' + filename);
-
-          await sharp(originalImagePath)
-              .resize(1920, 900)
-              .toFile(resizedPath);
-      });
-
-      await Promise.all(promises);
-  } catch (error) {
-      console.log('error at banner addition :', error);
-      res.status(500).send("Internal Server Error");
+      // Call the function initially to set the initial state of the submit button
+      enableSubmitButton();
   }
-};
+});
 
 
 
@@ -890,22 +932,627 @@ const addBannerDetails = async (req, res) => {
 
 
 
-if (date === "") { // Check if date is empty
-  document.getElementById("date-error").textContent = "Date is required";
-  isValid = false;
-} else {
-  const currentDate = new Date();
-  const selectedDate = new Date(date);
-  if (selectedDate < currentDate) {
-      document.getElementById("date-error").textContent = "Date must be today or in the future";
-      isValid = false;
-  }
+
+// //from here add product temped -----------------------
+// <%- include('./layouts/header.ejs')%>
+
+// <!-- iziToast CSS -->
+// <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+// <!-- iziToast JS -->
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+
+// <!-- cropper.js css -->
+// <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+// <!-- CropperJS JS -->
+// <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+
+
+
+
+
+// <% if (message.length !==0) { %>
+//     <script>
+//         // Display toast message
+//         iziToast.error({
+//             title: '<%= message %>',
+//             position: 'topRight',
+//             theme: 'dark', 
+//         });
+//     </script>
+// <% } %>
+
+
+
+// <section class="content-main">
+//     <div class="row">
+//         <div class="col-6">
+//             <div class="content-header">
+//                 <h2 class="content-title">Add New Product</h2>
+                
+//             </div>
+//         </div>
+//     </div>
+//     <div class="row">
+//         <div class="col-lg-6">
+//             <div class="card mb-4">
+//                 <div class="card-body">
+//                     <form action="/admin/createProduct" id="addProductForm" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+//                     <div class="row">
+//                         <div class="col-md-3">
+//                             <h6>1. General info</h6>
+//                         </div>
+//                         <div class="col-md-9">
+//                             <div class="mb-4">
+//                                 <label class="form-label">Product name</label>
+//                                 <input type="text" id="name" placeholder="Type here" class="form-control" name="name">
+//                                 <div class="error-message text-danger" id="name-error"></div>
+//                             </div>
+//                             <div class="mb-4">
+//                                 <label class="form-label">Description</label>
+//                                 <textarea name="description" id="description" placeholder="Type here" class="form-control" rows="4"></textarea>
+//                                 <div class="error-message text-danger" id="description-error"></div>
+//                             </div>
+//                             <div class="mb-4">
+//                                 <label class="form-label">Brand name</label>
+//                                 <input name="brand" id="brand" type="text" placeholder="Type here" class="form-control">
+//                                 <div class="error-message text-danger" id="brand-error"></div>
+//                             </div>
+//                             <div class="mb-4">
+//                                 <label class="form-label">Quantity</label>
+//                                 <input name="quantity" id="quantity" type="number"  class="form-control">
+//                                 <div class="error-message text-danger" id="quantity-error"></div>
+//                             </div>
+//                         </div> <!-- col.// -->
+//                     </div> <!-- row.// -->
+//                     <hr class="mb-4 mt-0">
+//                     <div class="row">
+//                         <div class="col-md-3">
+//                             <h6>2. Pricing</h6>
+//                         </div>
+//                         <div class="col-md-9">
+//                             <div class="mb-4">
+//                                 <label class="form-label">Cost </label>
+//                                 <input type="text" id="price" name="price" class="form-control">
+//                                 <div class="error-message text-danger" id="price-error"></div>
+//                             </div>
+//                         </div> <!-- col.// -->
+//                     </div> <!-- row.// -->
+//                     <hr class="mb-4 mt-0">
+//                     <div class="row">
+//                         <div class="col-md-3">
+//                             <h6>3. Date </h6>
+//                         </div>
+//                         <div class="col-md-9">
+//                             <div class="mb-4">
+//                                 <label class="form-label">Date </label>
+                        
+//                                 <input type="date" id="date" name="date" class="form-control">
+
+//                                 <div class="error-message text-danger" id="date-error"></div>
+//                             </div>
+//                         </div> <!-- col.// -->
+//                     </div> <!-- row.// -->
+//                     <hr class="mb-4 mt-0">
+//                     <div class="row">
+//                         <div class="col-md-3">
+//                             <h6>3. Category</h6>
+//                         </div>
+//                         <div class="col-md-9">
+//                             <div class="mb-4">
+//                                 <% category.forEach((categ, index) => { %>
+//                                     <label class="mb-2 form-check form-check-inline" style="width: 45%;">
+//                                         <input class="form-check-input" name="category" type="radio" value="<%= categ._id %>" id="category<%= index %>">
+//                                         <span class="form-check-label"> <%= categ.name %> </span>
+//                                     </label>
+//                                 <% }) %>
+//                             </div>
+//                             <!-- Error message element placed after all category input fields -->
+//                             <div class="category-error text-danger" id="category-error"></div>
+//                         </div>
+                        
+//                     </div> <!-- row.// -->
+//                     <hr class="mb-4 mt-0">
+//                     <div class="row">
+//                         <div class="col-md-3">
+//                             <h6>4. Media</h6>
+//                         </div>
+//                         <div class="col-md-9">
+//                             <div class="mb-4">
+
+//                                 <label class="form-label">Images</label>
+
+
+//                                 <input id="images" name="images" class="form-control" type="file" multiple>
+
+//                                 <div class="error-message text-danger" id="image-error"></div>
+
+                            
+        
+//                             </div>
+//                         </div> <!-- col.// -->
+//                     </div> <!-- .row end// -->
+//                     <div>
+                   
+//                         <button type="submit" id="submit-btn" class="btn btn-md rounded font-sm hover-up">Publish</button>
+//                     </div>
+//                     </form>
+//                 </div>
+//             </div>
+//         </div>
+//     </div>
+//     </div>
+// </section> <!-- content-main end// -->
+
+// <!-- jQuery -->
+// <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+// <!-- Bootstrap JS -->
+// <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+
+
+
+
+
+// <script>
+
+// function validateForm() {
+//         let isValid = true;
+    
+//         // General Info Validation
+//         const name = document.getElementById('name').value.trim();
+//         if (!name) {
+//             displayErrorMessage('name-error', 'Please enter the product name.');
+//             isValid = false;
+//         } else {
+//             displayErrorMessage('name-error', '');
+//         }
+    
+//         const description = document.getElementById('description').value.trim();
+//         if (!description) {
+//             displayErrorMessage('description-error', 'Please enter the product description.');
+//             isValid = false;
+//         } else {
+//             displayErrorMessage('description-error', '');
+//         }
+    
+//         const brand = document.getElementById('brand').value.trim();
+//         if (!brand) {
+//             displayErrorMessage('brand-error', 'Please enter the brand name.');
+//             isValid = false;
+//         } else {
+//             displayErrorMessage('brand-error', '');
+//         }
+    
+//         const quantity = document.getElementById('quantity').value.trim();
+//         if (!quantity) {
+//             displayErrorMessage('quantity-error', 'Please enter the product quantity.');
+//             isValid = false;
+//         } else {
+//             displayErrorMessage('quantity-error', '');
+//         }
+    
+//         // Pricing Validation
+//         const price = document.getElementById('price').value.trim();
+//         if (!price) {
+//             displayErrorMessage('price-error', 'Please enter the product price.');
+//             isValid = false;
+//         } else {
+//             displayErrorMessage('price-error', '');
+//         }
+    
+//         // Date Validation
+//         const date = document.getElementById('date').value.trim();
+//         if (!date) {
+//             displayErrorMessage('date-error', 'Please select a valid date.');
+//             isValid = false;
+//         } else {
+//             displayErrorMessage('date-error', '');
+//         }
+    
+//        // Validate Category
+//     const selectedCategory = document.querySelector('input[name="category"]:checked');
+//     if (!selectedCategory) {
+//         const categoryError = document.getElementById('category-error');
+//         categoryError.textContent = 'Please select a product category.';
+//         isValid = false;
+//     } else {
+//         const categoryError = document.getElementById('category-error');
+//         categoryError.textContent = ''; // Clear error message
+//     }
+
+//     // Media Validation
+//     const images = document.getElementById('images').files;
+//     if (images.length === 0) {
+//         const imageError = document.getElementById('image-error');
+//         imageError.textContent = 'Please select at least one image.';
+//         isValid = false;
+//     } else {
+//         const imageError = document.getElementById('image-error');
+//         imageError.textContent = ''; // Reset error message
+//     }
+
+//     return isValid;
+// }
+    
+//     function displayErrorMessage(elementId, message) {
+//         const errorElement = document.getElementById(elementId);
+//         errorElement.textContent = message;
+//     }
+
+
+
+//     //---------- cropper.js ------------------------------
+//     document.addEventListener('DOMContentLoaded', function () {
+//         console.log("DOM content loaded");
+//         const input = document.getElementById('images');
+//         const form = document.getElementById('addProductForm');
+//         const submitBtn = document.getElementById('submit-btn');
+//         let croppers = [];
+
+//         input.addEventListener('change', function (event) {
+//             console.log("File input changed");
+//             const files = event.target.files;
+//             if (!files || files.length === 0) return;
+            
+//             // Clear existing croppers
+//             croppers.forEach(cropper => cropper.destroy());
+//             croppers = [];
+
+//             // Create cropper for each selected image
+//             Array.from(files).forEach(file => {
+//                 const reader = new FileReader();
+//                 reader.onload = function (e) {
+//                     console.log("Image file loaded");
+//                     const img = new Image();
+//                     img.src = e.target.result;
+//                     img.onload = function () {
+//                         console.log("Image loaded");
+//                         const cropper = new Cropper(img, {
+//                             aspectRatio: 1, // Set aspect ratio as needed
+//                             viewMode: 2, // Set view mode as needed
+//                             crop(event) {
+//                                 // Handle crop event if needed
+//                             }
+//                         });
+//                         croppers.push(cropper);
+//                     };
+//                 };
+//                 reader.readAsDataURL(file);
+//             });
+//         });
+
+//         form.addEventListener('submit', function (event) {
+//             console.log("Form submitted");
+//             event.preventDefault();
+//             const formData = new FormData(form);
+
+//             // Append cropped images to formData
+//             croppers.forEach((cropper, index) => {
+//                 const canvas = cropper.getCroppedCanvas({
+//                     width: 300, // Set desired width
+//                     height: 300, // Set desired height
+//                 });
+//                 canvas.toBlob(blob => {
+//                     formData.append(`croppedImage_${index}`, blob);
+//                     if (formData.getAll('images').length === croppers.length) {
+//                         // Submit form with cropped images
+//                         fetch('/admin/createProduct', {
+//                             method: 'POST',
+//                             body: formData,
+//                         })
+//                         .then(response => response.json())
+//                         .then(data => {
+//                             // Handle response from backend if needed
+//                         })
+//                         .catch(error => {
+//                             console.error('Error:', error);
+//                         });
+//                     }
+//                 });
+//             });
+//         });
+//     });
+
+
+
+//     </script>
+    
+
+
+// <%- include('./layouts/footer.ejs')%>
+
+
+
+// </div>
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------------<%- include('./layouts/header.ejs')%>
+
+{/* <section class="content-main">
+    <div class="row">
+        <div class="col-6">
+            <div class="content-header">
+                <h2 class="content-title">Edit the Product</h2>
+                
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form action="/admin/productEdited" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>1. General info</h6>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-4">
+                                <label class="form-label">Product name</label>
+                                <input type="text" id="name" placeholder="Type here" class="form-control" value="<%= product.name %>" name="name">
+                                <div class="error-message text-danger" id="name-error"></div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Description</label>
+                                <textarea name="description" id="description" placeholder="Type here" class="form-control" rows="4" ><%= product.description %></textarea>
+                                <div class="error-message text-danger" id="description-error"></div>
+                            </div>
+                            <input type="hidden" name="id" value="<%= product._id %>">
+                            <div class="mb-4">
+                                <label class="form-label">Brand name</label>
+                                <input value="<%=product.brand%>" name="brand" id="brand" type="text" placeholder="Type here" class="form-control">
+                                <div class="error-message text-danger" id="brand-error"></div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label">Quantity</label>
+                                <input value="<%= product.quantity %>" name="quantity" id="quantity" type="number"  class="form-control">
+                                <div class="error-message text-danger" id="quantity-error"></div>
+                            </div>
+                        </div> <!-- col.// -->
+                    </div> <!-- row.// -->
+                    <hr class="mb-4 mt-0">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>2. Pricing</h6>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-4">
+                                <label class="form-label">Cost </label>
+                                <input type="text" value="<%= product.price %>" id="price" name="price" class="form-control">
+                                <div class="error-message text-danger" id="price-error"></div>
+                            </div>
+                        </div> <!-- col.// -->
+                    </div> <!-- row.// -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>3. Date of creation</h6>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-4">
+                                <label class="form-label">Date </label>
+                        
+                                <input type="date" value="<%= moment(product.date).format('YYYY-MM-DD') %>" id="date" name="date" class="form-control">
+
+                                <div class="error-message text-danger" id="date-error"></div>
+                            </div>
+                        </div> <!-- col.// -->
+                    </div> <!-- row.// -->
+                    <hr class="mb-4 mt-0">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>3. Category</h6>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-4">
+                                <% category.forEach((categ) => { %>
+                                    <label class="mb-2 form-check form-check-inline" style="width: 45%;">
+                                        <input class="form-check-input" name="category" type="radio" value="<%= categ.name %>" <%= product.category.name === categ.name ? 'checked' : '' %>>
+                                        <span class="form-check-label"> <%= categ.name %> </span>
+                                    </label>
+                                <% }) %>
+                                
+                               
+                         </div>
+                        </div> <!-- col.// -->
+                    </div> <!-- row.// -->
+                    <hr class="mb-4 mt-0">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h6>4. Media</h6>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-4">
+                             
+                                <label class="form-label">Images</label>
+                                <input id="images" name="images" class="form-control" type="file"  multiple>
+
+                                <% product.images.forEach((image, index) => { %>
+                                    <input id="hiddenImage" type="hidden" name="existingImages" value="<%= image %>">
+                                <% }) %>
+                                <!-- Display filenames -->
+                                <div>
+                                    <% product.images.forEach((image, index) => { %>
+                                        <span id="imageValidationTest"><%= image %></span>
+                                       
+                                       
+                                    <% }) %>
+                                </div>
+
+
+                                <div class="error-message text-danger" id="image-error"></div>
+                            </div>
+                        </div> <!-- col.// -->
+
+
+
+                        <div class="mb-4">
+                            <label class="form-label">Images</label>
+
+
+                            <% product.images.forEach((image, index) => { %>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <img src="/adminAssets/imgs/category/<%= image %>" alt="Product Image" style="width: 30px; height: 30px; margin-right: 10px;">
+                                        <span><%= image %></span>
+                                    </div>
+                                    <a href="#" onclick="confirmDelete('<%= index %>', '<%= product._id %>', event)" class="btn btn-danger btn-sm">Delete</a>
+
+                                </div>
+                            <% }) %>
+                        </div>
+                        
+
+
+
+                    </div> <!-- .row end// -->
+                    <div>
+                   
+                        <button type="submit" class="btn btn-md rounded font-sm hover-up">Publish</button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</section> <!-- content-main end// -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+
+
+
+
+
+    function validateForm() {
+        // Reset any existing error messages
+        clearErrorMessages();
+
+        const name = document.getElementById('name').value;
+        const description = document.getElementById('description').value;
+        const brand = document.getElementById('brand').value;
+        const quantity = document.getElementById('quantity').value;
+        const price = document.getElementById('price').value;
+        const images = document.getElementById('imageValidationTest').value;
+
+        
+        let isValid = true;
+
+        // General Info Validation
+        if (!name.trim()) {
+            displayErrorMessage('name-error', 'Please enter a product name.');
+            isValid = false;
+        }
+
+        if (!description.trim()) {
+            displayErrorMessage('description-error', 'Please enter a product description.');
+            isValid = false;
+        }
+
+        if (!brand.trim()) {
+            displayErrorMessage('brand-error', 'Please enter a brand name.');
+            isValid = false;
+        }
+
+        if (!quantity.trim() || isNaN(quantity) || quantity < 0) {
+            displayErrorMessage('quantity-error', 'Please enter a valid product quantity.');
+            isValid = false;
+        }
+
+        // Pricing Validation
+        if (!price.trim() || isNaN(price) || price < 0) {
+            displayErrorMessage('price-error', 'Please enter a valid product price.');
+            isValid = false;
+        }
+
+        // Category Validation
+        const selectedCategory = document.querySelector('input[name="category"]:checked');
+        if (!selectedCategory) {
+            displayErrorMessage('category-error', 'Please select a category.');
+            isValid = false;
+        }
+
+        // Media Validation
+        if (images.length === 0) {
+            displayErrorMessage('image-error', 'Please select at least one image.');
+            isValid = false;
+        } else {
+            // Validate image types (JPG or PNG)
+            const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+            for (const image of images) {
+                if (!allowedImageTypes.includes(image.type)) {
+                    displayErrorMessage('image-error', 'Please select images with JPG or PNG formats.');
+                    isValid = false;
+                    break; // Stop checking once an invalid image type is found
+                }
+            }
+        }
+
+        return isValid;
+    }
+
+    function clearErrorMessages() {
+        const errorMessages = document.querySelectorAll('.error-message');
+        errorMessages.forEach((errorMessage) => {
+            errorMessage.innerText = '';
+        });
+    }
+
+    function displayErrorMessage(errorId, message) {
+        const errorDiv = document.getElementById(errorId);
+        errorDiv.innerText = message;
+    }
+
+
+
+// delete image===============================
+function confirmDelete(index, productId, event) {
+    event.preventDefault(); // Prevent the default action of the anchor tag
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'You are about to delete this image!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `/admin/deleteimage?index=${index}&id=${productId}`;
+        }
+    });
 }
 
 
+    </script>
+
+
+
+
+<%- include('./layouts/footer.ejs')%></div>
 
 
 
 
 
+</section> */}
 
+//
+
+
+
+// Parse existingImages JSON string to get the array of existing image URLs
+const existingImages = JSON.parse(productData.existingImages);
+
+// Extract filenames from image URLs
+const imageFilenames = existingImages.map(imageUrl => {
+    // Split the URL by '/' to get the filename
+    const parts = imageUrl.split('/');
+    // Return the last part (filename)
+    return parts[parts.length - 1];
+});
+
+console.log('image filenames are:', imageFilenames);
+
+// Now you can use imageFilenames to save to the database or perform any other operations you need

@@ -39,7 +39,7 @@ router.get('/signout',userController.signout);
 
 router.get("/shop", userController.shopPage);
 
-router.get("/shopNew", userController.shopPageNew);
+// router.get("/shopNew", userController.shopPage);
 
 router.get("/productPage", userController.aProductPage);
 router.get('/loadProductSearchQuery',loadProductSearchQuery)
