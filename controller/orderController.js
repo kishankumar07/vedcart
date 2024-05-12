@@ -22,7 +22,7 @@ var instance = new Razorpay(
 
 const placeTheOrder = async (req, res) => {
     try {
-        
+        console.log('order placing started')
         const userId = req.session.userData;
         const { couponCode,paymentMethod,selectedValue } = req.body;
   
@@ -106,7 +106,7 @@ console.log('this is the coupon at placeOrder:',coupon)
 
               if (coupon && coupon.expiryDate >= currentDate && coupon.minAmount <= totalWithDiscount) {
 
-                   discountAmount = coupon.discountAmount;
+                   discountAmount = coupon.discount;
                   totalWithDiscount -= discountAmount;
       
                   coupon.userUsed.push({ userId, used: true });
@@ -142,15 +142,14 @@ console.log('this is the coupon at placeOrder:',coupon)
             grandTotal: grandTotal,
             couponDiscount:discountAmount,
             total: totalWithDiscount,
-        //    time:orderedTime,
-          //  paymentStatus:'Cash on delivery',
+           
           date: new Date(),
             address: selectedValue,
         };
 
         const orderInstance = new Orders(orderData);
   
-  console.log('order saved at the database is : ',orderInstance.couponDiscount)
+  console.log('discount value saved at the order database is : ',orderInstance.couponDiscount)
   
   
         if (paymentMethod === "Cash on delivery") {

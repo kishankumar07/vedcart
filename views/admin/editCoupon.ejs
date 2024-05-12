@@ -225,7 +225,11 @@
       document.getElementById("discountErr").textContent =
         "Discount amount cannot be negative.";
       hasError = true;
-    }
+    } else if (parseFloat(discountAmount) > parseFloat(minAmount)) {
+  document.getElementById("discountErr").textContent =
+    "Discount amount cannot exceed the minimum amount.";
+  hasError = true;
+}
 
     // Expiry Date
     if (expiryDate === "") {

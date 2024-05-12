@@ -45,7 +45,7 @@ const loadIndex = async (req, res) => {
 
 let banner = await Banner.find();
 
-    console.log('banner found at load index :',banner);
+    // console.log('banner found at load index :',banner);
     
     const productData = await Product.find({
       status: { $ne: "blocked" },
@@ -111,31 +111,39 @@ const signUpUser = async (req, res) => {
 
 const verifyLogin = async (req, res) => {
   try {
+    console.log('reached at verifylogin controller ')
     let {email,password} = req.body;
     const userData = await User.findOne({ email: email });
 
 // console.log('this is the user data',userData);
-
     if (userData) {
+      
       const passwordMatch = await bcrypt.compare(password, userData.password);
 
       if (passwordMatch) {
+
         if (userData.isBlocked === false && userData.isVerified == true) {
 
-          if (req.session) {
+          if ( req.session.userData !== null ||req.session.userData !== undefined) {
+
+
+            console.log('at session when user is unblocked ',req.session.userData)
             req.session.userData = userData._id;
 
-
-console.log('user successfully logged at verify user : sessin :',req.session.userData);
+console.log('finally at session :',req.session.userData)
 
             return res.redirect('/');
 
 
           } else {
-            console.error('req.session is undefined');
-            return res.status(500).send('Internal Server Error');
+            console.error(`in the session it is ${req.session.userData}`);
+            req.flash('er', ' Please login to continue')
+            res.redirect('/signin')
           }
         } else {
+
+         
+
           req.flash('er', ' Account blocked by the administrator or user not verified')
           // User not found
           return res.render('userSignin', { message: req.flash('er') });
@@ -478,185 +486,38 @@ const signout = async (req, res) => {
 
 
 // Calculate discounts for products kept as a seperate function=====
-const updatedProductsDiscount = async (products) => {
-  try {
+// const updatedProductsDiscount = async (products) => {
+//   try {
 
 
-    return await Promise.all(products.map(async (product) => {
-      if (product.offer) {
+//     return await Promise.all(products.map(async (product) => {
+//       if (product.offer) {
 
-        let discount = Math.round(product.price * (product.offer.discount / 100));
+//         let discount = Math.round(product.price * (product.offer.discount / 100));
         
-        product.offerprice = product.price - discount;
+//         product.offerprice = product.price - discount;
        
         
-      }
-       else if (product.category && product.category.offer) {
-        let discount = Math.round(product.price * (product.category.offer.discount / 100));
-        product.offerprice = product.price - discount;
+//       }
+//        else if (product.category && product.category.offer) {
+//         let discount = Math.round(product.price * (product.category.offer.discount / 100));
+//         product.offerprice = product.price - discount;
         
-      } 
-      else {
-        product.offerprice = undefined;
+//       } 
+//       else {
+//         product.offerprice = undefined;
         
-      }
-      await product.save();
-      return product;
-    }));
-  } catch (error) {
-    console.error("Error updating products:", error);
-    throw error;
-  }
-};
+//       }
+//       await product.save();
+//       return product;
+//     }));
+//   } catch (error) {
+//     console.error("Error updating products:", error);
+//     throw error;
+//   }
+// };
 
 
-
-
-//=============shop list page======================
-let shopPages = async (req, res) => {
-  try {
-    const user = req.session.userData;
-    const userNameforProfile = await User.findById(user);
-
-
-    //all the categories that exist without being blocked will be shown at the shop page
-    const category = await Category.find({ status: {$ne:'blocked'} });
-
-
-//By default the category filter is set to 'all' and when the  page loads no category based filtration would be there
-    let categoryName = "All"; 
-    let selectedCategoryId = req.query.category || "";
-
-    //Default sorting is for price category 'Low to high'
-    let selectedFilter = req.query.filter || "lowToHigh"; 
-
-//The products displayed would be based on this filter
-    let filters = { status: { $ne: "blocked" }, quantity: { $gt: 0 } }; 
-
-
-
-
-    if (selectedCategoryId && selectedCategoryId !== "all") {
-
-
-      // Only apply category filter if a valid category is selected
-
-      const selectedCategory = await Category.findById(selectedCategoryId);
-
-      if (selectedCategory) {
-
-        console.log( `${selectedCategory.name} i.e was selected at if case`)
-
-        categoryName = selectedCategory.name;
-        filters.category = selectedCategoryId;
-      } else {
-        console.log( `all was selected at else case`)
-
-        // If the selected category is invalid, reset it to "all"
-        selectedCategoryId = "all";
-      }
-    }
-
-    console.log('these are the filters :',filters)
-    //only existing offers will be displayed here , upcoming and expired offers are not displayed
-    let product = await Product.find(filters)
-    .populate({
-      path: 'category',
-      populate: {
-        path: 'offer',
-        match: {
-          startingDate: { $lte: new Date() },
-          endDate: { $gte: new Date() }
-        }
-      }
-    })
-    .populate({
-      path: 'offer',
-      match: {
-        startingDate: { $lte: new Date() },
-        endDate: { $gte: new Date() }
-      }
-    })
-
-
-    
-
-    // Apply price sorting based on the selected filter
-   
-let productSortFunction;
-if (selectedFilter === "lowToHigh") {
-  productSortFunction = (a, b) => parseFloat(a.price) - parseFloat(b.price);
-} else if (selectedFilter === "highToLow") {
-  productSortFunction = (a, b) => parseFloat(b.price) - parseFloat(a.price);
-} else if (selectedFilter === "AtoZ") {
-  productSortFunction = (a, b) => {
-    const nameA = a.name.toLowerCase();
-    const nameB = b.name.toLowerCase();
-    if (nameA < nameB) {
-      return -1;
-    }
-    if (nameA > nameB) {
-      return 1;
-    }
-    return 0;
-  };
-  
-} else if (selectedFilter === "ZtoA") {
-  productSortFunction = (a, b) => {
-    const nameA = a.name.toLowerCase();
-    const nameB = b.name.toLowerCase();
-    if (nameA > nameB) {
-      return -1;
-    }
-    if (nameA < nameB) {
-      return 1;
-    }
-    return 0;
-  };
-  
-} else if (selectedFilter === "newlyLaunched") {
-  productSortFunction = (a, b) => b.createdAt - a.createdAt;
-}
-
-// Sort the product array using the selected sorting function
-if (productSortFunction) {
-  product.sort(productSortFunction);
-}
-
-
-// ======  pagenation part===========
-const productsPerPage = 8; 
-
-let currentPage = parseInt(req.query.page) || 1;
-const totalProducts = await Product.countDocuments(filters);
-const totalPages = Math.ceil(totalProducts / productsPerPage);
-
-// Ensure currentPage is within valid range
-currentPage = Math.max(1, Math.min(currentPage, totalPages));
-
-
-
-     // Call updatedProductsDiscount function and await its result
-     let updatedProducts = await updatedProductsDiscount(product);
-
-
-    res.render("shopPage", {
-      product: updatedProducts,
-      user,
-      category,
-      currentPage,
-      productsPerPage,
-      totalPages,
-      userNameforProfile,
-      selectedCategoryId,
-      categoryName,
-      selectedFilter,
-    });
-  } catch (error) {
-    console.error(error);
-    res.redirect('/error')
-  }
-};
 
 
 //============== a product page selected====================
@@ -768,13 +629,16 @@ const wishList = async (req, res) => {
     let userNameforProfile = await User.findById(user);
 
     let category = await Category.find({ status: "active" });
-    let wishlist = await Wishlist.findOne({ user: user });
+    const wishlist = await Wishlist.findOne({ user: user }).populate({
+      path:'products.product',
+      model:'Product',
+    })
     // let product = await Product.find({ status: "active" }).populate("category").exec();
 
-    // console.log('wishlist at wishlist controller: ',wishlist);
+    console.log('wishlist at wishlist controller: ',wishlist);
     res.render("wishlist", { userNameforProfile, user, category, wishlist });
   } catch (error) {
-    console.error("Error during wishlist:", error);
+    console.error("Error during wishlist loading:", error);
     res.redirect("/error");
   }
 };
@@ -789,43 +653,50 @@ const addProductToWishList = async (req, res) => {
 
     const product = await Product.findById(req.query.productId);
 
+
+
+
     // Check if the user already has a wishlist document
-    const wishFind = await Wishlist.findOne({ user: user });
+    const wishFind = await Wishlist.findOne({ user: user }).populate({
+      path:'products.product',
+      model:'Product',
+    })
+
+console.log('this is the wishlist found :',wishFind)
 
     // console.log('this is wiishFind at wish controller', wishFind);
 
     if (wishFind) {
       // User already has a wishlist document
       const existingProduct = wishFind.products.find(
-        (prod) => prod.name === product.name
+        (prod) => prod.product.id === product.id
       );
+      console.log('this is the existing product------------------------------',existingProduct)
 
       if (existingProduct) {
         res.json({ success: false, message: "Already added" });
       } else {
+
+        console.log('wishlist is alreay present but not existing product------------------')
         // Product is not in the wishlist, add it
         wishFind.products.push({
           product: product._id,
-          price: product.price,
-          name: product.name,
-          image: product.images,
-          quantity: product.quantity,
+          
         });
 
         await wishFind.save();
         res.json({ success: true, message: "Added" });
       }
     } else {
+
+      console.log('new wishlist is created-------------------------')
       // User does not have a wishlist document, create a new one
       const wishAdd = new Wishlist({
         user: user,
         products: [
           {
             product: product._id,
-            price: product.price,
-            name: product.name,
-            image: product.images,
-            quantity: product.quantity,
+           
           },
         ],
       });
@@ -838,6 +709,7 @@ const addProductToWishList = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
 
 //==========remove a product from wishlist======================
 
@@ -1117,6 +989,78 @@ const removeAddress = async (req, res) => {
 
 
 
+//------------------- function to calculate offer price-----------------
+const updatedProductsDiscount = async (products) => {
+  try {
+    // Retrieve offers for products and categories
+    const productOffers = await Promise.all(products.map(async (product) => {
+      if (product.offer) {
+        // console.log('product offer is present and it is : ',product.offer)
+        return product.offer;
+      }
+      return null;
+    }));
+
+    const categoryOffers = await Promise.all(products.map(async (product) => {
+      if (product.category && product.category.offer) {
+        // console.log('category offer is present :',product.category.offer)
+        return product.category.offer;
+      }
+      return null;
+    }));
+
+    // Count the number of offers
+    const numProductOffers = productOffers.filter(offer => offer !== null).length;
+// console.log('total product offers available :',numProductOffers)
+
+
+    const numCategoryOffers = categoryOffers.filter(offer => offer !== null).length;
+    // console.log('total category offers available:',numCategoryOffers)
+
+
+    // Determine which offer type to prioritize
+    let chosenOffers;
+    if (numProductOffers > numCategoryOffers) {
+      chosenOffers = productOffers;
+    } else if (numProductOffers < numCategoryOffers) {
+      chosenOffers = categoryOffers;
+    } else {
+      // If both types have the same number of offers, prioritize product offers
+      chosenOffers = productOffers;
+    }
+    // console.log('chosenOffers is ;',chosenOffers)
+
+
+
+
+    // Apply discounts based on chosen offers
+    return await Promise.all(products.map(async (product, index) => {
+      const offer = chosenOffers[index];
+// console.log('offer is :',offer )
+      if (offer) {
+        const discount = Math.round(product.price * (offer.discount / 100));
+        console.log('price of product is :',product.price)
+console.log('disocunt of the same is :',discount)
+
+
+        product.offerprice = product.price - discount;
+
+        console.log('offerPrice finalization that will be seen on DOM is :',product.offerprice)
+        await product.save();
+
+      } else {
+      // If no offer is available, no need to set offerprice
+      console.log('No offer available, price is still the same :',product.price);
+      }
+
+      return product;
+    }));
+  } catch (error) {
+    console.error("Error updating products:", error);
+    throw error;
+  }
+};
+
 //-------------- shop page  =========================================
 
 const ITEMS_PER_PAGE = 8; // Number of items per page
@@ -1133,6 +1077,9 @@ const applyPagination = (query, page) => {
   return query.skip(skip).limit(ITEMS_PER_PAGE);
 };
 
+
+
+
 let shopPage = async (req, res) => {
   try {
     const user = req.session.userData;
@@ -1145,7 +1092,7 @@ let arr =[];
 banners.forEach(x=>{
   arr.push( x.image[0])
 })
-console.log('banners found  is :',arr)
+// console.log('banners found  is :',arr)
 //-------------------- [banner part] ------------------
 
 
@@ -1222,6 +1169,9 @@ console.log('z-a sorting worked=======================================')
 
     let updatedProducts = await updatedProductsDiscount(product);
 
+
+    // console.log('the products that are going to be rendered is :',updatedProducts)
+
     res.render('shopPage', {
       userNameforProfile,
       category,
@@ -1256,7 +1206,7 @@ module.exports = {
   verifyOTP,
   resendOTP,
   signout,
-  shopPages,
+  shopPage,
   aProductPage,
   wishList,
   addProductToWishList,
@@ -1267,7 +1217,7 @@ module.exports = {
   addAddressatProfile,
   editAddress,
   removeAddress,
-  shopPage
+  
 };
 
 

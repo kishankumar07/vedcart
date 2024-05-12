@@ -62,7 +62,7 @@
     style="background-image: url('userAssets/home/assets/images/checkoutPage.jpg')"
   >
     <div class="container">
-      <h1 style="color: azure;" class="page-title">Shopping Cart<span>Shop</span></h1>
+      <h1 style="color: azure;" class="page-title">Shopping Cart<span></span></h1>
     </div>
     <!-- End .container -->
   </div>
@@ -431,7 +431,7 @@ function updateUI(data, productId) {
         
         
 
-        totalOfSubtotals.textContent = data. totalOfSubTotals + '.00';
+        totalOfSubtotals.textContent ='₹' + data.totalOfSubTotals + '.00';
 
        
       // Calculate total including subtotal and shipping charges

@@ -57,14 +57,13 @@ const ordersSchema = mongoose.Schema({
   },
   date: {
     type: Date,
-  },
+  }, 
 
   address: {
     type: Object,
   },
   couponDiscount: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Coupon",
+    type:Number,
   },
 
 },

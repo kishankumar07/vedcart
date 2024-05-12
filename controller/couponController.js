@@ -164,11 +164,11 @@ const applyCoupon = async (req, res) => {
         console.log('reached here at apply coupon')
         const userId = req.session.userData;
 
-console.log('this is the userId :',userId)
+// console.log('this is the userId :',userId)
 
         const { couponCode } = req.body;
   
-console.log('this is teh coupon code :',couponCode)
+// console.log('this is teh coupon code :',couponCode)
 
         const currentDate = new Date();
 
@@ -177,13 +177,13 @@ console.log('this is teh coupon code :',couponCode)
             model: "Product",
         });
 
-        console.log('this is the cartData :',cartData)
+        // console.log('this is the cartData :',cartData)
 
         const totalPriceTotal = cartData.products.reduce((total, product) => {
             return total + product.totalPrice;
         }, 0);
   
-console.log('this is the totalPriceTotal :',totalPriceTotal)
+console.log('this is the totalPriceTotal at coupon apply controller :',totalPriceTotal)
 
         
        
@@ -194,14 +194,14 @@ console.log('this is the totalPriceTotal :',totalPriceTotal)
           "userUsed.used": { $ne: true }
       });
       
-console.log('this is the coupon found :',coupon)
+// console.log('this is the coupon found at apply coupon controller:',coupon)
 
 
       if (coupon) {
           const alreadyUsed = coupon.userUsed.some((user) => user.userid.toString() === userId && user.used === true);
           
            
-           console.log('this is the already used coupon:',alreadyUsed)
+        //    console.log('this is the already used coupon:',alreadyUsed)
 
           if (!alreadyUsed) {
 
@@ -213,16 +213,16 @@ console.log('this is the coupon found :',coupon)
       
             console.log('this is teh discount applied to the subtotal : ',discount)
 
-              res.json({ success: `${coupon.couponName} added`, totalPriceTotal, discount });
+              res.json({ success: `${coupon.couponName} added`, totalPriceTotal, discount,couponCode });
           } else {
               res.json({ already: 'Coupon already used by this user' });
           }
       } else {
-          res.json({ error: 'Coupon not found or not applicable' });
+          res.json({ error: 'Coupon not found or not applicable for this order' });
       }
       
     } catch (err) {
-     
+     console.log('error at addding the coupon :',err)
         res.status(500).json({ error: 'Internal Server Error' });
     }
   };

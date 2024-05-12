@@ -289,7 +289,8 @@
 
 
 
-	            					
+  <input type="hidden" value="<%= couponCode %>" id="couponCodeHiddenField">
+
 		                		</div><!-- End .col-lg-9 -->
 		                		<aside class="col-lg-3">
 		                			<div class="summary">
@@ -316,7 +317,8 @@
 										<% if (totalWithoutDiscount - totalWithDiscount> 0) { %>
 											<tr>
 												<td class="in-stock">Discount:</td>
-												<td class="in-stock">
+												
+												<td class="couponDiscount">
 													
 													<%= totalWithoutDiscount - totalWithDiscount %>
 												</td>
@@ -477,9 +479,15 @@ const paymentMethod = document.getElementById("payment").value;
 
 
 
-const couponCode = document.getElementById('couponCode').value;
+const couponCode = document.getElementById('couponCodeHiddenField').value;
 
+// Check if the element exists and has content
 
+    // Get the text content and parse it to a number (assuming it's a numeric value)
+    
+
+    
+console.log(`typeof coupon code is ${typeof couponCode} and coupon code is ${couponCode}`)
 
 //address validation when address is not selected
 if (selectedAddress === '' || selectedAddress === undefined) {
@@ -662,6 +670,13 @@ async function applyCoupon() {
 
         if (data.success) {
             window.location.href = `/checkout?coupon=${couponCode}`
+			// document.getElementById('couponCodeHiddenField').value = couponCode;
+
+			// document.querySelector('.table-summary .coupon').textContent = data.couponCode;
+			// document.querySelector('.table-summary .couponDiscount').textContent = data.discount;
+
+
+
             document.getElementById('couponMessage').innerHTML = data.success;
 
             // Disable the select dropdown and apply coupon button

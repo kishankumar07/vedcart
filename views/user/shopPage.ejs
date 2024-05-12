@@ -63,6 +63,13 @@
     height: 100%;
 }
 
+/* to change the font of add to cart  */
+/* Custom CSS to adjust the font size of the "Go to Cart" button */
+.btn-product.btn-cart {
+    font-size: 14px; /* Adjust the font size as needed */
+}
+
+
 </style>
 
   <body>
@@ -193,7 +200,7 @@
 
                   
                           </a>
-
+<!-- you might get confused about what this 'user'is . it is actually the user._id in user model -->
                           <div class="product-action-vertical">
                             <% if (user) { %>
                               <a
@@ -257,15 +264,19 @@
                                 <div class="row">
 
 
-                                    <br>
-                                    <span class="original-price  " style="margin-left: 10px;text-decoration: line-through;">₹
-                                        <%= product.price %>
-                                    </span>
-                                   
-                                    <span class="offer-price" style="color: red;font-size:16px ;">
-                                       (<%= product.offer ? product.offer.discount :
-                                            product.category.offer.discount %> % Off)
-                                    </span> 
+                                  <br>
+                                  <span class="original-price" style="margin-left: 10px;text-decoration: line-through;">₹<%= product.price %></span>
+                                  <% 
+                                     const productOffer = product.offer;
+                                     const categoryOffer = product.category ? product.category.offer : null;
+                                     const discount = productOffer && categoryOffer ? Math.max(productOffer.discount, categoryOffer.discount) : (productOffer ? productOffer.discount : (categoryOffer ? categoryOffer.discount : 0));
+                                  %>
+                                  <% if (discount > 0) { %>
+                                      <span class="offer-price" style="color: red; font-size: 16px;">
+                                          (<%= discount %> % Off)
+                                      </span>
+                                  <% } %>
+                                  
 
 
                                 </div>
@@ -717,7 +728,7 @@ else{
         
         
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error at adding product to wishlist:', error);
         });
 
 }
@@ -727,81 +738,95 @@ else{
 
 
 // ---------------  adding a product to cart -----------------------------
-function addToCart(userId,productId) {
-
-// let quantity = document.getElementById('qty').value;
-// console.log('this is the quantity ::',quantity);
-
-
-
-if(!userId || userId === 'null'){
-Swal.fire({
-title: 'Login to Purchase',
-text: 'To make a purchase, please log in.',
-icon: 'info',
-showCancelButton: true,
-confirmButtonColor: '#3085d6',
-cancelButtonColor: '#d33',
-confirmButtonText: 'Login'
-}).then((result) => {
-if (result.isConfirmed) {
-  
-  window.location.href = '/signin';
+function addToCart(userId, productId) {
+    if (!userId || userId === 'null') {
+        Swal.fire({
+            title: 'Login to Purchase',
+            text: 'To make a purchase, please log in.',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Login'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/signin';
+            }
+        });
+    } else {
+        let quantity = 1; // Default quantity
+        // Check if the product is already in the cart
+        const addToCartButton = document.querySelector(`[data-product-id="${productId}"]`);
+        if (addToCartButton && addToCartButton.dataset.added === 'true') {
+            // Product is already added to cart, show warning message
+            Swal.fire({
+                icon: 'warning',
+                title: 'Product already in cart!',
+                text: 'This product is already in your cart. You can proceed to the cart page.',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Go to Cart'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/cart';
+                }
+            });
+        } else {
+            // Fetch to add the product to cart
+            fetch(`/addToCart/${productId}/${quantity}/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    quantity: quantity,
+                }),
+            })
+            .then((response) => {
+                if (response.status === 401) {
+                    throw new Error('User not authenticated. Please login first.');
+                }
+                if (response.status === 400) {
+                    return response.json().then(data => {
+                        throw new Error(data.error);
+                    });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log('Response from the backend while product added to cart:', data);
+                // Update button text and mark product as added to cart
+                if (addToCartButton) {
+                    // addToCartButton.innerText = 'Go to Cart';
+                    addToCartButton.dataset.added = 'true';
+                    Swal.fire({
+                    icon: 'success',
+                    title: 'Product added to cart!',
+                    showConfirmButton: false,
+                    timer: 500,
+                });
+                }else if (data && data.error === "You're blocked by the admin") {
+                    // User is blocked by admin, show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Blocked by admin',
+                        text: 'You have been blocked by the admin. Please contact support for further assistance.',
+                    });
+                }
+               
+            })
+            .catch((error) => {
+                console.error('Error at product addition to the cart :', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error adding to cart',
+                    text: error.message || 'An error occurred while adding the product to the cart.',
+                });
+            });
+        }
+    }
 }
-});
-}
-// else if(quantity === '0'){
-//  console.log('else if is only working');
-//   addToCartButton.disabled = true;
-
-
-// }
-else{
-let quantity = 1;
-
-              fetch(`/addTocart/${productId}/${quantity}/${userId}`, {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                      quantity: quantity,
-                  }),
-              })
-              .then((response) => {
-                  if (response.status === 401) {
-                      throw new Error('User not authenticated. Please login first.');
-                  }
-                  return response.json();
-              })
-              
-              .then((data) => {
-                  console.log('Response from the backend while product added to cart:', data);
-      
-                  Swal.fire({
-                      icon: 'success',
-                      title: 'Product added to cart!',
-                      showConfirmButton: false,
-                      timer: 500, 
-
-                  })})
-                 
-
-              .catch((error) => {
-                  console.error('Error at product addition to the cart :', error);
-                  Swal.fire({
-                      icon: 'error',
-                      title: 'Error adding to cart',
-                      text: error.message || 'An error occurred while adding the product to the cart.',
-                  });
-              });
-       }
-
-}
-
-
-
-
 
 
 

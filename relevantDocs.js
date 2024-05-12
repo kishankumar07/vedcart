@@ -1541,18 +1541,183 @@ function confirmDelete(index, productId, event) {
 //
 
 
+const updatedProductsDiscount = async (products) => {
+  try {
+    // Retrieve offers for products and categories
+    const productOffers = await Promise.all(products.map(async (product) => {
+      if (product.offer) {
+        return product.offer;
+      }
+      return null;
+    }));
 
-// Parse existingImages JSON string to get the array of existing image URLs
-const existingImages = JSON.parse(productData.existingImages);
+    const categoryOffers = await Promise.all(products.map(async (product) => {
+      if (product.category && product.category.offer) {
+        return product.category.offer;
+      }
+      return null;
+    }));
 
-// Extract filenames from image URLs
-const imageFilenames = existingImages.map(imageUrl => {
-    // Split the URL by '/' to get the filename
-    const parts = imageUrl.split('/');
-    // Return the last part (filename)
-    return parts[parts.length - 1];
+    // Count the number of offers
+    const numProductOffers = productOffers.filter(offer => offer !== null).length;
+    const numCategoryOffers = categoryOffers.filter(offer => offer !== null).length;
+
+    // Compare counts and choose the offer type
+    const chosenOffers = numProductOffers > numCategoryOffers ? productOffers : categoryOffers;
+
+    // Apply discounts based on chosen offers
+    return await Promise.all(products.map(async (product, index) => {
+      const offer = chosenOffers[index];
+
+      if (offer) {
+        const discount = Math.round(product.price * (offer.discount / 100));
+        product.offerprice = product.price - discount;
+      } else {
+        product.offerprice = undefined;
+      }
+
+      await product.save();
+      return product;
+    }));
+  } catch (error) {
+    console.error("Error updating products:", error);
+    throw error;
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+document.addEventListener("DOMContentLoaded", function() {
+  // Your script here
+
+  //---------- cropper.js ------------------------------
+  let addProducts = document.getElementById('editProductPage');
+  if(addProducts){
+      let submitForm = document.getElementById("submitForm");
+      let productName = document.getElementById("productName");
+      let productDesc = document.getElementById("productDesc");
+      let productPrice = document.getElementById("productPrice");
+      let productQty = document.getElementById("productQty");
+      let productBrand = document.getElementById('productBrand');
+      let date = document.getElementById('date');
+      
+      submitForm.addEventListener("click", async (ev) => {
+          ev.preventDefault();
+
+          // Clear previous error messages
+          let errorMessages = document.querySelectorAll('.error-message');
+          errorMessages.forEach(message => message.textContent = '');
+
+          // Check for whitespace in product name
+          if(productName.value.trim() === ''){
+              document.getElementById('name-error').textContent = 'Product name cannot be empty';
+              return;
+          }
+
+          // Check for whitespace in product description
+          if(productDesc.value.trim() === ''){
+              document.getElementById('description-error').textContent = 'Description cannot be empty';
+              return;
+          }
+
+          // Check if product quantity is less than 0
+          if(parseInt(productQty.value) < 0){
+              document.getElementById('quantity-error').textContent = 'Quantity must be a positive number';
+              return;
+          }
+
+          // Check for whitespace in product brand
+          if(productBrand.value.trim() === ''){
+              document.getElementById('brand-error').textContent = 'Brand name cannot be empty';
+              return;
+          }
+
+          // Check for whitespace in product price
+          if(productPrice.value.trim() === ''){
+              document.getElementById('price-error').textContent = 'Price cannot be empty';
+              return;
+          }
+
+          // Check for whitespace in product date
+          if(date.value.trim() === ''){
+              document.getElementById('date-error').textContent = 'Date cannot be empty';
+              return;
+          }
+
+          // If all validations pass, submit the form
+          document.getElementById("addProductForm").submit();
+      });
+  }
 });
 
-console.log('image filenames are:', imageFilenames);
 
-// Now you can use imageFilenames to save to the database or perform any other operations you need
+
+
+
+
+
+
+const placeTheOrder = async (req, res) => {
+  try {
+      console.log('order placing started')
+      const userId = req.session.userData;
+      const { couponCode, paymentMethod, selectedValue } = req.body;
+
+      console.log('payment method selected is :', paymentMethod);
+
+      // ...
+
+      // Calculate total discount directly from the coupon amount received from the frontend
+      let discountAmount = 0;
+      if (couponCode) {
+          discountAmount = couponCode; // Assuming couponCode contains the discount amount
+          totalWithDiscount -= discountAmount;
+      }
+
+      console.log('discount amount at place order:', discountAmount);
+
+      // ...
+
+      // Calculate shipping charges based on totalWithDiscount
+      let shippingCharges = totalWithDiscount > 500 ? 'free delivery' : '₹40.00';
+
+      // Adjust grand total based on shipping charges
+      let grandTotal = shippingCharges === '₹40.00' ? totalWithDiscount + 40 : totalWithDiscount;
+
+      // ...
+
+      // Construct order data
+      const orderData = {
+          // ...
+          couponDiscount: discountAmount,
+          total: totalWithDiscount,
+          // ...
+      };
+
+      // ...
+  } catch (error) {
+      console.error('Error placing order at placeTheOrder of ordercontroller:', error);
+      res.status(500).json({ success: false, message: 'An error occurred while processing the order.' });
+  }
+};
+
+
+
+
+
+
+
+

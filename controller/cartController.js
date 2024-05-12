@@ -51,8 +51,8 @@ const loadCart = async (req, res) => {
         //subtotalwithnoshipping charge is the thing at the right most part of the cart page
         const subtotalWithNoShippingCharge = cartData.products.reduce((total, product) => {
           let totalPrice = 0; // Initialize totalPrice variable here
-          if (product.productId.offerprice) {
-              totalPrice = product.productId.offerprice * product.quantity;
+          if (product.productId?.offerprice) {
+              totalPrice = product.productId?.offerprice * product.quantity;
           } else if (product.productId.price) {
               totalPrice = product.productId.price * product.quantity;
           }
@@ -90,124 +90,93 @@ let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoS
 
 //==========================    add to cart   ==========================
 
+
+
 const addToCart = async (req, res) => {
   try {
-      const productId = req.params.productId;
-      const userId = req.session.userData;
-      const quantity = parseInt(req.params.quantity);
-let {isBlocked} = await User.findById(userId);
+    const productId = req.params.productId;
+    const userId = req.session.userData;
+    const quantity = parseInt(req.params.quantity);
 
-// console.log('value of user at isBlocked at add to cart controller :',isBlocked)
+    // Check if user is logged in
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized - User not authenticated" });
+    }
 
-      // console.log('this is the userId',userId);
-        // user logged or not checking 
-        if (!userId ) {
+    // Check if user is blocked
+    let { isBlocked } = await User.findById(userId);
+    if (isBlocked) {
+     
+      return res.status(400).json({ error: "You're blocked by the admin" });
+    }
 
-          console.log('user not found at add to cart controller')
+    // Find the product
+    const productFound = await Product.findById(productId);
+    if (!productFound) {
+      
+      return res.status(400).json({ error: "Invalid product is added." });
+    }
 
-          return res.status(401).json({ error: "Unauthorized - User not authenticated" });
+    // Check product stock
+    if (productFound.quantity === 0) {
+      return res.status(400).json({ error: "Product out of stock." });
+    }
 
-          //to check whether the user has been blocked
-      }else if(isBlocked){
-        return res.json({data:false,message: 'Blocked by the admin'})
+    // Proceed with adding to cart
+    const cart = await Cart.findOne({ userId });
+
+    if (cart) {
+      const existingProductIndex = cart.products.findIndex(
+        (item) => item.productId.toString() === productId
+      );
+
+      // If the product already exists in the cart
+      if (existingProductIndex !== -1) {
+        return res.status(400).json({ error: "Product already in the cart." });
       }
 
+      // If the product does not exist in the cart, add it
+      const productPrice = productFound.offerprice || productFound.price;
+      const totalPrice = quantity * productPrice;
 
+      cart.products.push({
+        productId: productId,
+        quantity: quantity,
+        productPrice: productPrice,//this one need not required
+        totalPrice: totalPrice,
+        name: productFound.name
+      });
 
-
-      const productFound = await Product.findOne({ _id: productId })
-      .populate({
-        path:'category',
-        populate:{
-          path:'offer',
-          model:'Offer'
-        }
-      })
-      .populate({
-        path:'offer',
-        model:'Offer'
-      })
-
-
-
-    // console.log('productFound when add to cart :::::::::::::::::::::::::::::::::::',productFound)
-
-
-
-      const cart = await Cart.findOne({ userId });
-
-      if (productFound) {
-
-        //if the session logged has cart
-        if (cart) {
-            const existingProductIndex = cart.products.findIndex(
-                (item) => item.productId.toString() === productId
-            );
-
-
-// console.log('this is the existing product index :',existingProductIndex)
-
-            //if the product already exists in the cart ??
-
-            //note that only the quantity and total price is increading, still the product price is always the same, either the offerprice or the default price of that product
-            if (existingProductIndex !== -1) {
-                const existingProduct = cart.products[existingProductIndex];
-
-                existingProduct.quantity += quantity;
-
-                existingProduct.totalPrice = existingProduct.quantity * existingProduct.productPrice;
-
-                //just add that new product to the existing array
-            } else {
-
-        
-                const productPrice = productFound.offerprice || productFound.price
-                const totalPrice = quantity * productPrice
-
-                cart.products.push({
-                    productId: productId,
-                    quantity: quantity,       
-                    productPrice: productPrice,
-                    totalPrice: totalPrice,
-                   name: productFound.name
-                });
-            }
-
-            await cart.save();
-
-            //if the user has no existing cart ??
-        } else {
-
-
-            const productPrice = productFound.offerprice || productFound.price
-            const totalPrice = quantity * productPrice
-
-            const newCart = new Cart({
-                userId: userId,
-                products: [
-                    {
-                        productId: productId,                      
-                        quantity: quantity,
-                        productPrice: productPrice,
-                        totalPrice: totalPrice,   
-                        name: productFound.name,
-                        
-                    },
-                ],
-            });
-
-            await newCart.save();
-        }
-
-        return res.status(200).json({data:true, message: "Product added to cart successfully." });
+      await cart.save();
     } else {
-        return res.status(400).json({ error: "Invalid product." });
+      // If the user has no existing cart, create a new one
+      const productPrice = productFound.offerprice || productFound.price;
+      const totalPrice = quantity * productPrice;
+
+      const newCart = new Cart({
+        userId: userId,
+        products: [
+          {
+            productId: productId,
+            quantity: quantity,
+            productPrice: productPrice,
+            totalPrice: totalPrice,
+            name: productFound.name,
+          },
+        ],
+      });
+
+      await newCart.save();
     }
-} catch (error) {
-    console.error('error at addto cart controller',error);
+
+    return res.status(200).json({ data: true, message: "Product added to cart successfully." });
+
+  } catch (error) {
+    console.error('Error at add to cart controller:', error);
     return res.status(500).json({ error: "Internal server error." });
-}
+  }
 };
+
 
 
 
@@ -337,7 +306,7 @@ const loadCheckout = async (req, res) => {
     );
     
 
-console.log('coupons available :',coupon)
+// console.log('coupons available at checkout load are:',coupon)
 
 
 // console.log('this is the user id :',userId)
@@ -434,7 +403,7 @@ const cartData = await Cart.findOne({ userId }).populate({
 
 
 
-console.log('these are theproducts in cart ;::',productsInCart)
+// console.log('these are theproducts in cart at checkout page;::',productsInCart)
 
 
 // Update cartData with applied offers

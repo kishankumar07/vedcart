@@ -24,11 +24,26 @@ router.get('/users',adminAuth.isLoggedIn,adminController.userField);
 router.get('/searchUser', adminAuth.isLoggedIn, adminController.loadSearchQuery);
 router.post('/toggleBlock',adminAuth.isLoggedIn,adminController.toggleBlockStatus)
 
-router.get('/salesReport',adminAuth.isLoggedIn,adminController.salesReport)
 
-router.post('/customSort',adminAuth.isLoggedIn,adminController.customSort)
+
+
+
+//--------sales report--------------------
+router.get('/salesReport',adminAuth.isLoggedIn,adminController.loadSalesReport)
+
+router.get('/customDateReport',adminAuth.isLoggedIn,adminController.customDateReport)
+
+router.get('/salesDaily',adminAuth.isLoggedIn,adminController.dailySalesReport)
+
+router.get('/salesWeekly',adminAuth.isLoggedIn,adminController.generateWeeklyReport)
+
+router.get('/salesMonthly',adminAuth.isLoggedIn,adminController.generateMonthlyReport)
+
+router.get('/salesYearly',adminAuth.isLoggedIn,adminController.generateYearlyReport)
+
+
+
 //=========product part============================
-
 
 router.get('/product',productController.productListPage);
 
