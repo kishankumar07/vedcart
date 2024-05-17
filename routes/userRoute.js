@@ -35,6 +35,9 @@ router.post("/signup", userController.createUser);
 router.post("/verifyOTP", userController.verifyOTP);
 router.post("/resendOTP",userController.resendOTP);
 router.get('/signout',userController.signout);
+router.post('/verify-email',userController.verifyEmail)
+
+
 
 
 router.get("/shop", userController.shopPage);
@@ -89,10 +92,10 @@ router.delete('/removeaddress/:id', userAuth.isLoggedIn,userAuth.isBlocked,userA
 
 router.get("/orderdetails",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.loadOrderDetailsPage)
   
+router.get("/orderdetails",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.loadOrderDetailsPage)
 
 
-
-router.post('/cancelOrder',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified, orderController.cancelOrPlacedOrder);
+router.get('/download-invoice',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified, orderController.loadDownloadInvoice);
 
 router.post('/returnOrder/:orderId/:productId',orderController.returnOrder)
 

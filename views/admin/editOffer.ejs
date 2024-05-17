@@ -95,14 +95,17 @@ function validateOfferForm() {
     }
 
     // Discount Percentage Validation (Optional)
-    if (discountPercentage !== '') {
-        if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
+    if (discountPercentage == '') {
+        document.getElementById('offerDiscountPercentageErr').innerText = 'Discount percentage cant be empty';
+        isValid = false;
+    }
+       else if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
             document.getElementById('offerDiscountPercentageErr').innerText = 'Please enter a valid discount percentage between 0 and 100';
             isValid = false;
         } else {
             document.getElementById('offerDiscountPercentageErr').innerText = '';
         }
-    }
+    
 
     // Date Range Validation
     if (startingDate !== '' && endingDate !== '') {
@@ -122,53 +125,53 @@ function validateOfferForm() {
     return isValid;
 }
 
-
-// Event listener for form submission
 document.getElementById('offerForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault(); 
     if (validateOfferForm()) {
+        const formData = new FormData(this);
 
+       
+        const offerData = {};
+        formData.forEach((value, key) => {
+            offerData[key] = value;
+        });
 
- const formData = new FormData(this);
-  // Convert FormData to JSON object
-  const offerData = {};
-            formData.forEach((value, key) => {
-                offerData[key] = value;
-            });
-
-            console.log('offerdata object ',offerData);
-
-        
-            axios.post('/admin/editOffer', offerData)
-                .then(function(response) {
-                   
-                   if(response.data.data === false){
-                    
+        axios.put('/admin/editOffer', offerData)
+            .then(function(response) {
+                if (response.data.data === false) {
+                    // Offer edit failed
                     iziToast.warning({
-                     title: response.data.message,            
-                     position: 'topRight',
-                     theme: 'orange', 
-                     color: 'black',
-                     backgroundColor: 'orange'
-                        });
-                   }
-                   else{
+                        title: response.data.message,
+                        position: 'topRight',
+                        theme: 'orange',
+                        color: 'black',
+                        backgroundColor: 'orange'
+                    });
+                } else {
+                    
                     iziToast.success({
-                     title: response.data.message,            
-                     position: 'topRight',
-                     theme: 'orange', 
-                     color: 'white',
-                     backgroundColor: '#79e313'
-                        });
-                        window.location.href = '/admin/offer'
-                   }
-                   
-                })
-                .catch(function(error) {
-                    console.error('Error:', error);
-                    // Handle error response
-                    alert('Error occurred while creating the offer.',error); // Notify user about the error
-                });
+                        title: response.data.message,
+                        position: 'topRight',
+                        theme: 'orange',
+                        color: 'white',
+                        backgroundColor: '#79e313'
+                    });
+                    setTimeout(() => {
+                        window.location.href = '/admin/offer';
+                    }, 2000);
+                }
+            })
+            .catch(function(error) {
+               
+                console.error('Error while offer is edited:', error);
+                iziToast.warning({
+                        title: error.response.data.error,
+                        position: 'topRight',
+                        theme: 'orange',
+                        color: 'black',
+                        backgroundColor: 'orange'
+                    });
+            });
     }
 });
 

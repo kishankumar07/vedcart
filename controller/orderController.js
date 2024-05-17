@@ -569,7 +569,7 @@ const loadOrder = async (req, res) => {
 console.log('this is at the allorder',allOrders);
 
 
-        res.render("orderView", { allOrders, totalPages, currentPage: page  });
+        res.render("orderView", { allOrders, totalPages, currentPage: page,moment  });
     } catch (error) {
         res.redirect("/error")
         console.log('error at loadOrder at admin',error);
@@ -736,6 +736,19 @@ console.log('initiated the return order request at order view page of the user p
     }
 }
 
+//-------------------------- load the invoice to download -----------------
+
+let loadDownloadInvoice = async(req,res)=>{
+    try{
+        let {id} = req.query;
+        let orderPlaced = await Orders.findById(id)
+        console.log('order placed is :',orderPlaced)
+        res.render('invoice',{orderPlaced,moment})
+    }catch(err){
+        console.log('error at loading the invoice',err)
+        res.redirect('/error')
+    }
+}
 
 module.exports = {
     placeTheOrder,
@@ -745,7 +758,8 @@ module.exports = {
     loadOrder,
     verifyPayment,
     changeStatus,
-    returnOrder
+    returnOrder,
+    loadDownloadInvoice
 };
 
 

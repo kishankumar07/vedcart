@@ -4,7 +4,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
 
-<h1> Sales Report</h1>
+<h1> <%= reportType %> Sales Report</h1>
+
 
 <div class="d-flex justify-content-end pe-4 pt-2">
     <div class="dropdown">
@@ -44,19 +45,28 @@
                 <% report.forEach((order, index) => { %>
                     <tr>
                         <td><%= index + 1 %></td>
-                        <td><%= order._id %></td>
+                        <td><%= moment(order._id).format('DD-MM-YYYY') %></td>
                         <td><%= order.totalOrders %></td>
-                        <td>₹<%= order.totalAmount.toFixed(2) %></td>
+                        <td>₹<%= order.totalSubTotal.toFixed(2) %></td>
                       
-                        <td><%= totalCouponAmount %></td>
+                        <td><%= order.totalCouponDiscount %></td>
                       
                     </tr>
                 <% }); %>
+
+
+
+
                 <tr> 
                     <td colspan="2"><strong>Total:</strong></td> 
-                    <td><%= totalOrders %></td> 
-                    <td>₹<%= totalAmount.toFixed(2) - totalCouponAmount %></td> 
+                    <td><%= (report.reduce((acc,curr) => acc+curr.totalOrders,0)) %></td> 
+                    <td>₹<%= (report.reduce((acc,curr)=> acc+curr.totalSubTotal,0)).toFixed(2) %>
+                    </td> 
+                    <td><%= (report.reduce((acc,curr)=> acc+curr.totalCouponDiscount,0)) %></td>
                 </tr>
+
+
+                
             </tbody>   
         </table>
     </div>
@@ -130,3 +140,13 @@
 
 
 <%- include('./layouts/footer') %>
+
+
+
+
+
+
+
+
+
+

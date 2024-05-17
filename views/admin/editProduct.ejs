@@ -4,9 +4,8 @@
 
 <style>
     .view-image {
-    width: 100%; /* Adjust the width as needed */
-    height: auto; /* Adjust the height as needed */
-    /* Add any other styles as needed */
+    width: 100%; 
+    height: auto; 
 }
 
 
@@ -28,7 +27,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <!-- CropperJS JS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
-
 
 
 
@@ -99,7 +97,7 @@
                             </div>
 
 
- <!-- Display Images -->
+ <!-- Display Images already present -->
  <div class="mb-4">
     <label class="form-label">Images</label>
     <% product.images.forEach((image, index) => { %>
@@ -192,6 +190,78 @@ document.addEventListener("DOMContentLoaded", function() {
       croppedImagesContainer.innerHTML= ''
 
 
+//form validation ----------------
+function validateForm() {
+      let isValid = true;
+
+      // Validate product name
+      if (productName.value.trim() === '') {
+      document.getElementById('name-error').textContent = 'Product name is required';
+      isValid = false;
+  } else if (productName.value !== productName.value.trim()) {
+      document.getElementById('name-error').textContent = 'Product name should not have leading or trailing spaces';
+      isValid = false;
+  } else {
+      document.getElementById('name-error').textContent = '';
+  }
+
+      // Validate product description
+      if (productDesc.value.trim() === '') {
+      document.getElementById('description-error').textContent = 'Product description is required';
+      isValid = false;
+  } else if (productDesc.value !== productDesc.value.trim()) {
+      document.getElementById('description-error').textContent = 'Product description should not have leading or trailing spaces';
+      isValid = false;
+  } else {
+      document.getElementById('description-error').textContent = '';
+  }
+
+       // Validate product price
+  const priceValue = parseFloat(productPrice.value.trim());
+  if (isNaN(priceValue)) {
+      document.getElementById('price-error').textContent = 'Product price is required and should be a number';
+      isValid = false;
+  } else if (priceValue < 0) {
+      document.getElementById('price-error').textContent = 'Product price cannot be negative';
+      isValid = false;
+  } else {
+      document.getElementById('price-error').textContent = '';
+  }
+
+       // Validate product quantity
+  const quantityValue = parseFloat(productQty.value.trim());
+  if (isNaN(quantityValue)) {
+      document.getElementById('quantity-error').textContent = 'Product quantity is required';
+      isValid = false;
+  } else if (quantityValue < 0) {
+      document.getElementById('quantity-error').textContent = 'Stock value cannot be negative';
+      isValid = false;
+  } else {
+      document.getElementById('quantity-error').textContent = '';
+  }
+
+      // Validate product brand
+      if (productBrand.value.trim() === '') {
+      document.getElementById('brand-error').textContent = 'Product brand is required';
+      isValid = false;
+  } else if (productBrand.value !== productBrand.value.trim()) {
+      document.getElementById('brand-error').textContent = 'Product brand should not have leading or trailing spaces';
+      isValid = false;
+  } else {
+      document.getElementById('brand-error').textContent = '';
+  }
+
+      // Validate product category
+      let productCatChecked = document.querySelector('input[name="productCat"]:checked');
+      if (!productCatChecked) {
+          document.getElementById('category-error').textContent = 'Please select a product category';
+          isValid = false;
+      } else {
+          document.getElementById('category-error').textContent = '';
+      }
+
+      return isValid;
+    }
 
 
 
@@ -200,18 +270,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
       inputImage.addEventListener("change", (event) => {
 
-console.log('event object is : ',event)
+// console.log('event object is : ',event)
          const files = event.target.files;
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']; // Add more image MIME types if needed
+         console.log('files that are targeted  :',files)
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg','image/webp']; 
 
-        if (files.length > 4) {
+        if (files.length > 3) {
     inputImage.value = '';
-    iziToast.error({
-        title: 'Error',
-        message: 'Select up to 4 images',
-        position: 'topCenter', // Adjust as needed
-        timeout: 2000, // Adjust as needed
-    });
+    const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+Toast.fire({
+  icon: "warning",
+  title: "Select upto 4 images",
+});
     return;
 }
 
@@ -219,12 +299,21 @@ console.log('event object is : ',event)
 for (let file of files) {
       if (!allowedTypes.includes(file.type)) {
           inputImage.value = '';
-          iziToast.error({
-              title: 'Error',
-              message: 'Only image files are allowed',
-              position: 'topCenter',
-              timeout: 2000,
-          });
+          const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+Toast.fire({
+  icon: "warning",
+  title:"Select only image files",
+});
           return;
       }
   }
@@ -236,6 +325,9 @@ for (let file of files) {
             document.querySelector('.image-preview').classList.remove('d-none'); 
           let divCount = previewImageContainer.querySelectorAll('.view-image').length;
          
+
+console.log('the div count is :',divCount)
+
           if(files.length + croppers.length >5){
             previewImageContainer.innerHTML = "";
             croppers.length = 0;
@@ -310,9 +402,19 @@ for (let file of files) {
 
 
       submitForm.addEventListener("click", async (ev) => {
-        console.log('reached here')
+        console.log('form submittted 1stly')
         let form = document.getElementById("addProductForm");
         ev.preventDefault();
+
+
+
+ // Validate the form
+ if (!validateForm()) {
+          return;
+      }
+
+
+
 
         let formData = new FormData();
 
@@ -360,23 +462,55 @@ formData.append("existingImages", JSON.stringify(existingImages));
             body: formData,
         }).then(response => response.json())
         .then((data) => {
-
-console.log('data received from the backend :',data)
-
-            if (data) {
-                Swal.fire({
-        title: 'Success!',
-        text: 'Product edited successfully',
-         icon: 'success',
-        confirmButtonText: 'OK',
-        }).then((result)=>{
-            if(result.isConfirmed){
-                window.location.href = '/admin/product'
-            }
-        })
-            }
-        })
-        .catch((error) => console.log(error));
+      if (data && data.message) {
+          // Show error message if product already exists
+          const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+Toast.fire({
+  icon: "warning",
+  title: data.message,
+});
+      } else {
+          // Redirect to product page on success
+          Swal.fire({
+              title: 'Success!',
+              text: 'Product edited successfully',
+              icon: 'success',
+              confirmButtonText: 'OK',
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  window.location.href = '/admin/product';
+              }
+          });
+      }
+  })
+  .catch((error) => {
+    console.log('error from backend after validation whle product edited ',error)
+    const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+Toast.fire({
+  icon: "warning",
+  title: error.message,
+});
+  });
     });
     
       

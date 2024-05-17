@@ -1,5 +1,14 @@
 <%- include('./layouts/header') %>
 
+<!-- css for the offer modals select option fields -->
+<style>
+  .large-dropdown {
+      width: 100%; /* Adjust the width as needed */
+      height: 45px; 
+      font-size: 18px; 
+  }
+</style>
+
 <section class="content-main">
   <div class="content-header">
     <div>
@@ -71,8 +80,8 @@
                     <img
                       src="/adminAssets/imgs/category/<%= product.images[i] %>"
                       alt="Product Image"
-                      width="50"
-                      height="50"
+                      width="60"
+                      height="60"
                     />
 
                     <% } %>
@@ -85,9 +94,9 @@
                 
                   <td>
                     <% if (product.quantity === 0) { %>
-                    <h5 style="color: red">0</h5>
+                    <h5 style="color: rgb(254, 48, 48)">0</h5>
                     <% } else if(product.quantity <=5) { %>
-                    <span style="color: red"> <%=product.quantity%> </span>
+                    <span style="color: rgb(224, 75, 75)"> <%=product.quantity%> </span>
                     <% } else if(product.quantity <=15) { %>
                     <span style="color: #3b5e33"> <%=product.quantity%></span>
                     <% }else{ %>
@@ -209,32 +218,33 @@
 
 
 
-<!-- Modal for category offer that pops up when clicked on create offer -->
+<!-- Modal for product offer that pops up when clicked on create offer -->
 <% productData.forEach(product=>{ %>
 	<div class="modal fade" id="productModal<%= product._id %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	  <div class="modal-dialog">
 		<div class="modal-content">
 		<div class="modal-header">
-		  <h5 class="modal-title">Select Offer</h5>
+		  <h3 class="modal-title">Select Offer</h3>
 		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 			<span aria-hidden="true">&times;</span>
 		  </button>
 		</div>
+    <!-- <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/35cef27e-8ad8-4a75-8508-b8cfaa7e44d9/AjXOG6UmKP.json" background="transparent" speed="1" style="width: 450px; height: 300px" direction="1" playMode="normal" loop autoplay></dotlottie-player> -->
     <div class="modal-body">
       <div class="">
         <div class="custom_select">
-            <select class="form-select offer-select">
+          <select class="form-select offer-select large-dropdown">
               <option selected>Select Offer for the products</option>
                       <% offerData.forEach((offer) => { %>
-                        <option value="<%= offer._id %>"><%= offer.name %></option>
+                        <option value="<%= offer._id %>"><%= offer.name %>  (<%= offer.discount%>% off) </option>
                       <% }) %>
             </select>
         </div>
     </div>
   </div>
 		<div class="modal-footer">
-		  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-		  <button type="button" class="btn btn-primary save-offer-btn">Save</button>
+		  <button type="button" class="btn btn-secondary hover-up" data-dismiss="modal">Close</button>
+		  <button class="btn btn-light rounded font-sm mr-5 mx-2 px-5 text-body hover-up save-offer-btn" type="button">Save</button>
      
 		</div>
 	  </div>
@@ -316,28 +326,35 @@
       function toggleBlockStatus(productId) {
         // Make a fetch request to toggle the block status
         fetch(`/admin/toggleBlockProduct?id=${productId}`, {
-          method: "POST",
+          method: "PATCH",
         })
           .then((response) => response.json())
 
           .then((data) => {
-            if (data.value == "noRecord") {
+            console.log('data from backend after status was changed:',data)
+            if (data.error) {
               Swal.fire({
-                title: "Product not found",
+                title: data.error,
 
                 icon: "warning",
-                timer: 3000,
-                showConfirmButton: false, // This removes the button
+                timer: 2000,
+                showConfirmButton: false, 
               });
-            } else if (data.value == true) {
+            } else if (data.success) {
               window.location.reload();
-            } else if (data.value === false) {
-              window.location.href = "/error";
             }
           })
 
           .catch((error) => {
             console.error("Error toggling block status:", error);
+            Swal.fire({
+                title: 'error while changing the status',
+
+                icon: "error",
+                timer: 2000,
+                showConfirmButton: false, 
+              });
+
           });
       }
     });
@@ -396,6 +413,9 @@
                 )
                 .join("")}
             </td>
+            <td>
+              ${product.category.name}
+              </td>
 
             <td>${moment(product.date).format('DD-MM-YYYY')}</td>
 
@@ -446,7 +466,7 @@
           });
         }
       })
-      .catch((error) => console.error("Error searching products:", error));
+      .catch((error) => console.error("Error searching products at admin product search:", error));
   };
 
   // Add event listener for input changes

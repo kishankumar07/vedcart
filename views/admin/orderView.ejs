@@ -42,8 +42,9 @@
                         <tr>
                             <th>#ID</th>
                             <th scope="col">Name</th>
-                            <th scope="col">price</th>
-                            <th scope="col">Address</th>
+                            <th scope="col">Price </th>
+                            <th scope="col">Coupon</th>
+                            <th scope="col">Date</th>
                             <th scope="col">Product</th>
                             <th scope="col">Quantity</th>
                             <th scope="col">Image</th>
@@ -80,10 +81,18 @@
                             <td rowspan="<%= order.Products.length %>">
                                 ₹<%= order.grandTotal %>
                             </td>
+                            <td rowspan="<%= order.Products.length %>">
+                                <% if (order.couponDiscount) { %>
+                                    <span class="badge rounded-pill alert-success">₹<%= order.couponDiscount %></span>
+                                <% } else { %>
+                                    Nil
+                                <% } %>
+                            </td>
+                            
 
 
                             <td rowspan="<%= order.Products.length %>">
-                                <p class="text-center"> <%= `Name: ${order.address.name}, Mobile: ${order.address.mobile}, Pincode: ${order.address.pincode}, Address: ${order.address.addressDetails}, City: ${order.address.city}, State: ${order.address.state}` %></p>
+                                <p class="text-center"> <%= moment(order.date).format('DD-MM-YYYY') %></p>
                             </td>
 
                             <% } %>

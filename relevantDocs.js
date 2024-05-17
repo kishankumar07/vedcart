@@ -15,6 +15,149 @@ ItgtAc365vyuqpoorMcCUsrw
 
 
 
+//============== toast sample -----------------------\
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+Toast.fire({
+  icon: "warning",
+  title: "Product already exists!"
+});
+
+
+
+
+
+
+
+
+
+
+//-------------------- sales report ---------------------
+
+const moment = require('moment');
+
+// Calculate total sales
+const totalSales = await Orders.aggregate([
+  { $match: { date: { $gte: startDate, $lte: endDate } } },
+  { $group: { _id: null, totalSales: { $sum: "$grandTotal" } } }
+]);
+
+// Calculate total orders
+const totalOrders = await Orders.countDocuments({ date: { $gte: startDate, $lte: endDate } });
+
+// Product-wise sales
+const productSales = await Orders.aggregate([
+  { $match: { date: { $gte: startDate, $lte: endDate } } },
+  { $unwind: "$Products" },
+  { $group: { _id: "$Products.productId", totalQuantity: { $sum: "$Products.quantity" }, totalRevenue: { $sum: "$Products.subTotal" } } }
+]);
+
+// Order status distribution
+const orderStatusDistribution = await Orders.aggregate([
+  { $match: { date: { $gte: startDate, $lte: endDate } } },
+  { $group: { _id: "$orderStatus", count: { $sum: 1 } } }
+]);
+
+// Payment mode distribution
+const paymentModeDistribution = await Orders.aggregate([
+  { $match: { date: { $gte: startDate, $lte: endDate } } },
+  { $group: { _id: "$paymentMode", count: { $sum: 1 } } }
+]);
+
+// Time-based analysis
+const dailySalesTrend = await Orders.aggregate([
+  { $match: { date: { $gte: startDate, $lte: endDate } } },
+  { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$date" } }, totalSales: { $sum: "$grandTotal" } } }
+]);
+
+// Geographic analysis (if applicable)
+// You may need to modify this based on your schema and data structure
+
+// Once you have retrieved the necessary data, you can format it into a report format and present it as needed.
+
+
+
+
+
+
+
+
+// Calculate total revenue after deducting coupon discounts
+const totalRevenueAfterDiscount = await Orders.aggregate([
+  { $match: { date: { $gte: startDate, $lte: endDate } } },
+  { $group: { _id: null, totalGrandTotal: { $sum: "$grandTotal" }, totalCouponDiscount: { $sum: "$couponDiscount" } } },
+  { $project: { _id: 0, totalRevenueAfterDiscount: { $subtract: ["$totalGrandTotal", "$totalCouponDiscount"] } } }
+]);
+
+// Access the total revenue after deducting coupon discounts
+const totalRevenuhe = totalRevenueAfterDiscount[0].totalRevenueAfterDiscount;
+
+
+
+
+
+
+
+
+// Example function to calculate total revenue after adjustments
+async function calculateTotalRevenueAfterAdjustments(startDate, endDate) {
+  // Query orders for the specified date range
+  const orders = await Orders.find({ date: { $gte: startDate, $lte: endDate } });
+
+  let totalRevenue = 0;
+
+  // Loop through each order
+  for (const order of orders) {
+      let orderRevenue = order.grandTotal;
+      let orderDiscount = order.couponDiscount;
+
+      // Adjust revenue and discount for canceled products
+      for (const product of order.Products) {
+          if (product.orderStatus === 'cancelled') {
+              orderRevenue -= product.subTotal;
+              orderDiscount -= (product.price * product.quantity); // Adjust discount if applicable
+          }
+      }
+
+      // Adjust revenue and discount for returned products
+      for (const product of order.Products) {
+          if (product.orderStatus === 'returned') {
+              orderRevenue -= (product.price * product.quantity);
+              orderDiscount -= (product.price * product.quantity); // Adjust discount if applicable
+          }
+      }
+
+      totalRevenue += orderRevenue;
+  }
+
+  return totalRevenue;
+}
+
+// Usage example
+const startDate = new Date('2024-01-01');
+const endDate = new Date('2024-01-31');
+const totalRevenue = await calculateTotalRevenueAfterAdjustments(startDate, endDate);
+console.log('Total Revenue After Adjustments:', totalRevenue);
+
+
+
+
+
+
+
+//--------------------- end --------------------------
+
+
+
 
 
 const mongoose = require('mongoose');
@@ -931,8 +1074,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-
-
 // //from here add product temped -----------------------
 // <%- include('./layouts/header.ejs')%>
 
@@ -1600,75 +1741,6 @@ const updatedProductsDiscount = async (products) => {
 
 
 
-document.addEventListener("DOMContentLoaded", function() {
-  // Your script here
-
-  //---------- cropper.js ------------------------------
-  let addProducts = document.getElementById('editProductPage');
-  if(addProducts){
-      let submitForm = document.getElementById("submitForm");
-      let productName = document.getElementById("productName");
-      let productDesc = document.getElementById("productDesc");
-      let productPrice = document.getElementById("productPrice");
-      let productQty = document.getElementById("productQty");
-      let productBrand = document.getElementById('productBrand');
-      let date = document.getElementById('date');
-      
-      submitForm.addEventListener("click", async (ev) => {
-          ev.preventDefault();
-
-          // Clear previous error messages
-          let errorMessages = document.querySelectorAll('.error-message');
-          errorMessages.forEach(message => message.textContent = '');
-
-          // Check for whitespace in product name
-          if(productName.value.trim() === ''){
-              document.getElementById('name-error').textContent = 'Product name cannot be empty';
-              return;
-          }
-
-          // Check for whitespace in product description
-          if(productDesc.value.trim() === ''){
-              document.getElementById('description-error').textContent = 'Description cannot be empty';
-              return;
-          }
-
-          // Check if product quantity is less than 0
-          if(parseInt(productQty.value) < 0){
-              document.getElementById('quantity-error').textContent = 'Quantity must be a positive number';
-              return;
-          }
-
-          // Check for whitespace in product brand
-          if(productBrand.value.trim() === ''){
-              document.getElementById('brand-error').textContent = 'Brand name cannot be empty';
-              return;
-          }
-
-          // Check for whitespace in product price
-          if(productPrice.value.trim() === ''){
-              document.getElementById('price-error').textContent = 'Price cannot be empty';
-              return;
-          }
-
-          // Check for whitespace in product date
-          if(date.value.trim() === ''){
-              document.getElementById('date-error').textContent = 'Date cannot be empty';
-              return;
-          }
-
-          // If all validations pass, submit the form
-          document.getElementById("addProductForm").submit();
-      });
-  }
-});
-
-
-
-
-
-
-
 
 const placeTheOrder = async (req, res) => {
   try {
@@ -1714,10 +1786,17 @@ const placeTheOrder = async (req, res) => {
   }
 };
 
+//--------- forgot email
 
+const { value: email } = await Swal.fire({
+  title: "Input email address",
+  input: "email",
+  inputPlaceholder: "Type here"
+});
 
-
-
-
+if (email) {
+  // Redirect to OTP verification page
+  window.location.href = "/otp-verification?email=" + email;
+}
 
 

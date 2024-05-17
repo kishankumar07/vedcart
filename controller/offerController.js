@@ -7,7 +7,7 @@ const moment = require("moment")
 const loadOfferListingPage = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 6;
+        const limit = parseInt(req.query.limit) || 10;
 
         const totalOffers = await Offer.countDocuments();
         const totalPages = Math.ceil(totalOffers / limit);
@@ -54,14 +54,19 @@ let createOffer= async(req,res)=>{
     
         let {offerName,startDate,endDate,discountPercentage} = req.body;
 
-        //regex search for existing offer
+        
+        if (!offerName || !startDate || !endDate || !discountPercentage) {
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+
         let existingOffer = await Offer.findOne({ name: { $regex: new RegExp(offerName, 'i') } });
 
 
 
         if(existingOffer){
      
-           return res.json({data:false,message:'Offer already exists'})
+            return res.status(400).json({ data: false, message: "Offer already exists..!" });
         }else{
             let offerSaved = await new Offer({
                name:offerName,
@@ -69,8 +74,7 @@ let createOffer= async(req,res)=>{
                startingDate:startDate,
                endDate:endDate, 
             }).save();
-            console.log('this is the offer saved at database :',offerSaved);
-           return res.json({data:true,message:'Offer successfully created'});
+            return res.status(201).json({ data: true, message: "Offer successfully created" });
         }
     }catch(err){
         console.log('error at createOffer controller : ',err)
@@ -86,39 +90,56 @@ let createOffer= async(req,res)=>{
 let changeOfferStatus = async(req,res)=>{
     try{
         let offerId = req.query.id;
+
+        if (!offerId) {
+            return res.status(400).json({ error: "Offer ID is required" });
+        }
+
         let foundOfferFromDatabase = await Offer.findOne({_id:offerId});
 
-        
+        if (!foundOfferFromDatabase) {
+            return res.status(404).json({ error: "Offer not found" });
+        }
 
           foundOfferFromDatabase.status = foundOfferFromDatabase.status === true ? false : true;
 
-
-
         let value = await foundOfferFromDatabase.save();
 
-        res.redirect('/admin/offer')
+       res.status(200).json({success:true,message:"Offer status updated successfully"})
 
     }catch(err){
         console.log('error at changing the offer status',err)
-        res.redirect('/error')
+        res.status(500).json({ error: "Internal server error" });
     }
 }
 
 
 //-------------------  load the  edit the offer page  -------------------------
 
-let loadEditOffer = async(req,res)=>{
-    try{
+let loadEditOffer = async (req, res) => {
+    try {
+      
         let offerId = req.query.id;
+        if (!offerId) {
+            return res.status(500).redirect('/error')
+        }
+
+       
         let offerData = await Offer.findById(offerId);
 
+       
+        if (!offerData) {
+            return res.status(500).redirect('/error')
+        }
 
-        res.render('editOffer',{offerData,moment})
-    }catch(err){
-        console.log('error at the loadEditOffer page :',err);
+        
+        res.render('editOffer', { offerData, moment });
+    } catch (err) {
+        console.log('Error at loading the edit offer page:', err);
         res.redirect('/error');
     }
 }
+
 //============= Offer edit ==============================================
 
 let offerEdited = async(req,res)=>{
@@ -127,22 +148,32 @@ let offerEdited = async(req,res)=>{
     
         let {offerName,startDate,endDate,discountPercentage,id} = req.body;
 
+        if (!id) {
+            return res.status(400).json({ error: "Offer ID is required" });
+        }
 
-//clarification at start date and end date:
-// console.log('start date :',startDate);
-// console.log('end date :',endDate);
+        if (!offerName) {
+            return res.status(400).json({ error: "Offer name is required" });
+        }
+
+        if (!startDate || !endDate) {
+            return res.status(400).json({ error: "Start date and end date are required" });
+        }
+
+        if (!discountPercentage || isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
+           
+            return res.status(400).json({ error: "Discount percentage must be a number between 0 and 100" });
+        }
 
 
 
-        //regex search for existing offer
+
         let existingOffer = await Offer.findOne({ name: { $regex: new RegExp(offerName, 'i') },_id:{$ne: id} });
 
 
-       
-
         if(existingOffer){
            
-           return res.json({data:false,message:'Offer already exists'})
+           return res.json({data:false,message:'Another offer with same name already exists'})
         }else{
            
          await Offer.findByIdAndUpdate(
@@ -165,18 +196,22 @@ const deleteOffer = async (req,res)=>{
     try {
         
         const offerId = req.query.id
-        // console.log("offer",offerId);
+       
+        if (!offerId) {
+            return res.status(400).json({ error: "Offer ID is required" });
+        }
+
         const deleteOffer = await Offer.findByIdAndDelete(offerId)
 
         if(deleteOffer){
-            
-            res.status(200).json({message:"deleted successfully"})
-        }else{
-            res.status(404).json({error:"offer not found"})
-        }
+            return res.status(200).json({ message: "Deleted successfully" });
+      } else {
+          return res.status(404).json({ error: "Offer not found" });
+      }
     } catch (error) {
-        res.redirect("/error")
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.log('error while deleting offer at delete offer controller',error)
+        return res.status(500).json({ error: "Internal server error" });
+        
     }
 }
 

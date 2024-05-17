@@ -73,69 +73,66 @@
                         <th class="text-center">Id</th>
                         <th>Order Number</th>
                         <th>Order Status</th>
+                        <th>Payment method</th>
                         <th>Date</th>
                         <th>Customer Name</th>
                         <th>Total Price</th>
-                       
                     </tr>
                 </thead>
                 <tbody>
                     <% let orderCounter = 0; %>
                     <% orderDetails.forEach((order) => { %>
-                        <% order.Products.forEach((product) => { %>
+                      
                             <tr>
                                 <td><a href="#" class="fw-bold"><%= ++orderCounter %></a></td>
                                 <td><%= order._id %></td>
-                    
                                 <td style="color:
-                                <% if (product.orderStatus === 'cancelled' || product.orderStatus === 'returned') { %>
-                                    red;
-                                <% } else if (product.orderStatus === 'pending') { %>
-                                    blue;
-                                <% } else if (product.orderStatus === 'delivered') { %>
-                                    green;
-                                <% } else { %>
-                                    black; 
-                                <% } %>">
-                                
-                                <%= product.orderStatus %>
-                            </td>
-                            <td><%= order.formattedCreatedAt %></td>
-                            <td><%= order.address ? order.address.name : 'N/A' %></td>
-                                <td><span class="badge badge-pill badge-soft-success">₹<%= product.subTotal %></span></td>
+                                    <% if (order.orderStatus === 'cancelled' || order.orderStatus === 'returned') { %>
+                                        red;
+                                    <% } else if (order.orderStatus === 'pending') { %>
+                                        blue;
+                                    <% } else if (order.orderStatus === 'delivered') { %>
+                                        green;
+                                    <% } else { %>
+                                        black; 
+                                    <% } %>">
+                                    <%= order.orderStatus %>
+                                </td>
+                                <td><%= order.paymentMode %></td>
+                                <td><%= moment(order.date).format('DD-MM-YYYY') %></td>
+                                <td><%= order.address ? order.address.name : 'N/A' %></td>
+                                <td><span class="badge badge-pill badge-soft-success">₹<%= order.productPrice %></span></td>
                             </tr>
                         <% }); %>
-                    <% }); %>
-                    
+                   
                 </tbody>
+                
             </table>
         </div>
-        <!-- table-responsive end// -->
-        <div class="pagination-area mt-15 mb-50">
-            <nav aria-label="Page navigation example">
-                <ul class="pagination justify-content-start">
-                    <% for (let i = 1; i <= totalPages; i++) { %>
-                        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                            <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
-                        </li>
-                    <% } %>
-                </ul>
-            </nav>
-        </div>
+       
+         <!-- table-responsive end// -->
+         <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-start">
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
     </div>
     
 </div>
 
 </section>
 
-<script>
-    // salesReport.js
 
 
 
 
 
-</script>
+
+
 
 
 

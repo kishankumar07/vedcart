@@ -53,6 +53,21 @@
 
 
 
+<% if(typeof message !== 'undefined' && message.length > 0) { %>
+
+  <script>
+
+iziToast.warning({
+  title: '<%= message %>',
+    
+    position: 'topRight',
+    timeout: 3000 
+    });
+
+  </script>
+ 
+  <% } %>
+
 
 
 
@@ -150,7 +165,7 @@
 
 
                       <td class="total-col" id="subtotal-<%= product.productId.id %>">
-                        ₹<%= product.totalPrice %>.00
+                        ₹<%= (product.productId.offerprice ? (product.productId.offerprice * product.quantity) : (product?.productId?.price) * product.quantity) %>.00
                        
                       </td>
                       

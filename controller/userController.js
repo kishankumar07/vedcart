@@ -89,6 +89,7 @@ let upcomingProducts = await Product.find({date:{$gt:new Date()}
 const signinUser = async (req, res) => {
   try {
     let message = req.flash("message");
+    console.log('message passed at signin page when session is out:',message)
     res.render("userSignin", { message });
   } catch (error) {
     console.log("login user error");
@@ -467,6 +468,67 @@ const resendOTP = async (req, res) => {
     console.log("error in resend otp function", error);
   }
 };
+
+
+//---------------- verfiy email for forgot password --------------
+let verifyEmail = async(req,res)=>{
+  let email = req.query.email;
+  try{console.log('req.query.email:',email)
+    let userFound = await User.findOne({email:email});
+    console.log('email of the user is :',userFound);
+
+    if(!userFound){
+      return res.status(400).json(false,{message:"User not registered"})
+    }
+    
+
+
+    const secret = speakeasy.generateSecret({ length: 20 }); // Generate secret for OTP
+
+    const otp = speakeasy.totp({
+      secret: secret.base32,
+      encoding: "base32",
+    });
+  
+    const otpDB = new OTP({
+      userId: userFound.id,
+      otp: otp,
+    });
+    console.log("otp generated is :", otp);
+    await otpDB.save();
+  
+    console.log("OTP saved to database:", otpDB);
+  
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: process.env.AUTH_MAIL,
+        pass: process.env.AUTH_PASS,
+      },
+    });
+    const info = await transporter.sendMail({
+      from: process.env.AUTH_MAIL,
+      to: email,
+      subject: "Verify Your Account",
+      text: `your OTP is :${otp}`,
+      html: `<b> <h4> Your OTP ${otp}</h4> `,
+    });
+    if (info) {
+      res.render("emailOtp", { email });
+      console.log("Message sent: %s", info.messageId);
+    }
+
+  }catch(err){
+    console.log('error at verify email :',err)
+    res.redirect('/error')
+  }
+}
+
+
+
 
 //=================logout----------------------------
 const signout = async (req, res) => {
@@ -992,7 +1054,7 @@ const removeAddress = async (req, res) => {
 //------------------- function to calculate offer price-----------------
 const updatedProductsDiscount = async (products) => {
   try {
-    // Retrieve offers for products and categories
+    
     const productOffers = await Promise.all(products.map(async (product) => {
       if (product.offer) {
         // console.log('product offer is present and it is : ',product.offer)
@@ -1009,31 +1071,31 @@ const updatedProductsDiscount = async (products) => {
       return null;
     }));
 
-    // Count the number of offers
-    const numProductOffers = productOffers.filter(offer => offer !== null).length;
-// console.log('total product offers available :',numProductOffers)
+   
+    const numProductOffers = productOffers.filter(offer => offer !== null);
+console.log('total product offers available :',numProductOffers)
 
 
-    const numCategoryOffers = categoryOffers.filter(offer => offer !== null).length;
-    // console.log('total category offers available:',numCategoryOffers)
+const numCategoryOffers = categoryOffers.filter(offer => offer !== null);
+    console.log('total category offers available:',numCategoryOffers)
 
 
-    // Determine which offer type to prioritize
+    
     let chosenOffers;
     if (numProductOffers > numCategoryOffers) {
       chosenOffers = productOffers;
     } else if (numProductOffers < numCategoryOffers) {
       chosenOffers = categoryOffers;
     } else {
-      // If both types have the same number of offers, prioritize product offers
+     
       chosenOffers = productOffers;
     }
-    // console.log('chosenOffers is ;',chosenOffers)
+    console.log('chosenOffers is ;',chosenOffers)
 
 
 
 
-    // Apply discounts based on chosen offers
+    
     return await Promise.all(products.map(async (product, index) => {
       const offer = chosenOffers[index];
 // console.log('offer is :',offer )
@@ -1049,7 +1111,7 @@ console.log('disocunt of the same is :',discount)
         await product.save();
 
       } else {
-      // If no offer is available, no need to set offerprice
+      
       console.log('No offer available, price is still the same :',product.price);
       }
 
@@ -1063,7 +1125,7 @@ console.log('disocunt of the same is :',discount)
 
 //-------------- shop page  =========================================
 
-const ITEMS_PER_PAGE = 8; // Number of items per page
+const ITEMS_PER_PAGE = 8; 
 
 const getPaginationParams = (totalItems, currentPage) => {
   const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
@@ -1087,7 +1149,7 @@ let shopPage = async (req, res) => {
     const category = await Category.find({ status: { $ne: 'blocked' } });
 
 //----------   ------- [banner part] -----   ----------
-    const banners = await Banner.find(); // Fetch active banners
+    const banners = await Banner.find(); 
 let arr =[];
 banners.forEach(x=>{
   arr.push( x.image[0])
@@ -1099,18 +1161,20 @@ banners.forEach(x=>{
 // out of stock products wont be displayed right now
     let filters = { status: { $ne: 'blocked' }, quantity: { $gt: 0 } };
 
-    // Apply category filter if present in query
+  
     if (req.query.category) {
+      console.log(`category queried is ${req.query.category} and type is ${typeof req.query.category}`)
+      
       filters.category = req.query.category;
     }
 
-    // Apply search query if present in query
+    
     if (req.query.search) {
-      filters.name = { $regex: req.query.search, $options: 'i' }; // Case-insensitive search by product name
+      filters.name = { $regex: req.query.search, $options: 'i' };
     }
 
-    // Declare and initialize productQuery
-    let productQuery = Product.find(filters)
+    
+    let productQuery =  Product.find(filters)
       .populate({
         path: 'category',
         populate: {
@@ -1128,15 +1192,15 @@ banners.forEach(x=>{
           endDate: { $gte: new Date() }
         }
       });
-
+// console.log('product query is :',productQuery)
       
-    // Apply price range filter if present in query
+    
     if (req.query.price) {
       const priceRange = req.query.price;
       if (priceRange === 'low-to-high') {
-        productQuery = productQuery.sort({ price: 1 }); // Sort in ascending order by price
+        productQuery = productQuery.sort({ price: 1 }); 
       } else if (priceRange === 'high-to-low') {
-        productQuery = productQuery.sort({ price: -1 }); // Sort in descending order by price
+        productQuery = productQuery.sort({ price: -1 }); 
       }
     }
 
@@ -1147,14 +1211,14 @@ if (req.query.sort) {
 
 console.log('a-z sorting worked----------------------------------------')
 
-    productQuery = productQuery.sort({ name: 1 }); // Sort in ascending order by name
+    productQuery = productQuery.sort({ name: 1 }); 
   } else if (sortOption === 'nameDesc') {
 
 console.log('z-a sorting worked=======================================')
 
-    productQuery = productQuery.sort({ name: -1 }); // Sort in descending order by name
+    productQuery = productQuery.sort({ name: -1 }); 
   } else if (sortOption === 'date') {
-    productQuery = productQuery.sort({ createdAt: -1 }); // Sort in descending order by creation date
+    productQuery = productQuery.sort({ createdAt: -1 });
   }
 }
 
@@ -1165,10 +1229,13 @@ console.log('z-a sorting worked=======================================')
 
     const product = await applyPagination(productQuery, currentPage).exec();
 
+
+
     // console.log('products data at new shop page :', product);
 
     let updatedProducts = await updatedProductsDiscount(product);
 
+  
 
     // console.log('the products that are going to be rendered is :',updatedProducts)
 
@@ -1184,7 +1251,7 @@ console.log('z-a sorting worked=======================================')
         hasNextPage,
         hasPrevPage
       },
-      query: req.query // Pass the query parameters to the template
+      query: req.query 
     });
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -1206,6 +1273,7 @@ module.exports = {
   verifyOTP,
   resendOTP,
   signout,
+  verifyEmail,
   shopPage,
   aProductPage,
   wishList,

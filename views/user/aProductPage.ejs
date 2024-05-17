@@ -124,17 +124,7 @@
               <div class="product-details-action">
                 <div class="details-action-col">
                   <div class="product-details-quantity">
-                    <input
-                      type="number"
-                      id="qty"
-                      class="form-control"
-                      value="1"
-                      min="1"
-                      max="10"
-                      step="1"
-                      data-decimals="0"
-                      required
-                    />
+                    <input type="number" id="qty" class="form-control" value="1" min="1" max="<%=products.quantity%>" step="1" data-decimals="0" required readonly onkeydown="return false;">
                   </div>
                   <!-- End .product-details-quantity -->
 
@@ -744,7 +734,34 @@ else{
                  }
 
      }
+//------------------------ increment the quantity --------
+async function updateQuantity(cartId, productId) {
 
+// console.log('this is the cartId',cartId);
+// console.log('this is the product id ',productId);
+  const updatedQuantity = document.getElementById(productId).value;
+
+  try {
+      const response = await fetch('/updatequantity', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ cartId, productId, quantity: updatedQuantity }),
+      });
+
+      if (!response.ok) {
+          throw new Error('Failed to update quantity');
+      }
+
+      const data = await response.json();
+      
+      
+     
+  } catch (error) {
+      console.error('Error updating quantity:', error);
+  }
+}
 
 
 

@@ -7,8 +7,6 @@
 
             
 
-
-
             <section class="content-main">
                 <div class="row">
                     <div class="col-9">
@@ -113,13 +111,13 @@ function validateOfferForm() {
 if (startingDate !== '' && endingDate !== '') {
     let startDateObj = new Date(startingDate);
     let endDateObj = new Date(endingDate);
-    let currentDate = new Date(); // Get current date
+    let currentDate = new Date();
 
     if (startDateObj > endDateObj) {
         document.getElementById('offerStartDateErr').innerText = 'Starting date must be before the ending date';
         document.getElementById('offerEndDateErr').innerText = 'Ending date must be after the starting date';
         isValid = false;
-    } else if (startDateObj < currentDate && !isSameDay(startDateObj, currentDate)) { // Check if start date is before current date (excluding today)
+    } else if (startDateObj < currentDate && !isSameDay(startDateObj, currentDate)) { 
         document.getElementById('offerStartDateErr').innerText = 'Starting date cannot be before the current date';
         isValid = false;
     } else {
@@ -128,7 +126,7 @@ if (startingDate !== '' && endingDate !== '') {
     }
 }
 
-// Function to check if two dates are the same day
+
 function isSameDay(date1, date2) {
     return date1.getDate() === date2.getDate() &&
            date1.getMonth() === date2.getMonth() &&
@@ -140,9 +138,9 @@ function isSameDay(date1, date2) {
     return isValid;
 }
 
-// Event listener for form submission
+
 document.getElementById('offerForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault(); 
     if (validateOfferForm()) {
 
 
@@ -179,14 +177,22 @@ console.log('offerData gonna sent to backend :',offerData)
                      color: 'white',
                      backgroundColor: '#79e313'
                         });
-                        window.location.href= '/admin/offer'
+                        setTimeout(()=>{
+                            window.location.href= '/admin/offer'
+                        },3000)
+                       
                    }
                    
                 })
                 .catch(function(error) {
-                    console.error('Error:', error);
-                    // Handle error response
-                    alert('Error occurred while creating the offer.',error); // Notify user about the error
+                    console.error('Error from the backend while the product was added:', error);
+                    iziToast.warning({
+                     title: error.response.data.message,            
+                     position: 'topRight',
+                     theme: 'orange', 
+                     color: 'black',
+                     backgroundColor: 'orange'
+                        });
                 });
     }
 });

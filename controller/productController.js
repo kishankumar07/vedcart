@@ -17,11 +17,12 @@ const productListPage = async (req, res) => {
 
     const totalProducts = await Product.countDocuments();
     const totalPages = Math.ceil(totalProducts / limit);
+
     const productData = await Product.find()
     .populate({
       path: "category",
       model: "Category",
-      populate: { // Populate the offer field for the category
+      populate: { 
         path: "offer",
         model: "Offer"
       }
@@ -34,18 +35,17 @@ const productListPage = async (req, res) => {
     .limit(limit);
   
 
-    // console.log('this  is the product data :',productData)
+    // console.log('this  is the product data that will be rendered in the product listing page at admin:',productData)
 
     const currentDate = new Date();
 
+
+    // only those offers which are not unblocked and those which are not expired(gt: currentdate) and those which are not upcoming
     const offerData = await Offer.find({
     status: true,
     startingDate: { $lte: currentDate },
     endDate: { $gte: currentDate }
     })
-
-
-
 
     res.render("productListPage", {
       productData,
@@ -56,6 +56,7 @@ const productListPage = async (req, res) => {
       moment,
     });
   } catch (error) {
+    console.error('error at loading the product listing page at the admin side :',error)
     res.redirect("/error");
   }
 };
@@ -69,7 +70,7 @@ let loadAddProduct = async (req, res) => {
     // console.log('this is the category found at add proudct page :',category)
     res.render("addProduct", { category, message });
   } catch (err) {
-    console.log("error at add product loading page :", err);
+    console.error("error at add product loading page :", err);
     res.redirect("/error");
   }
 };
@@ -114,20 +115,42 @@ const loadProductSearchQuery = async (req, res) => {
   }
 };
 
-//creating new product========================
+
+
+//-----------------------creating new product=================
 const createProduct = async (req, res) => {
   try {
+    
     const { productName, productDesc, productPrice, productQty, productCat, productBrand, date } = req.body;
 
-// console.log('this is the formdata :',req.body)
-// console.log('req.body is :',req.body)
-// console.log('images received : ',req?.files || req?.file)
+//input validation before proceeding to the case if front end validation doesn't works , in front end i didn't gave the condition to check the validation for checking the selection of date field
+if (!productName || !productDesc || !productPrice || !productQty || !productCat || !productBrand || !date) {
+  return res.status(400).json({ success: false, message: "All fields are required" });
+}
+ //main thing to check before adding a new product
+    const productExist = await Product.findOne({ name: { $regex: new RegExp(productName, 'i') } });
+    if (productExist) {
+      return res.status(409).json({ success: false, message: "Product already exists..!" });
+    }
+//backend validation to check image was uploaded or not 
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: "At least one image is required" });
+    }
 
-    // Check if product with the same name already exists
-    const productExist = await Product.findOne({ name: productName });
+    // Backend validation to check if at most 3 images were uploaded
+    else if (req.files && req.files.length > 3) {
+      return res.status(400).json({ success: false, message: "Only up to 3 images are allowed" });
+  }
 
-    if (!productExist) {
-      // Create new product
+
+  // Ensure proper file format for images like other than images not allowed
+  const imageFiles = req.files.filter(file => file.mimetype.startsWith('image/'));
+  if (imageFiles.length !== req.files.length) {
+    return res.status(400).json({ success: false, message: "Only image files are allowed" });
+  }
+
+
+    //if all the validations are passed then save to database
       const newProduct = new Product({
         name: productName,
         description: productDesc,
@@ -136,22 +159,17 @@ const createProduct = async (req, res) => {
         category: productCat,
         brand: productBrand,
         date: date,
-        images: req.files.map(file => file.filename) // Assuming req.files contains uploaded images
+        images: req.files.map(file => file.filename)
       });
 
-      // Save the product to the database
+      
       await newProduct.save();
 
-     return res.status(200).json(true)
+      return res.status(201).json({ success: true, message: "Product created successfully", productId: newProduct._id });
       
-    } else {
-      // Product already exists
-      console.log("Product already exists.");
-      return  res.status(505).json(false,{message:'product already exists'})
-     
-    }
+  
   } catch (error) {
-    // Handle errors
+    
     console.log("Error occurred in createProduct function:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
@@ -179,6 +197,7 @@ const editProduct = async (req, res) => {
     // console.log('reached here at edit product page :');
     const { id } = req.query;
 
+
     const product = await Product.findOne({ _id: id })
       .populate({
         path: "category",
@@ -201,7 +220,7 @@ const editProduct = async (req, res) => {
     }
   } catch (error) {
     console.log("Error occurred in editProduct function", error);
-    res.redirect('/error') // Send a suitable error response
+    res.redirect('/error') 
   }
 };
 
@@ -209,51 +228,45 @@ const editProduct = async (req, res) => {
 
 const toggleBlockStatusProduct = async (req, res) => {
   try {
+
     const productId = req.query.id;
-
-    // console.log('this is the product id :',productId);
-    // console.log('this si teh type of  product forund :',typeof productId);
     const product = await Product.findOne({ _id: productId });
-
-    // console.log('this is the product id :',product);
-
     if (!product) {
-      return res.json({ value: "noRecord" });
+      return res.status(404).json({ error: "Product not found" });
     }
-
     product.status = product.status === "active" ? "blocked" : "active";
-
     await product.save();
-    // console.log("this was saved in db", product);
+    res.status(200).json({ success: true, message: "Product status updated successfully" });
 
-    res.json({ value: true });
   } catch (err) {
+
     console.error("Error toggling user  block status:", err);
-    res.json({ value: false });
+    res.status(500).json({ error: "Internal server error" });
+
   }
 };
 
 //after editing the product==============================
 const productEdited = async (req, res) => {
   try {
-    const id = req.body.id;
+    const {id,productName} = req.body;
     const productData = req.body;
 
 
-console.log('this is the id :',id)
+    const productExist = await Product.findOne({ name: { $regex: new RegExp(productName, 'i') } });
 
+    if (productExist && productExist._id != id) { 
+      console.log( `this is the existing product ${productExist} and its id is ${productExist._id} and the comparison id is ${id} if these both are same then this error message wouldn't have come`)
+      return res.status(400).json({ message: "Product already exists" }); // Send error response
+    }
    
-
-    console.log("product data at body rec : ", productData);
-
-    // Parse existingImages JSON string to get the array of existing image URLs
     const existingImages = JSON.parse(productData.existingImages);
 
-// Extract filenames from image URLs
+
 const imageFilenames = existingImages.map(imageUrl => {
-  // Split the URL by '/' to get the filename
+ 
   const parts = imageUrl.split('/');
-  // Return the last part (filename)
+
   return parts[parts.length - 1];
 });
 
@@ -272,8 +285,7 @@ console.log('image filenames are:', imageFilenames);
     };
 
 
-    // Handle existing images
-    // Ensure it's an array
+  
 
     if (imageFilenames && imageFilenames.length > 0) {
       updateData.images = imageFilenames;
@@ -305,12 +317,12 @@ const deleteimage = async (req, res) => {
     const index = req.query.index;
     const product = await Product.findOne({ _id: req.query.id });
 
-    //checking product
+
     if (!product) {
       return res.status(404).send("Product not found");
     }
 
-    // Check index
+
     if (index >= 0 && index < product.images.length) {
       const filenameToDelete = product.images[index];
       const filePath = path.join(
@@ -319,9 +331,9 @@ const deleteimage = async (req, res) => {
         filenameToDelete
       );
 
-      // Delete the file
+    
       fs.unlinkSync(filePath);
-      // fs.promises.unlink(filePath)
+     
 
       await Product.findByIdAndUpdate(product._id, {
         $pull: { images: filenameToDelete },

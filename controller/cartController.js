@@ -16,6 +16,9 @@ const loadCart = async (req, res) => {
   try {
       const userId = req.session.userData;
     let message = req.flash('message');
+
+console.log('message from checkout page by flash',message)
+
       let userNameforProfile = await User.findById(userId);
 
       let category = await Category.find({ status: "active" });
@@ -24,7 +27,7 @@ const loadCart = async (req, res) => {
           path: "products.productId",
           model: "Product",
       });
-      // console.log('cart ddataaaa -----------------------------------------',cartData)
+      console.log('cart ddataaaa -----------------------------------------',cartData)
 
       if (!cartData) {
 
@@ -50,15 +53,17 @@ const loadCart = async (req, res) => {
 
         //subtotalwithnoshipping charge is the thing at the right most part of the cart page
         const subtotalWithNoShippingCharge = cartData.products.reduce((total, product) => {
-          let totalPrice = 0; // Initialize totalPrice variable here
+          let totalPrice = 0; 
           if (product.productId?.offerprice) {
               totalPrice = product.productId?.offerprice * product.quantity;
-          } else if (product.productId.price) {
-              totalPrice = product.productId.price * product.quantity;
+              console.log('total price when offer price applied at loadCart suddenly',totalPrice)
+          } else if (product.productId?.price) {
+              totalPrice = product.productId?.price * product.quantity;
+              console.log('total price when no offer applied at loadCart suddenly',totalPrice)
           }
-          return total + totalPrice; // Add totalPrice to the total
+          return total + totalPrice; 
       }, 0);
-      
+      console.log('subtotals with no shipping charges :',subtotalWithNoShippingCharge)
 
 
 let shippingCharges = subtotalWithNoShippingCharge > 500 ? 'free shipping' :'₹40.00'
@@ -74,7 +79,7 @@ let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoS
 
 // console.log('this is the grandTotal for checkout ::',grandTotalForCheckOut);
 
-          res.render("cart", { userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock });
+          res.render("cart", { userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock,message });
 
       } else {
         console.log('cart page loaded with no cart data else case')
@@ -298,7 +303,10 @@ let updatedGrandTotal = updatedShippingCharges ==='free delivery' ? totalOfSubTo
 
 const loadCheckout = async (req, res) => {
   try {
+   
       const userId = req.session.userData;
+
+
 
       const coupon = await Coupons.find(
         { status: true, 'userUsed.used': { $ne: true } }, 
@@ -349,7 +357,7 @@ const cartData = await Cart.findOne({ userId }).populate({
 });
 
 
-// console.log('cart data at checkout page: ',cartData)
+console.log('cart data at checkout page: ',cartData)
 
     let states = [
       'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 
@@ -362,8 +370,9 @@ const cartData = await Cart.findOne({ userId }).populate({
 
 // console.log('this the founded cart at checkout ::',cartFound);
       if (!userId) {
-  console.log("user has no session so redirecting to signin Paage")
-          res.redirect("/");
+  console.log("user has no session so redirecting to signin Paage from checkout load controller")
+  req.flash('message',"Please login to continue")
+         return res.redirect("/signin");
 
 
       } else if(!cartData){
@@ -376,13 +385,16 @@ const cartData = await Cart.findOne({ userId }).populate({
 
       console.log('user has a cart and has no products so redirected to cart page')
 
-     
         res.redirect('/cart')
-
+      } else {
+        
+        const hasZeroQuantity = cartData.products.some(product => product.productId.quantity === 0);
+        if (hasZeroQuantity) {
+            console.log('At least one product has a quantity of 0, cannot proceed to checkout.');
+            req.flash('message',"Either of the product is out of stock")
+           return res.redirect('/cart')
+        }
       }
-      
-      else {
-
 
   
       // Extract product IDs from cartData
@@ -469,7 +481,7 @@ let grandTotal = shippingCharges === 'Free shipping' ? totalWithDiscount : total
 console.log('couponname at checkout :',couponNameForDisplay)
 
           res.render("checkout", { couponNameForDisplay,couponCode,coupon,shippingCharges,grandTotal,cartData,userNameforProfile,category,states,totalWithoutDiscount,totalWithDiscount });
-      }
+      
   } catch (error) {
     console.log('error occured at load checkout page : ',error);
      res.redirect("/error");

@@ -43,29 +43,36 @@ router.get('/salesYearly',adminAuth.isLoggedIn,adminController.generateYearlyRep
 
 
 
+
+
+
+
 //=========product part============================
 
-router.get('/product',productController.productListPage);
+router.get('/product',adminAuth.isLoggedIn,productController.productListPage);
 
-router.get('/addProduct',productController.loadAddProduct)
+router.get('/addProduct',adminAuth.isLoggedIn,productController.loadAddProduct)
 
 router.get('/searchProduct', productController.loadProductSearchQuery);
 
-router.get('/editProduct',productController.editProduct);
+router.get('/editProduct',adminAuth.isLoggedIn,productController.editProduct);
 
 
-router.post('/createProduct',adminAuth.isLoggedIn,upload.array('images', 4),productController.createProduct);
+router.post('/createProduct',adminAuth.isLoggedIn,upload.array('images', 3),productController.createProduct);
 
 
-router.post('/productEdited',upload.array('images', 4),productController.productEdited);
+router.post('/productEdited',upload.array('images', 3),productController.productEdited);
 
 
-router.post('/toggleBlockProduct',adminAuth.isLoggedIn,productController.toggleBlockStatusProduct)
+router.patch('/toggleBlockProduct',adminAuth.isLoggedIn,productController.toggleBlockStatusProduct)
 
 
 router.get('/deleteProduct',adminAuth.isLoggedIn,productController.deleteProduct);
 
-router.get('/deleteimage', productController.deleteimage)
+router.get('/deleteimage',adminAuth.isLoggedIn, productController.deleteimage)
+
+
+
 
 
 
@@ -93,6 +100,8 @@ router.get('/categoryList',adminAuth.isLoggedIn,categoryController.categoryList)
 
 
 
+
+
 //order part====================================
 router.get("/orders",adminAuth.isLoggedIn,orderController.loadOrder)
 
@@ -110,11 +119,12 @@ router.get('/addOffer',adminAuth.isLoggedIn,offerController.loadAddOffer)
 
 router.post('/addOffer',adminAuth.isLoggedIn,offerController.createOffer)
 
-router.get('/statusOffer',adminAuth.isLoggedIn,offerController.changeOfferStatus)
+router.patch('/statusOffer', adminAuth.isLoggedIn, offerController.changeOfferStatus);
+
 
 router.get('/editOffer',adminAuth.isLoggedIn,offerController.loadEditOffer)
 
-router.post('/editOffer',adminAuth.isLoggedIn,offerController.offerEdited)
+router.put('/editOffer',adminAuth.isLoggedIn,offerController.offerEdited)
 
 router.delete('/deleteOffer',adminAuth.isLoggedIn,offerController.deleteOffer)
 
@@ -131,17 +141,17 @@ router.patch('/removeProductOffer',adminAuth.isLoggedIn,offerController.removePr
 
 // =============   coupon management =============================
 
-router.get('/coupon',couponController.couponView)
+router.get('/coupon',adminAuth.isLoggedIn,couponController.couponView)
 
-router.get('/addCoupon',couponController.loadAddCoupon)
+router.get('/addCoupon',adminAuth.isLoggedIn,couponController.loadAddCoupon)
 
-router.post('/addCoupon',couponController.addCouponDetails)
+router.post('/addCoupon',adminAuth.isLoggedIn,couponController.addCouponDetails)
 
-router.get('/editCoupon',couponController.loadEditCoupon)
+router.get('/editCoupon',adminAuth.isLoggedIn,couponController.loadEditCoupon)
 
-router.post('/editCoupon',couponController.editCoupon)
+router.post('/editCoupon',adminAuth.isLoggedIn,couponController.editCoupon)
 
-router.delete('/deleteCoupon/:id',couponController.deleteCoupon)
+router.delete('/deleteCoupon/:id',adminAuth.isLoggedIn,couponController.deleteCoupon)
 
 
 
@@ -149,21 +159,21 @@ router.delete('/deleteCoupon/:id',couponController.deleteCoupon)
 
 //-------------  banner management ------------------------------
 
-router.get("/banner",bannerController.loadBanner)
+router.get("/banner",adminAuth.isLoggedIn,bannerController.loadBanner)
 
-router.get("/addBanner",bannerController.loadAddBanner)
+router.get("/addBanner",adminAuth.isLoggedIn,bannerController.loadAddBanner)
 
-router.get('/editBanner',bannerController.loadEditBanner)
+router.get('/editBanner',adminAuth.isLoggedIn,bannerController.loadEditBanner)
 
-router.post("/addBanner",bannerUpload.single('image'),bannerController.addBannerDetails)
+router.post("/addBanner",adminAuth.isLoggedIn,bannerUpload.single('image'),bannerController.addBannerDetails)
 
-router.delete('/deleteImage', bannerController.editImageDelete);
+router.delete('/deleteImage',adminAuth.isLoggedIn, bannerController.editImageDelete);
 
-router.post("/editBanner/:id", bannerUpload.single('image'), bannerController.editBannerDetails);
+router.post("/editBanner/:id",adminAuth.isLoggedIn, bannerUpload.single('image'), bannerController.editBannerDetails);
 
-router.patch('/changeStatus',bannerController.toggleListUnlistBanner)
+router.patch('/changeStatus',adminAuth.isLoggedIn,bannerController.toggleListUnlistBanner)
 
-router.delete('/deleteBanner',bannerController.deleteBanner)
+router.delete('/deleteBanner',adminAuth.isLoggedIn,bannerController.deleteBanner)
 
 
 

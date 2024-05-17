@@ -27,16 +27,10 @@
                                     <option>Status</option>
                                     <option>Active</option>
                                     <option>Disabled</option>
-                                    <option>Show all</option>
+                                   
                                 </select>
                             </div>
-                            <div class="col-lg-2 col-6 col-md-3">
-                                <select class="form-select">
-                                    <option>Show 20</option>
-                                    <option>Show 30</option>
-                                    <option>Show 40</option>
-                                </select>
-                            </div>
+                            
                         </div>
                     </header>
                     <!-- card-header end// -->
@@ -103,16 +97,14 @@
 
                                         
                                             <a href="#" onclick="confirmDelete('<%= offer._id %>')" class="btn btn-md rounded font-sm">Delete</a>
-                                                                                                                                                    
+                                                                                                                                        
                                             <!-- dropdown //end -->
                                         </td>
                                     </tr>
                                     <% }) %>
                                     <% }else{%>
 
-                                      
-
-
+                                    
                                         <td colspan="2"> Offer not found </td>
                                         <% } %>
                                 </tbody>
@@ -144,23 +136,50 @@
 <script>
 
     // =============== to unlist or list the offer =================
-function changeOfferStatus(offerId,currentStatus){
+    function changeOfferStatus(offerId, currentStatus) {
+  console.log('this is the offerid', offerId);
+  console.log('this is the currentstatsy', currentStatus);
 
-console.log('this is the offerid',offerId)
-console.log('this is the currentstatsy',currentStatus)
-
-Swal.fire({
-    title:`Are you sure to change the status to ${currentStatus === 'true' ? 'Inactive': 'Active'} ?`,
-    icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Yes'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.location.href = `/admin/statusOffer?id=${offerId}`;
-            }
-})
+  Swal.fire({
+      title: `Are you sure to change the status to ${currentStatus === 'true' ? 'Inactive' : 'Active'} ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes'
+  }).then(async (result) => {
+      if (result.isConfirmed) {
+          try {
+              const response = await fetch(`/admin/statusOffer?id=${offerId}`, {
+                  method: 'PATCH', 
+                  headers: {
+                      'Content-Type': 'application/json'
+                  }
+              });
+              
+              if (response.ok) {
+                  const data = await response.json();
+                  if (data.success) {
+                      
+                      Swal.fire('Success', data.message, 'success').then(() => {
+                          
+                          window.location.reload();
+                      });
+                  } else {
+                     
+                      Swal.fire('Error', data.error || 'An error occurred', 'error');
+                  }
+              } else {
+                 
+                  Swal.fire('Error', 'Failed to update offer status', 'error');
+              }
+          } catch (error) {
+              console.error('Error at changing the offer status:', error);
+             
+              Swal.fire('Error', 'Failed to update offer status', 'error');
+          }
+      }
+  });
 }
 
 
@@ -201,11 +220,12 @@ async function deleteOffer(offerId) {
             });
         }
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error from the backend is:', error.response.data.error);
+        
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'An error occurred during deletion.'
+            text: error.response.data.error,
         });
     }
 }

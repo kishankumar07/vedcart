@@ -65,7 +65,7 @@ a {
                   
                 </div>
                 <div class="d-flex">
-                  <button class="btn btn-link p-0 me-3 d-none d-lg-block btn-icon-text"><i class="bi bi-download"></i> <span class="text"><a href="/download-invoice/<%= orderPlacedByTheUser?.id%>">Invoice</a></span></button>
+                  <button class="btn-danger"><i class="bi bi-download"></i> <span class="text"><a href="/download-invoice/?id=<%= orderPlacedByTheUser.id %>">Invoice</a></span></button>
                   <div class="dropdown">
                     <button class="btn btn-link p-0 text-muted" type="button" data-bs-toggle="dropdown">
                       <i class="bi bi-three-dots-vertical"></i>
