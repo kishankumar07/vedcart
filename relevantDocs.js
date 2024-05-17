@@ -1074,6 +1074,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
+
+
+
+
 // //from here add product temped -----------------------
 // <%- include('./layouts/header.ejs')%>
 

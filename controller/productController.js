@@ -314,7 +314,10 @@ console.log('this is the updaetdProduct at the database: ',updatedProduct)
 //============= deleting a image ==============================
 const deleteimage = async (req, res) => {
   try {
-    const index = req.query.index;
+    const index = parseInt(req.query.index, 10);
+
+console.log('this is the index got from frontend  :',index)
+
     const product = await Product.findOne({ _id: req.query.id });
 
 
@@ -322,8 +325,10 @@ const deleteimage = async (req, res) => {
       return res.status(404).send("Product not found");
     }
 
+console.log('product.images.length before the condition checking is:',product.images.length)
 
-    if (index >= 0 && index < product.images.length) {
+    if (index >= 0 && index <= product.images.length) {
+      console.log('index inside the if:',index)
       const filenameToDelete = product.images[index];
       const filePath = path.join(
         __dirname,
@@ -335,17 +340,18 @@ const deleteimage = async (req, res) => {
       fs.unlinkSync(filePath);
      
 
-      await Product.findByIdAndUpdate(product._id, {
-        $pull: { images: filenameToDelete },
-      });
-      res.redirect(`/admin/editproduct?id=${req.query.id}`);
+      product.images.splice(index, 1);
+      await product.save();
+      
+       res.status(200).json({ message: "Image deleted successfully" });
     } else {
+      console.log('index inside the else:',index)
       res.status(400).send("Invalid index");
     }
   } catch (error) {
-    console.log(error.message);
-    res.redirect("/error");
-    res.status(500);
+    console.log('error at deleting the image at the product page:',error.message);
+    
+    res.status(500).send("internal Server error");
   }
 };
 

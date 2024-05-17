@@ -101,13 +101,13 @@
  <div class="mb-4">
     <label class="form-label">Images</label>
     <% product.images.forEach((image, index) => { %>
-    <div class="d-flex align-items-center justify-content-between mb-2">
-        <div class="d-flex align-items-center">
-            <img src="/adminAssets/imgs/category/<%= image %>"  class="existing-image" alt="Product Image" style="width: 30px; height: 30px; margin-right: 10px;">
-            <span><%= image %></span>
+        <div id="imageContainer_<%= index %>" class="image-container d-flex align-items-center justify-content-between mb-2">
+            <div class="d-flex align-items-center">
+                <img id="image_<%= index %>" src="/adminAssets/imgs/category/<%= image %>" class="existing-image" alt="Product Image" style="width: 30px; height: 30px; margin-right: 10px;">
+                <span><%= image %></span>
+            </div>
+            <a href="#" onclick="confirmDelete('<%= index %>', '<%= product._id %>',event)" class="btn btn-danger btn-sm">Delete</a>
         </div>
-        <a href="#" onclick="confirmDelete('<%= index %>', '<%= product._id %>', event)" class="btn btn-danger btn-sm">Delete</a>
-    </div>
     <% }) %>
 </div>
 
@@ -275,7 +275,7 @@ function validateForm() {
          console.log('files that are targeted  :',files)
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg','image/webp']; 
 
-        if (files.length > 3) {
+        if (files.length + croppers.length > 3) {
     inputImage.value = '';
     const Toast = Swal.mixin({
   toast: true,
@@ -290,7 +290,7 @@ function validateForm() {
 });
 Toast.fire({
   icon: "warning",
-  title: "Select upto 4 images",
+  title: "Select upto 3 images",
 });
     return;
 }
@@ -323,15 +323,12 @@ Toast.fire({
     
         if (files.length > 0) {
             document.querySelector('.image-preview').classList.remove('d-none'); 
-          let divCount = previewImageContainer.querySelectorAll('.view-image').length;
+        //   let divCount = previewImageContainer.querySelectorAll('.view-image').length;
          
-
-console.log('the div count is :',divCount)
-
-          if(files.length + croppers.length >5){
-            previewImageContainer.innerHTML = "";
-            croppers.length = 0;
-          }
+        //   if(files.length + croppers.length >5){
+        //     previewImageContainer.innerHTML = "";
+        //     croppers.length = 0;
+        //   }
           
           
     
@@ -522,7 +519,7 @@ Toast.fire({
 
 // delete image===============================
 function confirmDelete(index, productId, event) {
-    event.preventDefault(); // Prevent the default action of the anchor tag
+    event.preventDefault();
     Swal.fire({
         title: 'Are you sure?',
         text: 'You are about to delete this image!',
@@ -533,7 +530,41 @@ function confirmDelete(index, productId, event) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            window.location.href = `/admin/deleteimage?index=${index}&id=${productId}`;
+            fetch(`/admin/deleteimage?index=${index}&id=${productId}`)
+              .then(response => {
+                  if (response.ok) {
+                      const containerId = `imageContainer_${index}`;
+                      const container = document.getElementById(containerId);
+                      if (container) {
+                          container.remove();
+                          updateImageIndices(productId); 
+                      } else {
+                          throw new Error('Failed to delete image');
+                      }
+                  }
+              })
+              .catch(error => {
+                  console.error('Error deleting image:', error);
+              });
+        }
+    });
+}
+//this part is done to not to refresh the page and then just delete the container that holds the image.
+function updateImageIndices(productId) {
+    const containers = document.querySelectorAll('.image-container');
+    containers.forEach((container, newIndex) => {
+        console.log('index is of new :',newIndex)
+        const oldIndex = container.id.split('_')[1];
+        console.log('old index is :',oldIndex)
+        if (newIndex != oldIndex) {
+            // Update container ID
+            container.id = `imageContainer_${newIndex}`;
+            // Update image ID
+            const img = container.querySelector('.existing-image');
+            img.id = `image_${newIndex}`;
+            // Update delete button onclick event
+            const deleteButton = container.querySelector('.btn-danger');
+            deleteButton.setAttribute('onclick', `confirmDelete(${newIndex}, '${productId}', event)`);
         }
     });
 }
