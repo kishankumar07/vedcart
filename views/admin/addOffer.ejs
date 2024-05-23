@@ -65,18 +65,22 @@
   
 // Function to validate the offer form before submission
 function validateOfferForm() {
-    let offerName = document.getElementById('offerName').value.trim();
+    let offerName = document.getElementById('offerName');
     let startingDate = document.getElementById('startDate').value;
     let endingDate = document.getElementById('endDate').value;
-    let discountPercentage = document.getElementById('offerPercentage').value;
+    let discountPercentage = document.getElementById('offerPercentage');
 
     let isValid = true;
 
     // Offer Name Validation
-    if (offerName === '') {
+    if (offerName.value === '') {
         document.getElementById('offerNameErr').innerText = 'Offer name cannot be empty';
         isValid = false;
-    } else {
+    }else if(offerName.value !== offerName.value.trim()){
+        document.getElementById('offerNameErr').innerText = 'Avoid triling spaces';
+        isValid = false;
+    }
+     else {
         document.getElementById('offerNameErr').innerText = '';
     }
 
@@ -97,13 +101,16 @@ function validateOfferForm() {
     }
 
     // Discount Percentage Validation
-    if (discountPercentage === '') {
+    if (discountPercentage.value === '') {
         document.getElementById('offerDiscountPercentageErr').innerText = 'Discount percentage cannot be empty';
         isValid = false;
     } else if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
         document.getElementById('offerDiscountPercentageErr').innerText = 'Please enter a valid discount percentage between 0 and 100';
         isValid = false;
-    } else {
+    }else if(discountPercentage.value !== discountPercentage.value.trim()){
+        document.getElementById('offerDiscountPercentageErr').innerText = 'avoid trailing spaces';
+        isValid = false;
+    }else {
         document.getElementById('offerDiscountPercentageErr').innerText = '';
     }
 

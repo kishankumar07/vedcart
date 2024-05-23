@@ -1,4 +1,5 @@
 let express = require('express')
+const fetchCommonData = require('./middleware/commonDataMiddleware');
 let app = express();
 let path = require('path');
 const passport = require('passport');
@@ -11,6 +12,7 @@ let flash = require('connect-flash');
 let User = require("./model/userModel");
 let session =require('express-session')
 const GoogleSignIn = require('./model/googleModel');
+const {notFoundHandler, multerErrorHandler } = require('./middleware/errorHandler');
 
 dbConnect();
 app.use(express.static(path.join(__dirname,'public')));
@@ -31,8 +33,15 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(fetchCommonData);
+
+
+
 app.use('/',userRoute)
 app.use('/admin',adminRoute)
+// Error handling middlewares
+app.use(multerErrorHandler)
+app.use(notFoundHandler)
 
 
 
@@ -108,23 +117,24 @@ app.listen(3000, () => {
 
 
 
-app.use('/',userRoute)
-app.use('/admin',adminRoute)
 
 
-app.use((req, res, next) => {
-    // Determine if the request is for an admin route
-    const isAdminRoute = req.originalUrl.startsWith('/admin');
 
-    // Render the appropriate error page based on the route type
-    if (isAdminRoute) {
-        // Send the admin 404 error page
-        res.status(404).sendFile(path.join(__dirname, 'public','errorPages', 'admin_404.html'));
-    } else {
-        // Send the user 404 error page
-        res.status(404).sendFile(path.join(__dirname, 'public','errorPages', 'user_404.html'));
-    }
-});
+
+
+// app.use((req, res, next) => {
+//     // Determine if the request is for an admin route
+//     const isAdminRoute = req.originalUrl.startsWith('/admin');
+
+//     // Render the appropriate error page based on the route type
+//     if (isAdminRoute) {
+//         // Send the admin 404 error page
+//         res.status(404).sendFile(path.join(__dirname, 'public','errorPages', 'admin_404.html'));
+//     } else {
+//         // Send the user 404 error page
+//         res.status(404).sendFile(path.join(__dirname, 'public','errorPages', 'user_404.html'));
+//     }
+// });
 
 
 

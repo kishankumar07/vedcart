@@ -121,8 +121,7 @@ const addBannerDetails = async (req, res) => {
 //---------------------- delete an image at edit -----------------
 const editImageDelete = async (req, res) => {
     try {
-        console.log("query data",req.query.image);
-        console.log("quer",req.query.bannerId);
+      
         const banner = await Banner.findOne({_id:req.query.bannerId});
         
 
@@ -131,7 +130,7 @@ const editImageDelete = async (req, res) => {
         }
 
         const imageToDelete = req.query.image;
-        console.log("image id",imageToDelete);
+       
 
         // // Optionally 
         // const imagePath = path.join(__dirname, '../public/uploads', imageToDelete);

@@ -11,6 +11,7 @@ let Product = require("../model/productModel");
 let Wishlist = require("../model/wishListModel");
 const Orders = require("../model/orderModel");
 let Banner = require('../model/bannerModel');
+let Cart = require("../model/cartModel");
 
 //===========error- 500=======================
 
@@ -28,60 +29,59 @@ const securePassword = async (password) => {
     const passwordHash = await bcrypt.hash(password, 10);
     return passwordHash;
   } catch (error) {
-   res.redirect("/500")
+  console.log('error at securePassword creation: ',error);
+  res.status(500).redirect('/error')
   }
 }
 
 
-//load index-----------------------------------------------
+//-----  ------- --- -load index--  ---  -----  ------   ---------
 const loadIndex = async (req, res) => {
   try {
-    let user = req.session.userData;
-    // console.log('this is present in the user: ',user);
    
-    let userNameforProfile = await User.findById(user);
+    const currentDate = new Date();
 
-    let category = await Category.find({ status: "active" });
+ // Access common data attached by the middleware
+ const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
 
-let banner = await Banner.find();
 
-    // console.log('banner found at load index :',banner);
-    
-    const productData = await Product.find({
-      status: { $ne: "blocked" },
-      quantity: { $ne: 0 }
-  }) .populate({
+
+let [upcomingProducts,banner,category,productData] = await Promise.all([
+
+  Product.find({ date : { $gt : currentDate }}),
+  Banner.find({
+    status:{$ne : false}
+  }),
+  Category.find({status: { $ne: "blocked" }}),
+  Product.find({
+    status: { $ne: "blocked" },
+    quantity: { $ne: 0 },
+  })
+  .populate({
     path: 'category',
     populate: {
       path: 'offer',
       match: {
-        startingDate: { $lte: new Date() },
-        endDate: { $gte: new Date() }
-      }
-    }
+        startingDate: { $lte: currentDate },
+        endDate: { $gte: currentDate },
+      },
+    },
   })
   .populate({
     path: 'offer',
     match: {
-      startingDate: { $lte: new Date() },
-      endDate: { $gte: new Date() }
-    }
+      startingDate: { $lte: currentDate },
+      endDate: { $gte: currentDate },
+    },
   }).limit(7)
+])
 
 
-  //with this condition the unlisted categories product wont be displayed
-  const product = productData.filter((product) => product.category.status !== "blocked")
-
-
-  //planning a field for upcoming products
-let upcomingProducts = await Product.find({date:{$gt:new Date()}
-})
-
-
-    
-    res.render("home", { userNameforProfile, user,banner, category, product,upcomingProducts });
+    const product = productData.filter((product) => product.category.status !== "blocked");
+    res.render("home", { categoriesWithProducts,cart, userNameforProfile, user:userId, banner, product, upcomingProducts, category,totalPriceOfCartProducts });
   } catch (error) {
     console.log("Error happens in userController loadIndex function:", error);
+    res.status(500).redirect('/error');
   }
 };
 
@@ -167,55 +167,6 @@ console.log('finally at session :',req.session.userData)
 };
 
 
-
-
-
-const verifyuser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const findUser = await User.findOne({ email: email });
-    let userPass = findUser.password;
-    console.log("this is the findUser.password", userPass);
-
-    if (findUser.isBlocked) {
-      req.flash("message", "User blocked");
-      res.redirect("/signin");
-    } else if (
-      findUser &&
-      (await bcrypt.compare(password, findUser.password))
-    ) {
-      req.session.user = findUser._id;
-
-      console.log(
-        `User login successful and session created by user id ====${req.session.user}`
-      );
-      // req.app.locals.user = req.session.user;
-      // console.log('locals.user',req.app.locals.user);
-      // console.log('once againin',locals.user);
-
-      res.redirect("/");
-    } else {
-      //req.flash("error", "Incorrect email or password"); // Flash an error message
-
-      req.flash("message", "Invalid email or password");
-      res.redirect("/signin");
-    }
-  } catch (error) {
-    console.log("Error happens in userController verifyUser function:", error);
-  }
-};
-
-//==to generate otp====================
-function generateotp() {
-  var digits = "1234567890";
-  var otp = "";
-  for (let i = 0; i < 4; i++) {
-    otp += digits[Math.floor(Math.random() * 10)];
-  }
-  return otp;
-}
-
 // async function otpGenerationAndMailSent(email) {
 //   const otp = generateotp();
 //   console.log("--------------------------------------", otp);
@@ -268,7 +219,7 @@ let otpGenerationSavedAndMailSent = async (
 
   await user.save();
 
-  console.log("User saved successfully:", user);
+  console.log("User saved successfully at datavbase as :", user);
 
   req.session.userData = user;
 
@@ -540,45 +491,9 @@ const signout = async (req, res) => {
     });
   } catch (error) {
     console.error("Error during logout:", error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).redirect('/error')
   }
 };
-
-
-
-
-// Calculate discounts for products kept as a seperate function=====
-// const updatedProductsDiscount = async (products) => {
-//   try {
-
-
-//     return await Promise.all(products.map(async (product) => {
-//       if (product.offer) {
-
-//         let discount = Math.round(product.price * (product.offer.discount / 100));
-        
-//         product.offerprice = product.price - discount;
-       
-        
-//       }
-//        else if (product.category && product.category.offer) {
-//         let discount = Math.round(product.price * (product.category.offer.discount / 100));
-//         product.offerprice = product.price - discount;
-        
-//       } 
-//       else {
-//         product.offerprice = undefined;
-        
-//       }
-//       await product.save();
-//       return product;
-//     }));
-//   } catch (error) {
-//     console.error("Error updating products:", error);
-//     throw error;
-//   }
-// };
-
 
 
 
@@ -586,49 +501,73 @@ const signout = async (req, res) => {
 
 const aProductPage = async (req, res) => {
   try {
-    let user = req.session.userData;
-    let userNameforProfile = await User.findById(user);
+   
+    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
+   
+    const currentDate = new Date();
+    let queriedProductId = req.query.id;
+  
+    const aProductFoundFromDb = await Product.findById(queriedProductId).populate({
+      path: 'category',
+      populate: {
+        path: 'offer',
+        match: {
+          startingDate: { $lte: currentDate },
+          endDate: { $gte: currentDate },
+        },
+      },
+    })
+    .populate({
+      path: 'offer',
+      match: {
+        startingDate: { $lte: currentDate },
+        endDate: { $gte: currentDate },
+      },
+    })
+    
+    let relatedProductCatId = aProductFoundFromDb.category.id;
 
-    let queriedProduct = req.query.id;
-
-    console.log(`this is the queried product ${queriedProduct}`)
-
-    const aProductFoundFromDb = await Product.findById(queriedProduct)
-      .populate("category")
-      .exec();
-
-console.log(`this is the full details of the queried product ${aProductFoundFromDb}`)
 
 
-    let relatedProductCat = aProductFoundFromDb.category;
+    let product = await Product.find({ status: "active" }).populate({
+      path: 'category',
+      populate: {
+        path: 'offer',
+        match: {
+          startingDate: { $lte: currentDate },
+          endDate: { $gte: currentDate },
+        },
+      },
+    })
+    .populate({
+      path: 'offer',
+      match: {
+        startingDate: { $lte: currentDate },
+        endDate: { $gte: currentDate },
+      },
+    })
 
-console.log( `this is the relatedProductCat : ${relatedProductCat}`)
-
-    let category = await Category.find({ status: "active" });
 
 
+let relatedProds = product.filter(prod=>prod.category._id.toString() === relatedProductCatId)
 
 
-    let product = await Product.find({ status: "active" })
-      .populate("category")
-      .exec();
 
-    let relatedProd = product.filter(
-      (product) =>
-        product.category._id.toString() === relatedProductCat._id.toString()
-    );
 
     res.render("aProductPage", {
-      user,
+      user:userId,
+      cart,
+      totalPriceOfCartProducts,
       userNameforProfile,
+      categoriesWithProducts,
       product,
-      category,
-      relatedProd,
+      
+      relatedProds,
       aProductFoundFromDb,
     });
   } catch (error) {
-    console.error("Error during aProductPage:", error);
-    res.redirect("/error");
+    console.error("Error during aProductPage rendering:", error);
+    res.status(500).redirect("/error");
   }
 };
 
@@ -689,6 +628,13 @@ const wishList = async (req, res) => {
   try {
     let user = req.session.userData;
     let userNameforProfile = await User.findById(user);
+    let cart =await Cart.findOne({userId:user}).populate({
+      path:"products.productId",
+      model: 'Product',
+    })
+    let totalPriceOfCartProducts = cart?.products.reduce((acc,curr)=>{
+           return acc + curr.totalPrice;
+    },0)
 
     let category = await Category.find({ status: "active" });
     const wishlist = await Wishlist.findOne({ user: user }).populate({
@@ -698,7 +644,7 @@ const wishList = async (req, res) => {
     // let product = await Product.find({ status: "active" }).populate("category").exec();
 
     console.log('wishlist at wishlist controller: ',wishlist);
-    res.render("wishlist", { userNameforProfile, user, category, wishlist });
+    res.render("wishlist", { cart,totalPriceOfCartProducts,userNameforProfile, user, category, wishlist });
   } catch (error) {
     console.error("Error during wishlist loading:", error);
     res.redirect("/error");
@@ -707,36 +653,47 @@ const wishList = async (req, res) => {
 
 //==========add to wishlist list page====================
 
-//add products to wishlist
+
 const addProductToWishList = async (req, res) => {
   try {
+
+console.log('wishlist controller was invoked --------------------------')
+
     let user = req.session.userData;
-    // let userNameforProfile = await User.findById(user);
+    if (!user) {
+console.log(`case to check if user is not there  and the value is :${user}`)
+      return res.status(401).json({ success: false, message: "Unauthorized access" });
+    }
+       let productId = req.body.id;
+     const product = await Product.findById(productId);
 
-    const product = await Product.findById(req.query.productId);
+
+    if (!product) {
+console.log('debug check this console works, if no product found:',product)
+      return res.status(404).json({ success: false, message: "Product not found" });
 
 
-
-
+    }
     // Check if the user already has a wishlist document
-    const wishFind = await Wishlist.findOne({ user: user }).populate({
+    const wishFind = await Wishlist.findOne({ user }).populate({
       path:'products.product',
       model:'Product',
     })
 
-console.log('this is the wishlist found :',wishFind)
-
-    // console.log('this is wiishFind at wish controller', wishFind);
+console.log( ` this is the wishlist found while adding to wishlist by user with id: ${user}`)
+console.log(wishFind);
+    
 
     if (wishFind) {
       // User already has a wishlist document
       const existingProduct = wishFind.products.find(
         (prod) => prod.product.id === product.id
       );
-      console.log('this is the existing product------------------------------',existingProduct)
+     
 
       if (existingProduct) {
-        res.json({ success: false, message: "Already added" });
+        console.log('this is the existing product and so warning message will comes ------------------------------',existingProduct)
+       return res.json({ success: false, message: "Already in wishlist" });
       } else {
 
         console.log('wishlist is alreay present but not existing product------------------')
@@ -747,13 +704,13 @@ console.log('this is the wishlist found :',wishFind)
         });
 
         await wishFind.save();
-        res.json({ success: true, message: "Added" });
+       return res.json({ success: true, message: "Added to wishlist" });
       }
     } else {
 
-      console.log('new wishlist is created-------------------------')
+      console.log(' since no exiting wishlist present,new wishlist is created-------------------------')
       // User does not have a wishlist document, create a new one
-      const wishAdd = new Wishlist({
+      const newWishlist = new Wishlist({
         user: user,
         products: [
           {
@@ -763,12 +720,12 @@ console.log('this is the wishlist found :',wishFind)
         ],
       });
 
-      await wishAdd.save();
-      res.json({ success: true, message: "Added" });
+      await newWishlist.save();
+      res.json({ success: true, message: "Added to wishlist" });
     }
   } catch (error) {
     console.log(error.message);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).redirect('/error')
   }
 };
 
@@ -822,8 +779,14 @@ const loadUserProfile = async (req, res) => {
 
     let category = await Category.find({ status: "active" });
     const userNameforProfile  = await User.findById(userId);
-
-    console.log('this is the full user details of this user :',userNameforProfile);
+    let cart =await Cart.findOne({userId:userId}).populate({
+      path:"products.productId",
+      model: 'Product',
+    })
+    let totalPriceOfCartProducts = cart?.products.reduce((acc,curr)=>{
+           return acc + curr.totalPrice;
+    },0)
+    // console.log('this is the full user details of this user :',userNameforProfile);
 
    // Query orders sorted by createdAt field in descending order
    const orders = await Orders.find({ userId: userId })
@@ -856,7 +819,7 @@ const loadUserProfile = async (req, res) => {
   
 
 
-    res.render("userProfile", { moment,userNameforProfile , orders,category,states,orders });
+    res.render("userProfile", { cart,totalPriceOfCartProducts,moment,userNameforProfile , orders,category,states,orders });
   } catch (error) {
     console.log('error at loading userProfilePage',error)
    res.redirect("/error")
@@ -1054,10 +1017,10 @@ const removeAddress = async (req, res) => {
 //------------------- function to calculate offer price-----------------
 const updatedProductsDiscount = async (products) => {
   try {
-    
+    // Fetch all product offers and category offers concurrently
     const productOffers = await Promise.all(products.map(async (product) => {
       if (product.offer) {
-        // console.log('product offer is present and it is : ',product.offer)
+        console.log(`Product ${product.offer.name} with ${product.offer.discount}% off`);
         return product.offer;
       }
       return null;
@@ -1065,61 +1028,48 @@ const updatedProductsDiscount = async (products) => {
 
     const categoryOffers = await Promise.all(products.map(async (product) => {
       if (product.category && product.category.offer) {
-        // console.log('category offer is present :',product.category.offer)
+        console.log(`Category ${product.category.offer.name} with ${product.category.offer.discount}% off`);
         return product.category.offer;
       }
       return null;
     }));
 
-   
-    const numProductOffers = productOffers.filter(offer => offer !== null);
-console.log('total product offers available :',numProductOffers)
-
-
-const numCategoryOffers = categoryOffers.filter(offer => offer !== null);
-    console.log('total category offers available:',numCategoryOffers)
-
-
-    
-    let chosenOffers;
-    if (numProductOffers > numCategoryOffers) {
-      chosenOffers = productOffers;
-    } else if (numProductOffers < numCategoryOffers) {
-      chosenOffers = categoryOffers;
-    } else {
-     
-      chosenOffers = productOffers;
-    }
-    console.log('chosenOffers is ;',chosenOffers)
-
-
-
-
-    
     return await Promise.all(products.map(async (product, index) => {
-      const offer = chosenOffers[index];
-// console.log('offer is :',offer )
-      if (offer) {
-        const discount = Math.round(product.price * (offer.discount / 100));
-        console.log('price of product is :',product.price)
-console.log('disocunt of the same is :',discount)
+      const productOffer = productOffers[index];
+      const categoryOffer = categoryOffers[index];
 
+      // Choose the appropriate offer for the product
+      const chosenOffer = chooseOffer(productOffer, categoryOffer);
+
+      if (chosenOffer) {
+        const discount = chosenOffer.discount ? Math.round(product.price * (chosenOffer.discount / 100)) : 0;
+        console.log(`Discount is ${discount}`);
 
         product.offerprice = product.price - discount;
-
-        console.log('offerPrice finalization that will be seen on DOM is :',product.offerprice)
+        console.log(`offerPrice applied is ${product.offerprice}`);
         await product.save();
-
       } else {
-      
-      console.log('No offer available, price is still the same :',product.price);
+        // No offer available, use original price
+        product.offerprice = product.price;
+        console.log(`no offer price so price is applied ${product.offerprice}`);
       }
-
       return product;
     }));
   } catch (error) {
     console.error("Error updating products:", error);
     throw error;
+  }
+};
+
+// Helper function to choose the appropriate offer for a product
+const chooseOffer = (productOffer, categoryOffer) => {
+  if (productOffer && categoryOffer) {
+    // Compare discounts and choose the offer with the highest discount
+    return productOffer.discount > categoryOffer.discount ? productOffer : categoryOffer;
+  } else if (productOffer) {
+    return productOffer;
+  } else {
+    return categoryOffer;
   }
 };
 
@@ -1146,7 +1096,14 @@ let shopPage = async (req, res) => {
   try {
     const user = req.session.userData;
     const userNameforProfile = await User.findById(user);
-    const category = await Category.find({ status: { $ne: 'blocked' } });
+    let cart =await Cart.findOne({userId:user}).populate({
+      path:"products.productId",
+      model: 'Product',
+    })
+    let totalPriceOfCartProducts = cart?.products.reduce((acc,curr)=>{
+           return acc + curr.totalPrice;
+    },0)
+   
 
 //----------   ------- [banner part] -----   ----------
     const banners = await Banner.find(); 
@@ -1158,7 +1115,7 @@ banners.forEach(x=>{
 //-------------------- [banner part] ------------------
 
 
-// out of stock products wont be displayed right now
+// out of stock and blocked products wont be displayed right now
     let filters = { status: { $ne: 'blocked' }, quantity: { $gt: 0 } };
 
   

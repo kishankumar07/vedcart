@@ -24,4 +24,12 @@ let categorySchema = new mongoose.Schema({
         ref:"Offer"
       }
 });
+
+categorySchema.virtual('products', {
+    ref: 'Product',
+    localField: '_id',
+    foreignField: 'category'
+});
+
+
 module.exports = mongoose.model('Category',categorySchema);

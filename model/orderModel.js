@@ -1,9 +1,17 @@
 const mongoose = require("mongoose");
+let randomString = require('randomstring');
 const ordersSchema = mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
+  },
+  orderId: { type: String,
+     unique: true,
+      default: () => randomString.generate({
+        length: 14,
+        charset: 'hex'
+      }) 
   },
   Products: [
     {

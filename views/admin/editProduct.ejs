@@ -272,10 +272,12 @@ function validateForm() {
 
 // console.log('event object is : ',event)
          const files = event.target.files;
+         const existingImages = document.querySelectorAll('.existing-image');
+         console.log('existing images:',existingImages)
          console.log('files that are targeted  :',files)
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg','image/webp']; 
 
-        if (files.length + croppers.length > 3) {
+        if (files.length + existingImages.length > 3) {
     inputImage.value = '';
     const Toast = Swal.mixin({
   toast: true,
@@ -455,7 +457,7 @@ formData.append("existingImages", JSON.stringify(existingImages));
     
        
         fetch("/admin/productEdited", {
-            method: "POST",
+            method: "PUT",
             body: formData,
         }).then(response => response.json())
         .then((data) => {
@@ -473,7 +475,7 @@ formData.append("existingImages", JSON.stringify(existingImages));
   }
 });
 Toast.fire({
-  icon: "warning",
+  icon: "error",
   title: data.message,
 });
       } else {
@@ -517,7 +519,7 @@ Toast.fire({
 
 
 
-// delete image===============================
+//------------------------  delete image  ===============================
 function confirmDelete(index, productId, event) {
     event.preventDefault();
     Swal.fire({
@@ -530,7 +532,7 @@ function confirmDelete(index, productId, event) {
         confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`/admin/deleteimage?index=${index}&id=${productId}`)
+            fetch(`/admin/deleteimage?index=${index}&id=${productId}`,{method:"DELETE"})
               .then(response => {
                   if (response.ok) {
                       const containerId = `imageContainer_${index}`;
@@ -541,10 +543,27 @@ function confirmDelete(index, productId, event) {
                       } else {
                           throw new Error('Failed to delete image');
                       }
+                  }else{
+                    throw new Error('Product not found');
                   }
               })
               .catch(error => {
-                  console.error('Error deleting image:', error);
+                  console.error('Error deleting image at edit product at admin side:', error);
+                  const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+Toast.fire({
+  icon: "warning",
+  title: error.message,
+});
               });
         }
     });
@@ -553,9 +572,9 @@ function confirmDelete(index, productId, event) {
 function updateImageIndices(productId) {
     const containers = document.querySelectorAll('.image-container');
     containers.forEach((container, newIndex) => {
-        console.log('index is of new :',newIndex)
+        
         const oldIndex = container.id.split('_')[1];
-        console.log('old index is :',oldIndex)
+      
         if (newIndex != oldIndex) {
             // Update container ID
             container.id = `imageContainer_${newIndex}`;
@@ -568,7 +587,7 @@ function updateImageIndices(productId) {
         }
     });
 }
-
+//-------------------- end of image deletion part -------------------
 
     </script>
 
@@ -576,3 +595,90 @@ function updateImageIndices(productId) {
 
 
 <%- include('./layouts/footer.ejs')%>
+
+
+
+
+
+
+
+
+
+
+
+<script>
+    document.querySelector('form').addEventListener('submit', async function(event) {
+      event.preventDefault(); // Prevent the default form submission
+  
+      if (validateForm()) { // Check if form validation passes
+        const formData = new FormData(this);
+  
+        try {
+          const response = await fetch(this.action, {
+            method: this.method,
+            body: formData,
+          });
+  
+          const result = await response.json();
+  
+          if (response.ok) {
+            alert('Category created successfully');
+            window.location.reload(); // Optionally reload the page or redirect
+          } else {
+            alert('Error: ' + result.message);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('An error occurred while submitting the form');
+        }
+      }
+    });
+  
+    function validateForm() {
+      clearErrorMessages();
+  
+      const categoryName = document.getElementById('category_name');
+      const image = document.getElementById('image');
+      const description = document.getElementById('description');
+      let valid = true;
+  
+      // Validate category name
+      if (categoryName.value.trim() === '') {
+        document.getElementById('name-error').textContent = 'Category name is required';
+        valid = false;
+      } else if (categoryName.value !== categoryName.value.trim()) {
+        document.getElementById('name-error').textContent = 'Category name should not have leading or trailing spaces';
+        valid = false;
+      } else {
+        document.getElementById('name-error').textContent = '';
+      }
+  
+      // Validate image
+      if (!image.files.length) {
+        document.getElementById('image-error').textContent = 'Image field cannot be empty';
+        valid = false;
+      } else {
+        document.getElementById('image-error').textContent = '';
+      }
+  
+      // Validate description
+      if (description.value.trim() === '') {
+        document.getElementById('description-error').textContent = 'Description is required';
+        valid = false;
+      } else if (description.value !== description.value.trim()) {
+        document.getElementById('description-error').textContent = 'Avoid trailing spaces in description';
+        valid = false;
+      } else {
+        document.getElementById('description-error').textContent = '';
+      }
+  
+      return valid;
+    }
+  
+    function clearErrorMessages() {
+      document.getElementById('name-error').textContent = '';
+      document.getElementById('image-error').textContent = '';
+      document.getElementById('description-error').textContent = '';
+    }
+  </script>
+  

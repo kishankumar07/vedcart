@@ -1,6 +1,34 @@
 <%- include('./layouts/header.ejs')%>
 
+<style>
+  .large-dropdown {
+      width: 100%; 
+      height: 45px; 
+      font-size: 18px; 
+  }
+</style>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<% if(errMess && errMess.length !==0) { %>
+  <script>
+    const Toast = Swal.mixin({
+toast: true,
+position: "top-end",
+showConfirmButton: false,
+timer: 3000,
+timerProgressBar: true,
+didOpen: (toast) => {
+toast.onmouseenter = Swal.stopTimer;
+toast.onmouseleave = Swal.resumeTimer;
+}
+});
+Toast.fire({
+icon: "warning",
+title:'<%= errMess %>',
+});
+  </script>
+<% } %>
 
 
 
@@ -11,32 +39,27 @@
       <h2 class="content-title card-title">Categories</h2>
       <p>Add, edit or delete a category</p>
     </div>
-
-
-
     <div>
       <input
         type="text"
         placeholder="Search Categories"
-        class="form-control bg-white" id="searchInput" oninput="searchCategories()"
+        class="form-control bg-white"
+        id="searchInput"
+        oninput="searchCategories()"
       />
     </div>
-
   </div>
+
   <div class="card">
     <div class="card-body">
       <div class="row">
         <div class="col-md-3">
-        
-            <form
+          <form
             action="/admin/addCategory"
             method="post"
             enctype="multipart/form-data"
-            onsubmit="return validateForm('<%= JSON.stringify(category) %>')" 
-            >
-
-
-         
+            onsubmit="return validateForm()"
+          >
             <div class="mb-4">
               <label for="product_name" class="form-label">Name</label>
               <input
@@ -44,7 +67,7 @@
                 name="name"
                 placeholder="Type here"
                 class="form-control"
-                id="product_name"
+                id="category_name"
               />
               <div class="error-message text-danger" id="name-error"></div>
             </div>
@@ -63,544 +86,531 @@
             </div>
 
             <div class="mb-4">
-                <label class="form-label">Description</label>
-                <textarea id="description" placeholder="Type here" class="form-control" name="description"></textarea>
-                
-                <div class="error-message alert text-danger" id="description-error">
+              <label class="form-label">Description</label>
+              <textarea
+                id="description"
+                placeholder="Type here"
+                class="form-control"
+                name="description"
+              ></textarea>
+              <div class="error-message alert text-danger" id="description-error">
 
-                  <% if(errMess) {%>
-                    <%= errMess %>
-                    <% } %>
 
-                </div>
+              
+
+              </div>
             </div>
             
             <div class="d-grid">
-              <button type="submit" class="btn btn-primary" > Create category</button>
+              <button type="submit" class="btn btn-primary">Create category</button>
             </div>
-
-
-        
-
           </form>
         </div>
+        
+        <!-- Category Table -->
         <div class="col-md-9">
           <div class="table-responsive">
             <table class="table table-hover">
-
-
-                <thead>
-                    <tr>
-                      <th class="text-center">
-                        <div class="form-check">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            value=""
-                          />
-                        </div>
-                      </th>
-                      <th>Image</th>
-                      <th>Name</th>
-                      <th>Description</th>
-                      <th>Category Offer</th>
-                      <th>Status</th>
-    
-                      <th class="text-end">Action</th>
-                    </tr>
-                  </thead>
-
-              <tbody>
-                <% if(category.length>0) { %>
-                  <% for(let i=0;i< category.length;i++) { %>
-
-
+              <thead>
                 <tr>
-                  <td class="text-center">
+                  <th class="text-center">
                     <div class="form-check">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        value=""
-                      />
+                      <input class="form-check-input" type="checkbox" value="" />
                     </div>
-                  </td>
-                  <div class="col-12">
-                    <td>
-                      <img
-                        class="rounded"
-                        style="width: 50px; height: 60px"
-                        src="/adminAssets/imgs/category/<%= category[i].image %>"
-                        alt="image"
-                      />
-                    </td>
-                  </div>
-                  <td><%= category[i].name%></td>
-                  <td><%= category[i].description%></td>
-                  
-
-
-                  
-                <!-- offer part  -->
-                  <td>
-                    <% let flag = 0 %>
-                    <% if(category[i].offer) { %>
-                        <% const currentDate = new Date(); %>
-                        <% const startDate = new Date(category[i].offer.startingDate); %>
-                        <% const endDate = new Date(category[i].offer.endDate); %>
-                        
-                        <% if (startDate > currentDate) {
-                           %> 
-
-                         
-                            <!-- Display upcoming offer -->
-                            <span class="badge rounded-pill alert-info">
-                                Offer <%= category[i].offer.name %> (<%= category[i].offer.discount %>%) starts on <%= moment(startDate).format('DD-MM-YYYY') %>
-                            </span>
-                           
-                            <br> <span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#categoryModal<%= category[i]._id %>">Apply another Offer</a></span>
-                            <span><a style="color: red;" onclick="removeOffer('<%= category[i]._id %>', '<%= flag %>')">Remove offer</a></span>
-                        
-                        <% } else if (endDate < currentDate) { %>
-                            <% flag++ %>    
-                            
-                        
-                            <span class="badge rounded-pill alert-danger">Offer <%= category[i].offer.name %> (<%=category[i].offer.discount %>%) had Expired</span><br>
-                            <span><a style="color: red;" onclick="removeOffer('<%= category[i]._id %>', '<%= flag %>')">Click to update</a></span>
-                        
-                        <% } else { %>
-                            <!-- Display offer name and discount if offer is currently valid -->
-
-                         
-
-                            <span class="badge rounded-pill alert-success"><%= category[i].offer.name %> (<%= category[i].offer.discount %>%)
-                            </span><br>
-                            <span><a href="#" style="color: red;" onclick="removeOffer('<%= category[i]._id %>')">Remove Offer</a></span> 
-                        <% } %>
-                    <% } else { %>
-                        <!-- Display message if no offer exists for the category -->
-
-                       
-                        <span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#categoryModal<%= category[i]._id %>">Apply Offer</a></span><br>
-                   <span>No offer</span>
-                      <% } %>
-                  </td>
-                  
-               
-
-              
-
-
-
-
-
-
-                  <% if (category[i].status=='active') { %>
-                    <td>
-                      <span class="badge rounded-pill alert-success">Active</span>
-                    </td>
-  
-                    <%  } else { %>
-                    <td>
-                      <span class="badge rounded-pill alert-danger">Unlisted</span>
-                    </td>
-                    <% } %>
-
-
-                  <td class="text-end">
-                    <div class="dropdown">
-                      <a
-                        href="#"
-                        data-bs-toggle="dropdown"
-                        class="btn btn-light rounded btn-sm font-sm"
-                      >
-                        <i class="material-icons md-more_horiz"></i>
-                      </a>
-                      <div class="dropdown-menu">
-                        <a class="dropdown-item" href="/admin/editCategory?id=<%= category[i]._id %>">Edit</a>
-
-
-                        
-                      
-                        <a class="dropdown-item" href="#" onclick="confirmDelete('<%= category[i]._id %>') ">Delete</a>
-
-
-
-                        <% if(category[i].status === 'active') {%>
-                            <!-- <a class="dropdown-item text-danger" href="/admin/categoryUnlist?id=<%= category[i]._id %>">Unlist</a> -->
-
-                            <a class="dropdown-item text-danger" href="#" onclick="confirmUnlist('<%= category[i]._id %>')">Unlist</a>
-
-                        <% }else{ %>
-
-                          
-
-                            <a class="dropdown-item text-success" href="/admin/categoryList?id=<%= category[i]._id %>">list</a>
-                            <% } %>
-
-                        
-                      </div>
-                    </div>
-                    <!-- dropdown //end -->
-                  </td>
+                  </th>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Category Offer</th>
+                  <th>Status</th>
+                  <th class="text-end">Action</th>
                 </tr>
-               
+              </thead>
+              <tbody>
+                <% if(category.length > 0) { %>
+                  <% category.forEach((cat) => { %>
+                    <tr>
+                      <td class="text-center">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" value="" />
+                        </div>
+                      </td>
+                      <td>
+                        <img
+                          class="rounded"
+                          style="width: 50px; height: 60px"
+                          src="/adminAssets/imgs/category/<%= cat.image %>"
+                          alt="image"
+                        />
+                      </td>
+                      <td><%= cat.name %></td>
+                      <td><%= cat.description %></td>
+                      <td>
+                        <!-- Offer part -->
+                        <% let flag = 0 %>
+                        <% if(cat.offer) { %>
+                          <% const currentDate = new Date(); %>
+                          <% const startDate = new Date(cat.offer.startingDate); %>
+                          <% const endDate = new Date(cat.offer.endDate); %>
+                          
+                          <% if (startDate > currentDate) { %>
+
+                            <% flag++ %>
+
+                            <span class="badge rounded-pill alert-info">
+                              Offer <%= cat.offer.name %> (<%= cat.offer.discount %>%) starts on <%= moment(startDate).format('DD-MM-YYYY') %>
+                            </span>
+                            <br>
+                            <span class="badge rounded-pill alert-warning">
+                              <a href="" data-toggle="modal" data-target="#categoryModal<%= cat._id %>">Apply another Offer</a>
+                            </span>
+                            <span>
+                              <a style="color: red;" onclick="removeOffer('<%= cat._id %>', '<%= flag %>')">Remove offer</a>
+                            </span>
+                          <% } else if (endDate < currentDate) { %>
+
+                            <% flag++ %>
+
+                            <span class="badge rounded-pill alert-danger">
+                              Offer <%= cat.offer.name %> (<%= cat.offer.discount %>%) had Expired
+                            </span>
+                            <br>
+                            <span>
+                              <a style="color: red;" onclick="removeOffer('<%= cat._id %>', '<%= flag %>')">Click to update</a>
+                            </span>
+                          <% } else { %>
+                            <span class="badge rounded-pill alert-success">
+                              <%= cat.offer.name %> (<%= cat.offer.discount %>%)
+                            </span>
+                            <br>
+                            <span>
+                              <a href="#" style="color: red;" onclick="removeOffer('<%= cat._id %>')">Remove Offer</a>
+                            </span>
+                          <% } %>
+                        <% } else { %>
+                          <span class="badge rounded-pill alert-warning">
+                            <a href="#" data-toggle="modal" data-target="#categoryModal<%= cat._id %>">Apply Offer</a>
+                          </span>
+                          <br>
+                          <span>No offer</span>
+                        <% } %>
+                      </td>
+                      <td>
+                        <% if (cat.status === 'active') { %>
+                          <span class="badge rounded-pill alert-success">Active</span>
+                        <% } else { %>
+                          <span class="badge rounded-pill alert-danger">Unlisted</span>
+                        <% } %>
+                      </td>
+                      <td class="text-end">
+                        <div class="dropdown">
+                          <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm">
+                            <i class="material-icons md-more_horiz"></i>
+                          </a>
+                          <div class="dropdown-menu">
+                            <a class="dropdown-item" href="/admin/editCategory?id=<%= cat._id %>">Edit</a>
+                            <a class="dropdown-item" href="#" onclick="confirmDelete('<%= cat._id %>')">Delete</a>
 
 
+                            <a class="dropdown-item text-<%= cat.status === 'active' ? 'danger' : 'success' %>" href="#" onclick="toggleListUnlist('<%= cat._id %>', '<%= cat.status %>')">
+                              <%= cat.status === 'active' ? 'Unlist' : 'List' %>
+                            </a>
 
 
-
-
-                <% } %> <% } else { %>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } else { %>
                   <tr>
                     <td colspan="7">Category not found</td>
                   </tr>
-                  <% } %>
-  
-
-
+                <% } %>
               </tbody>
-
-              
             </table>
           </div>
         </div>
-        <!-- .col// -->
       </div>
-      <!-- .row // -->
     </div>
-    <!-- card body .// -->
   </div>
-  <!-- card .// -->
 </section>
 
-
-
-<!-- Modal for category offer that pops up when clicked on create offer -->
-<% for(let i=0; i< category.length; i++) { %>
-	<div class="modal fade" id="categoryModal<%= category[i]._id %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	  <div class="modal-dialog">
-		<div class="modal-content">
-		<div class="modal-header">
-		  <h5 class="modal-title">Select Offer</h5>
-		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			<span aria-hidden="true">&times;</span>
-		  </button>
-		</div>
-    <div class="modal-body">
-      <div class="">
-        <div class="custom_select">
-            <select class="form-select offer-select">
-              <option selected>Select Offer for the categories</option>
-                      <% offerData.forEach((offer) => { %>
-                        <option value="<%= offer._id %>"><%= offer.name %></option>
-                      <% }) %>
-            </select>
+<!-- Modal for category offer -->
+<% category.forEach((cat) => { %>
+  <div class="modal fade" id="categoryModal<%= cat._id %>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Select Offer</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
+        <div class="modal-body">
+          <div class="">
+            <div class="custom_select">
+              <select class="form-select offer-select large-dropdown">
+                <option selected>Select Offer for the categories</option>
+                <% offerData.forEach((offer) => { %>
+                  <option value="<%= offer._id %>"><%= offer.name %>(<%= offer.discount %>% off)</option>
+                <% }) %>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="applyOffer('<%= cat._id %>')">Apply</button>
+        </div>
+      </div>
     </div>
   </div>
-		<div class="modal-footer">
-		  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-		  <button type="button" class="btn btn-primary save-offer-btn">Save</button>
-     
-		</div>
-	  </div>
-	  </div>
-	</div>
-  <% } %>
+<% }) %>
 
-
-
-
-
-<!-- Include SweetAlert library in your EJS template -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 
-<!-- for the modal to work these are needed  start guess what , these are the basics that are needed for the modal to work-->
+<!-- for modal to work start -->
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- Bootstrap JS -->
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-<!-- for the modal to work these are needed end -->
-
-
+<!-- for modal to work end -->
 
 <script>
-     function validateForm(category) {
-        // Reset any existing error messages
-        clearErrorMessages();
 
-    // console.log('this is what received in the script of category.ejs passed as parametere ',category);
-
-        const name = document.getElementById('product_name').value.trim().toLowerCase();
-
-
-        console.log('this is the name from req.body converted to lowercase()',name);
-
-        
-        const image = document.getElementById('image').files[0];
-        const description = document.getElementById('description').value;
-        
-        // Check if category already exists
-        var categoryName = document.getElementById("product_name").value.trim();
+document.querySelector('form').addEventListener('submit', async function(event) {
+      event.preventDefault();
   
+      if (validateForm()) { 
+        const formData = new FormData(this);
+
+let categoryData = {};
+        formData.forEach((value,key)=>{
+          categoryData[key] = value;
+        })
 
 
-
-      
-      
-        let isValid = true;
-
-        // Check if name is empty
-        if (name.trim() === '') {
-            displayErrorMessage('name-error', 'Please enter a category name.');
-            isValid = false;
-        // } else if (!isFirstLetterCapital(name)) {
-        //     displayErrorMessage('name-error', 'Category name should start with a capital letter.');
-        //     isValid = false;
-        }
-
-        // Check if an image is selected and is of the correct type (jpg or png)
-         if (!image) {
-            displayErrorMessage('image-error', 'Please select an image.');
-            isValid = false;
-        } else if (!isImageTypeValid(image)) {
-            displayErrorMessage('image-error', 'Please select a valid image file (jpg or png).');
-            isValid = false;
-        }
-
-        // Check if description is empty
-        if (description.trim() === '') {
-            displayErrorMessage('description-error', 'Please enter a category description.');
-            isValid = false;
-        }
-
-
-
-        console.log('reached existing category array creation');
-
-      
-        var existingCategories = JSON.parse(category).map(cat => cat.name.toLowerCase()); // Extract category names from array
-
-        console.log('array created is ',existingCategories);
-
-
-
-if (existingCategories.includes(categoryName)) {
-  // Show SweetAlert for duplicate category
-  Swal.fire({
-    title: "Duplicate Category!",
-    text: "This category already exists.",
-    icon: "error",
-    timer: 3000,
-    showConfirmButton: false,
+        let response = await axios.post(this.action, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });   
+    }
   });
-  return false; // Prevent form submission
-}
-
-    
-
-        return isValid; // Form is valid
 
 
 
+ function validateForm() {
+    clearErrorMessages();
+
+    const categoryName = document.getElementById('category_name');
+    const image = document.getElementById('image');
+    const description = document.getElementById('description');
+    let valid = true;
+
+    // Validate category name
+    if (categoryName.value.trim() === '') {
+      document.getElementById('name-error').textContent = 'Category name is required';
+      valid = false;
+    } else if (categoryName.value !== categoryName.value.trim()) {
+      document.getElementById('name-error').textContent = 'Category name should not have leading or trailing spaces';
+      valid = false;
+    } else {
+      document.getElementById('name-error').textContent = '';
     }
 
-    // function isFirstLetterCapital(str) {
-    //     return /^[A-Z]/.test(str);
-    // }
-
-    function isImageTypeValid(file) {
-        return /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+    // Validate image
+    if (!image.files.length) {
+      document.getElementById('image-error').textContent = 'Image field cannot be empty';
+      valid = false;
+    } else {
+      document.getElementById('image-error').textContent = '';
     }
 
-    function displayErrorMessage(errorId, message) {
-        const errorDiv = document.getElementById(errorId);
-        errorDiv.innerText = message;
+    // Validate description
+    if (description.value.trim() === '') {
+      document.getElementById('description-error').textContent = 'Description is required';
+      valid = false;
+    } else if (description.value !== description.value.trim()) {
+      document.getElementById('description-error').textContent = 'Avoid trailing spaces in description';
+      valid = false;
+    } else {
+      document.getElementById('description-error').textContent = '';
     }
+    console.log('form will sumit  :',valid);
+    return valid;
+  }
 
-    function clearErrorMessages() {
-        const errorMessages = document.querySelectorAll('.error-message');
-        errorMessages.forEach((errorMessage) => {
-            errorMessage.innerText = '';
+  function clearErrorMessages() {
+    document.getElementById('name-error').textContent = '';
+    document.getElementById('image-error').textContent = '';
+    document.getElementById('description-error').textContent = '';
+  }
+
+
+
+  //----------------- handling the delete of category -------------------
+  function confirmDelete(categoryId) {
+
+    Swal.fire({
+  title: "Are you sure?",
+  text: "You won't be able to revert this!",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Yes, delete it!"
+}).then(async(result) => {
+  if (result.isConfirmed) {
+    try {
+        const response = await axios.delete(`/admin/deleteCategory?id=${categoryId}`);
+        
+        if (response.status === 200) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: response.data.message
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: response.data.error || 'An error occurred.'
+            });
+        }
+    } catch (error) {
+      const errorMessage = error.response && error.response.data && error.response.data.message 
+                ? error.response.data.message 
+                : error.message;
+        console.error('Error from the backend is:', error);
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: errorMessage,
         });
     }
-
-
-    
-  function confirmUnlist(categoryId) {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'You are about to unlist this category. ',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, unlist it',
-      cancelButtonText: 'Cancel'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // If confirmed, redirect to the unlist category route with the category ID
-        window.location.href = `/admin/categoryUnlist?id=${categoryId}`;
-      }
-    });
   }
+});
 
-  function confirmDelete(categoryId) {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: 'You are about to delete this category. This action cannot be undone.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Yes, delete it',
-      cancelButtonText: 'Cancel'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // If confirmed, redirect to the unlist category route with the category ID
-        window.location.href = `/admin/deleteCategory?id=${categoryId}`;
-      }
-    });
   }
 
 
- 
-  
+//----------------- handling the list or unlist of category ------------
+  async function toggleListUnlist(categoryId, currentStatus) {
+    const action = currentStatus === 'active' ? 'unlist' : 'list';
+
+    const result = await Swal.fire({
+        title: `Are you sure you want to ${action} this category?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'No',
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await axios.patch(`/admin/toggleCategoryStatus?id=${categoryId}`);
+
+            if (response.status === 200) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: response.data.message,
+                    showConfirmButton: false,
+                    timer: 2000,
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.data.message || 'An error occurred.',
+                    showConfirmButton: false,
+                    timer: 2000,
+                });
+            }
+        } catch (error) {
+      
+            const errorMessage = error.response && error.response.data && error.response.data.message
+                ? error.response.data.message
+                : error.message;
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: errorMessage,
+                showConfirmButton: false,
+                timer: 2000,
+            });
+            console.error('Error updating category status:', error);
+        }
+    }
+  }
+
+ async function removeOffer(categoryId,flag) {
+    try{
+
+if(flag === String(1)){
+
+let response = await fetch('/admin/removeCategoryOffer',{
+                          method:"PATCH",
+                          headers:{
+                            "Content-Type":"application/json"
+                          },
+                          body: JSON.stringify({categoryId})
+                        })
+
+                        if (response.ok) {
+  // Display a toast notification for successful update
+  const Toast = Swal.mixin({
+      toast: true,
+      position: "bottom",
+      showConfirmButton: true, // Show the OK button
+      confirmButtonText: "OK",
+      didOpen: (toast) => {
+          toast.onmouseenter = Swal.stopTimer;
+          toast.onmouseleave = Swal.resumeTimer;
+      }
+  });
+
+  Toast.fire({
+      icon: "success",
+      title: "Updated Successfully"
+      
+  }).then((result) => {
+      if (result.isConfirmed) {
+          // Reload the page after the user clicks OK
+          window.location.reload();
+      }
+  });
+}
+}
+else{
+
+const isConfirmedWarning = await Swal.fire({
+          title: 'Are you sure?',
+          text: "You want remove the offer!",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Yes, remove it!'
+      });
+
+      if (isConfirmedWarning.isConfirmed) {
+        console.log('reached here')
+          const response = await fetch("/admin/removeCategoryOffer", {
+              method: "PATCH",
+              headers: {
+                  "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ categoryId })
+          });
+          console.log("hfkhjkhh");
+
+          if (response.ok) {
+              const responseData = await response.json();
+
+              const isConfirmed = await Swal.fire({
+              title: 'Offer Removed',
+              icon: 'success',
+              showConfirmButton: false,
+                  timer: 500,
+          });
+          setTimeout(()=>{
+            window.location.reload();
+          },1000)
+              
+          
+          } else {
+              console.error('Error removing category offer:', response.statusText);
+          }
+      }
+}
+
+    }catch(err){
+      console.log('error while removing category offer :',err)
+    }
+  }
+
+ //================= apply category offer --------------------
+ function applyOffer(categoryId) {
+  const selectedOffer = document.querySelector(`#categoryModal${categoryId} .offer-select`).value;
+
+console.log('selected offer :',selectedOffer)
+
+  if (!selectedOffer) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Warning',
+      text: 'Please select an offer to apply.',
+    });
+    return;
+  }
+
+  axios.patch('/admin/applyCategoryOffer', {
+    categoryId: categoryId,
+    offerId: selectedOffer,
+  })
+  .then(response => {
+    if (response.status === 200) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: response.data.message,
+        showConfirmButton: false,
+        timer: 2000,
+      }).then(() => {
+        window.location.reload();
+      });
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: response.data.message || 'An error occurred.',
+      });
+    }
+  })
+  .catch(error => {
+    const errorMessage = error.response && error.response.data && error.response.data.message
+        ? error.response.data.message
+        : error.message;
+
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: errorMessage,
+    });
+    console.error('Error applying  category offer:', error);
+  });
+}
+
+
   function searchCategories() {
-    // Get the value of the search input
-    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const table = document.querySelector('.table');
+    const rows = table.querySelectorAll('tbody tr');
 
-    // Get all table rows
-    const rows = document.querySelectorAll('tbody tr');
-
-    // Loop through each row and filter based on the search query
     rows.forEach(row => {
-      // Extract the category name from the row 
-      const categoryName = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-
-      // Check if the category name contains the search query
-      if (categoryName.includes(searchQuery)) {
-        // If the category name contains the search query, display the row
+      const categoryName = row.cells[2].textContent.toLowerCase();
+      if (categoryName.includes(input)) {
         row.style.display = '';
       } else {
-        // If not, hide the row
         row.style.display = 'none';
       }
     });
   }
-
-//===================== for selecting the offer---------------------------
-
-document.addEventListener("DOMContentLoaded", function () {
-        const saveButtons = document.querySelectorAll(".save-offer-btn");
-
-        saveButtons.forEach((button) => {
-            button.addEventListener("click", async function () {
-                const modal = button.closest(".modal");
-                const categoryId = modal.getAttribute("id").replace("categoryModal", "");
-                const offerSelect = modal.querySelector(".offer-select");
-                const offerId = offerSelect.value;
-
-                try {
-                    const response = await axios.patch("/admin/applyCategoryOffer", {
-                        categoryId,
-                        offerId
-                    });
-
-                    if (response.data.success) {
-                                        
-                        window.location.reload()
-                    
-                    } else {
-                        // Handle failure, e.g., show an error message
-                        console.error("Failed to apply category offer");
-                    }
-                } catch (error) {
-                    console.error("Error applying category offer:", error);
-                }
-            });
-        });
-    });
-
-//===========remove category offer ============================
-async function removeOffer(categoryId,flag) {
-    try {
-
-      if(flag === String(flag)){
-        const response = await axios.patch('/admin/removeCategoryOffer', {
-                categoryId
-            });
-
-            if (response.data.success) {
-                Swal.fire({
-                    title: 'Update successful',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Reload the page or perform any other action
-                        window.location.reload();
-                    }
-                });
-            } else {
-                console.error('Error removing offer:', response.statusText);
-            }
-      }
-else{
-  const isConfirmed = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'You want to remove the offer!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, remove it!'
-        });
-
-        if (isConfirmed.isConfirmed) {
-            const response = await axios.patch('/admin/removeCategoryOffer', {
-                categoryId
-            });
-
-            if (response.data.success) {
-                Swal.fire({
-                    title: 'Offer Removed',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Reload the page or perform any other action
-                        window.location.reload();
-                    }
-                });
-            } else {
-                console.error('Error removing offer:', response.statusText);
-            }
-        }
-}
-       
-    } catch (error) {
-        console.error('Error removing offer:', error);
-    }
-}
-
-
-
-
-
-
-
 </script>
 
-
-
 <%- include('./layouts/footer.ejs')%>
-
-
-
-
-
 
 
 

@@ -8,6 +8,7 @@ const Razorpay = require("razorpay");
 const Coupons = require("../model/couponModel")
 const Crypto = require("crypto");
 let moment = require("moment");
+let randomString = require('randomstring');
 
 //============  Razorpay instance  ==========================
 
@@ -73,7 +74,7 @@ const placeTheOrder = async (req, res) => {
             return {
                 productId: cartProduct.productId,
                 name: productDetails.name,
-                price: productDetails.price,
+                price: priceProduct,
                 quantity: cartProduct.quantity,
                 subTotal: productSubTotal,
                 orderStatus: cartProduct.status,
@@ -177,7 +178,7 @@ console.log('this is the coupon at placeOrder:',coupon)
             res.json({ success: true, order: savedOrder });
           } catch (error) {
             console.log('error at cod placing :',error)
-              res.status(500).json({ success: false, message: 'OD not working properly.' });
+              res.status(500).json({ success: false, message: 'COD not working properly.' });
           }
       }  
   
@@ -237,7 +238,7 @@ console.log('this is the coupon at placeOrder:',coupon)
 
             res.json({ success: true, order: savedOrder });
         } catch (error) {
-            console.error('Wallet order error:', error);
+            console.error('Error using wallet to do the payment:', error);
             res.status(500).json({ success: false, message: 'Wallet order error' });
         }
     }
@@ -248,7 +249,7 @@ console.log('this is the coupon at placeOrder:',coupon)
         
     } catch (error) {
         console.error('Error placing order at placetheOrder of ordercontroller:', error);
-        res.status(500).json({ success: false, message: 'An error occurred while processing the order.' });
+        res.status(500).redirect("/error");
     }
   };
   
@@ -477,6 +478,7 @@ const loadOrderDetailsPage = async (req, res) => {
         model:'Product'
      })
 
+     console.log(`this is the orderPlacedByTheUser gonna render on order details page :${orderPlacedByTheUser}`)
      
       res.render("orderDetails", { orderPlacedByTheUser,moment });
 
@@ -750,6 +752,20 @@ let loadDownloadInvoice = async(req,res)=>{
     }
 }
 
+//==-----==---------== Single order view at admin side--------------
+
+let loadSingleOrder = async(req,res)=>{
+    try{
+        let orderId = req.query.id;
+        let order = await Orders.findById(orderId);
+        res.render('adminOrderDetails',{order,moment});
+    }catch(err){
+        console.log('error loading the single order page at admin :',err)
+        res.status(500).redirect('/error');
+    }
+}
+
+
 module.exports = {
     placeTheOrder,
     orderSuccess,
@@ -759,7 +775,8 @@ module.exports = {
     verifyPayment,
     changeStatus,
     returnOrder,
-    loadDownloadInvoice
+    loadDownloadInvoice,
+    loadSingleOrder
 };
 
 

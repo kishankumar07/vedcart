@@ -71,6 +71,7 @@
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <script>
     document.getElementById("publishButton").addEventListener("click", function() {
@@ -93,10 +94,10 @@
         }
 
         // Validate description
-        if (description === "") {
-            document.getElementById("description-error").textContent = "Description is required";
-            return;
-        }
+        // if (description === "") {
+        //     document.getElementById("description-error").textContent = "Description is required";
+        //     return;
+        // }
 
         // Validate date
         const currentDate = new Date();
@@ -112,39 +113,53 @@
             return;
         }
 
-        // If all validations pass, submit the form
+       
         document.getElementById("itemForm").submit();
     });
 
+
+
+//------------delete the banner image=====================
     function confirmDelete(bannerId, image) {
-        Swal.fire({
-            title: 'Are you sure?',
-            text: 'You will not be able to recover this image!',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`/admin/deleteImage?bannerId=${bannerId}&image=${image}`, {
-                    method: 'DELETE'
+    Swal.fire({
+        title: 'Are you sure?',
+        text: 'You will not be able to recover this image!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            try {
+                console.log(`Deleting banner with ID: ${bannerId} and image: ${image}`);
+                axios.delete(`/admin/deleteBannerImage`, {
+                    params: {
+                        bannerId: bannerId,
+                        image: image
+                    }
                 }).then(response => {
-                    if (response.ok) {
+                    if (response.status === 200) {
                         Swal.fire('Deleted!', 'Your image has been deleted.', 'success').then(() => {
                             window.location.reload();
                         });
                     } else {
-                        console.error('Delete request failed with status:', response.status);
+                        console.error('Delete request failed with status:', response.status, 'Response message:', response.data);
                         Swal.fire('Error!', 'Failed to delete the image.', 'error');
                     }
                 }).catch(error => {
-                    console.error('Error:', error);
+                    console.error('Error at deleting the banner image:', error);
                     Swal.fire('Error!', 'Failed to delete the image.', 'error');
                 });
+            } catch (error) {
+                console.error('Error executing axios.delete:', error);
+                Swal.fire('Error!', 'Failed to delete the image.', 'error');
             }
-        });
-    }
+        }
+    });
+}
+
+
 </script>
 
 <%- include('./layouts/footer') %>

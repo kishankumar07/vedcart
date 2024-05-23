@@ -45,8 +45,10 @@
                             <th scope="col">Price </th>
                             <th scope="col">Coupon</th>
                             <th scope="col">Date</th>
+                            <th scope="col">Details</th>
                             <th scope="col">Product</th>
-                            <th scope="col">Quantity</th>
+                            <th scope="col">Quantity</th>  
+                            <th scope="col">Price</th>                      
                             <th scope="col">Image</th>
                             <th scope="col">Status</th>
                             <th scope="col" class="text-end">Action</th>
@@ -62,7 +64,7 @@
                             <% if (index === 0) { %>
 
                             <td rowspan="<%= order.Products.length %>">
-                                <p><%= order.id %></p>
+                                <p><%= order.orderId %></p>
                             </td>
 
 
@@ -95,17 +97,27 @@
                                 <p class="text-center"> <%= moment(order.date).format('DD-MM-YYYY') %></p>
                             </td>
 
+
+
+                            <td rowspan="<%= order.Products.length %>">
+                                <a class="badge rounded-pill alert-primary" href="/admin/singleOrder?id=<%= order.id %>">View info</a>
+                            </td>
+
+                
                             <% } %>
 
                            
 
 
-
+                            
                             <td>
                                 <p><%= product.name %></p>
                             </td>
                             <td>
                                 <p class="text-center"><%= product.quantity %></p>
+                            </td>
+                            <td>
+                                <p>₹<%= product.price %></p>
                             </td>
                             <td>
                                 <img src="/adminAssets/imgs/category/<%= product.image[0] %>" alt="Product Image" width="50" height="50">

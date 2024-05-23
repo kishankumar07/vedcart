@@ -11,6 +11,60 @@ ItgtAc365vyuqpoorMcCUsrw
 {/* <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> */}
 
 
+<div class="banner banner-overlay">
+<script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/72ef9b38-e534-415c-a451-5d9ccea05bec/ErU02LkRoE.json" background="#FFFFFF" speed="1" style="width: 300px; height: 300px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+
+
+
+<script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/63f92b03-9df2-4ec9-9a02-cf1f719c3f2c/QUWZQKsool.json" background="#FFFFFF" speed="1" style="width: 300px; height: 300px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+
+
+
+<div class="col-md-4">
+    <div class="banner banner-overlay" style="margin-top: 100px;"> <!-- Add margin-top here -->
+        <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+        <dotlottie-player src="https://lottie.host/63f92b03-9df2-4ec9-9a02-cf1f719c3f2c/QUWZQKsool.json" background="#FFFFFF" speed="1" style="width: 300px; height: 300px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+    </div><!-- End .banner banner-overlay -->
+</div><!-- End .col-md-4 -->
+
+
+
+
+
+const userId = req.session.userData;
+
+ const userNameforProfile = await User.findById(userId);
+
+ let cart =await Cart.findOne({userId:user}).populate({
+     path:"products.productId",
+     model: 'Product',
+    })
+
+ const totalPriceOfCartProducts = cart?.products.reduce((acc, curr) => acc + curr.totalPrice, 0) || 0;
+
+
+
+ const banners = await Banner.find(); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -983,94 +1037,76 @@ document.getElementById('customSortBtn').addEventListener('click', customSortOrd
 
 
 
+function validateForm(category) {
+  // Reset any existing error messages
+  clearErrorMessages();
 
+  const name = document.getElementById('product_name').value.trim();
+  const image = document.getElementById('image').files[0];
+  const description = document.getElementById('description').value.trim();
 
+  let isValid = true;
 
-
-
-
-document.addEventListener("DOMContentLoaded", function() {
-  // Your script here
-
-  //---------- cropper.js ------------------------------
-  let addProducts = document.getElementById('addProductsPage');
-  if (addProducts) {
-      // Other code remains the same
-
-      function enableSubmitButton() {
-          // Check if all necessary fields are filled and images are cropped
-          let allFieldsFilled = productName.value && productDesc.value && productPrice.value && productQty.value && productBrand.value && date.value;
-          let imagesCropped = croppedDataArray.length > 0;
-
-          // Enable submit button if all fields are filled and images are cropped
-          submitForm.disabled = !(allFieldsFilled && imagesCropped);
-
-          // Display error messages for empty fields
-          if (!productName.value) {
-              document.getElementById('name-error').innerText = 'Product name is required';
-          } else {
-              document.getElementById('name-error').innerText = '';
-          }
-
-          if (!productDesc.value) {
-              document.getElementById('description-error').innerText = 'Description is required';
-          } else {
-              document.getElementById('description-error').innerText = '';
-          }
-
-          if (!productPrice.value) {
-              document.getElementById('price-error').innerText = 'Price is required';
-          } else {
-              document.getElementById('price-error').innerText = '';
-          }
-
-          if (!productQty.value) {
-              document.getElementById('quantity-error').innerText = 'Quantity is required';
-          } else {
-              document.getElementById('quantity-error').innerText = '';
-          }
-
-          if (!productBrand.value) {
-              document.getElementById('brand-error').innerText = 'Brand name is required';
-          } else {
-              document.getElementById('brand-error').innerText = '';
-          }
-
-          if (!date.value) {
-              document.getElementById('date-error').innerText = 'Date is required';
-          } else {
-              document.getElementById('date-error').innerText = '';
-          }
-
-          if (!document.querySelector('input[name="productCat"]:checked')) {
-              document.getElementById('category-error').innerText = 'Please select a category';
-          } else {
-              document.getElementById('category-error').innerText = '';
-          }
-
-          if (croppedDataArray.length === 0) {
-              document.getElementById('image-error').innerText = 'Please crop at least one image';
-          } else {
-              document.getElementById('image-error').innerText = '';
-          }
-      }
-
-      // Add event listeners to input fields to check for changes
-      let inputFields = [productName, productDesc, productPrice, productQty, productBrand, date];
-      inputFields.forEach(field => {
-          field.addEventListener('input', enableSubmitButton);
-      });
-
-      // Call the function initially to set the initial state of the submit button
-      enableSubmitButton();
+  // Check if name is empty or has trailing spaces
+  if (name === '') {
+      displayErrorMessage('name-error', 'Please enter a category name.');
+      isValid = false;
+  } else if (name !== document.getElementById('product_name').value) {
+      displayErrorMessage('name-error', 'Please avoid trailing spaces.');
+      isValid = false;
   }
-});
 
+  // Check if an image is selected and is of the correct type (jpg, jpeg, png, webp)
+  if (!image) {
+      displayErrorMessage('image-error', 'Please select an image.');
+      isValid = false;
+  } else if (!isImageTypeValid(image)) {
+      displayErrorMessage('image-error', 'Please select a valid image file (jpg, jpeg, png, webp).');
+      isValid = false;
+  }
 
+  // Check if description is empty or has trailing spaces
+  if (description === '') {
+      displayErrorMessage('description-error', 'Please enter a category description.');
+      isValid = false;
+  } else if (description !== document.getElementById('description').value) {
+      displayErrorMessage('description-error', 'Please avoid trailing spaces.');
+      isValid = false;
+  }
 
+  // Check if category already exists
+  const categoryName = document.getElementById("product_name").value.trim().toLowerCase();
+  const existingCategories = JSON.parse(category).map(cat => cat.name.toLowerCase());
 
+  if (existingCategories.includes(categoryName)) {
+      Swal.fire({
+          title: "Duplicate Category!",
+          text: "This category already exists.",
+          icon: "error",
+          timer: 3000,
+          showConfirmButton: false,
+      });
+      return false; // Prevent form submission
+  }
 
+  return isValid; // Form is valid
+}
 
+function isImageTypeValid(file) {
+  return /\.(jpg|jpeg|png|webp)$/i.test(file.name);
+}
+
+function displayErrorMessage(errorId, message) {
+  const errorDiv = document.getElementById(errorId);
+  errorDiv.innerText = message;
+}
+
+function clearErrorMessages() {
+  const errorMessages = document.querySelectorAll('.error-message');
+  errorMessages.forEach((errorMessage) => {
+      errorMessage.innerText = '';
+  });
+}
 
 
 
@@ -1804,3 +1840,164 @@ if (email) {
 }
 
 
+
+
+
+
+
+
+
+
+const mongoose = require('mongoose');
+const randomstring = require('randomstring');
+
+const orderSchema = new mongoose.Schema({
+  orderId: { type: String, unique: true, default: () => randomstring.generate(10) },
+  orderStatus: String,
+  paymentMode: String,
+  date: Date,
+  address: {
+    name: String,
+    // other address fields
+  },
+  productPrice: Number
+});
+
+const Order = mongoose.model('Order', orderSchema);
+
+module.exports = Order;
+
+
+
+const randomStrHex = randomstring.generate({
+  length: 16,
+  charset: 'hex'
+});
+
+
+
+
+
+
+
+
+
+const generateWeeklyReport = async (req, res) => {
+  try {
+      // Get the start and end of the current week
+      const startOfWeek = moment().startOf('isoWeek');
+      const endOfWeek = moment().endOf('isoWeek');
+
+      console.log('Start of Week:', startOfWeek.toDate());
+      console.log('again debug :', moment(startOfWeek).format('DD-MM-YYYY'));
+      console.log('End of Week:', endOfWeek.toDate());
+      console.log('again debug :', moment(endOfWeek).format('DD-MM-YYYY'));
+
+      const weeklyOrders = await Orders.aggregate([
+          {
+              $match: {
+                  createdAt: { $gte: startOfWeek.toDate(), $lte: endOfWeek.toDate() }
+              }
+          },
+          {
+              $group: {
+                  _id: { $week: "$createdAt" },
+                  totalOrders: { $sum: 1 },
+                  totalCouponDiscount: { $sum: "$couponDiscount" },
+                  products: { $push: "$Products" }
+              }
+          },
+          {
+              $unwind: "$products"
+          },
+          {
+              $unwind: "$products"
+          },
+          {
+              $match: {
+                  "products.orderStatus": "delivered"
+              }
+          },
+          {
+              $group: {
+                  _id: "$_id",
+                  totalOrders: { $first: "$totalOrders" },
+                  totalCouponDiscount: { $first: "$totalCouponDiscount" },
+                  totalSubTotal: { $sum: "$products.subTotal" }
+              }
+          },
+          {
+              $addFields: {
+                  weekRange: {
+                      $let: {
+                          vars: {
+                              startOfWeek: { $dateToString: { format: "%d-%b-%Y", date: startOfWeek.toDate() } },
+                              endOfWeek: { $dateToString: { format: "%d-%b-%Y", date: endOfWeek.toDate() } }
+                          },
+                          in: { $concat: ["$$startOfWeek", " to ", "$$endOfWeek"] }
+                      }
+                  }
+              }
+          },
+          {
+              $project: {
+                  _id: "$weekRange",
+                  totalOrders: 1,
+                  totalCouponDiscount: 1,
+                  totalSubTotal: 1
+              }
+          }
+      ]);
+
+      console.log('Weekly orders shown in the DOM when the weekly button is clicked:', weeklyOrders);
+
+      res.render('reports', {
+          report: weeklyOrders,
+          reportType: 'Weekly',
+          moment,
+      });
+  } catch (error) {
+      console.log('Error generating weekly sales report:', error);
+      res.redirect('/error');
+  }
+};
+
+\
+
+
+
+
+
+
+let orders = await Orders.aggregate([
+  {
+      $match: {}
+  },
+  {
+      $group: {
+          _id: null,
+          totalOrders: { $sum: 1 },
+          totalCouponDiscount: { $sum: "$couponDiscount" },
+          products: { $push: "$Products" }
+      }
+  },
+  {
+      $unwind: "$products"
+  },
+  {
+      $unwind: "$products"
+  },
+  {
+      $match: { "products.orderStatus": "delivered" }
+  },
+  {
+      $group: {
+          _id: "$_id",
+          totalOrders: { $first: "$totalOrders" },
+          totalCouponDiscount: { $first: "$totalCouponDiscount" },
+          totalSubTotal: { $sum: "$products.subTotal" }
+      }
+  }
+]);
+
+console.log('orders is :', orders);

@@ -45,7 +45,7 @@
                 <% report.forEach((order, index) => { %>
                     <tr>
                         <td><%= index + 1 %></td>
-                        <td><%= moment(order._id).format('DD-MM-YYYY') %></td>
+                        <td><%= order._id %></td>
                         <td><%= order.totalOrders %></td>
                         <td>₹<%= order.totalSubTotal.toFixed(2) %></td>
                       
@@ -60,7 +60,7 @@
                 <tr> 
                     <td colspan="2"><strong>Total:</strong></td> 
                     <td><%= (report.reduce((acc,curr) => acc+curr.totalOrders,0)) %></td> 
-                    <td>₹<%= (report.reduce((acc,curr)=> acc+curr.totalSubTotal,0)).toFixed(2) %>
+                    <td>₹<%= (report.reduce((acc,curr)=> acc+curr.totalSubTotal,0)).toFixed(2) - (report.reduce((acc,curr)=> acc+curr.totalCouponDiscount,0)) %>.00
                     </td> 
                     <td><%= (report.reduce((acc,curr)=> acc+curr.totalCouponDiscount,0)) %></td>
                 </tr>

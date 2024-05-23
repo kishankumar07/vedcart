@@ -40,8 +40,41 @@ const verifyAdminLogin=async(req,res)=>{
 const adminDashboard = async (req, res) => {
     try{
     
-        
-        res.render('dashboard');
+        let orders = await Orders.aggregate([
+
+            {
+              $match:{}
+            },
+            {
+              $group:{
+                _id:null,
+                totalOrders:{ $sum : 1},
+                totalCouponDiscount : {$sum : "$couponDiscount" },
+                products : { $push:"$Products" }
+              }
+            },
+            {
+              $unwind : "$products"
+            },
+            {
+              $unwind : "$products"
+            },
+            {
+              $match :{ "products.orderStatus" : "delivered"}
+            },
+            {
+              $group: {
+                  _id: "$_id",
+                  totalOrders: { $first: "$totalOrders" },
+                  totalCouponDiscount: { $first: "$totalCouponDiscount" }, 
+                  totalSubTotal: { $sum: "$products.subTotal" }
+              }
+          },
+          
+          
+          ])
+          console.log('orders is :',orders)
+        res.render('dashboard',{orders});
 
     } catch (error) {
         console.log('Error happened in admin controller at adminLoginPage function ', error);
@@ -181,7 +214,7 @@ const loadSalesReport = async (req, res) => {
            
             {
                 $project: {
-                    _id: 1,
+                    orderId: 1,
                     paymentMode: 1,
                     date: 1,
                     address: 1,
@@ -199,7 +232,7 @@ const loadSalesReport = async (req, res) => {
         
       
         const totalOrders = await Orders.countDocuments();
-        console.log('total orders when loading the sales report page is :',totalOrders)
+        // console.log('total orders when loading the sales report page is :',totalOrders)
         const totalPages = Math.ceil(totalOrders / limit);
        
         res.render('salesReport', {
@@ -224,13 +257,47 @@ const customDateReport = async (req, res) => {
     try {
        
         const { startDate, endDate } = req.query; 
-
-       
         const start = new Date(startDate);
         const end = new Date(endDate);
 
-       
+
+
         const aggregationPipeline = [
+           
+            {
+                $match: {
+                    date: { $gte: start, $lte: end }
+                }
+            },
+            
+            {
+                $sort: { createdAt: -1 }
+            },
+
+            {
+                $unwind: "$Products"
+            },
+           
+            {
+                $project: {
+                    orderId: 1,
+                    paymentMode: 1,
+                    date: 1,
+                    address: 1,
+                    orderStatus: "$Products.orderStatus",
+                    productPrice:"$Products.subTotal"
+                }
+            }
+            
+        ];
+        
+       
+        const orders1 = await Orders.aggregate(aggregationPipeline)
+
+// console.log('table orders :',orders1)
+
+       
+        const aggregationPipeline1 = [
             
             {
                 $match: {
@@ -259,7 +326,7 @@ const customDateReport = async (req, res) => {
         ];
 
        
-        const orders = await Orders.aggregate(aggregationPipeline);
+        const orders = await Orders.aggregate(aggregationPipeline1);
 
 
 // console.log('orders value at custom sales report------------------------------------------------ :',orders)
@@ -284,7 +351,9 @@ const totalOrders = await Orders.countDocuments({
             startDate: start,
             endDate:end,    
             totalCount: totalOrders,
-            moment
+            moment,
+            reportType:'Custom Date',
+            tableOrders : orders1,
         });
     } catch (error) {
         console.log('Error loading custom date sales report page', error);
@@ -300,8 +369,9 @@ const totalOrders = await Orders.countDocuments({
 const dailySalesReport = async (req, res) => {
     try {
         
-        const startOfDay = moment().startOf('day');
-        const endOfDay = moment().endOf('day');
+        const startOfDay = moment().utc().startOf('day');
+        const endOfDay = moment().utc().endOf('day');
+        
 
 
         
@@ -316,7 +386,7 @@ const dailySalesReport = async (req, res) => {
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { $dateToString: { format: "%d-%m-%Y", date: "$createdAt" } },
                     totalOrders: { $sum: 1 },
                     totalCouponDiscount: { $sum: "$couponDiscount" },
                     products: { $push: "$Products" }
@@ -347,7 +417,7 @@ const dailySalesReport = async (req, res) => {
         
 
 
-        console.log('daily orders gonna be loaded after unwind stage :',dailyOrders)
+        console.log('daily orders gonna be loaded after  stage :',dailyOrders)
 
 
 
@@ -379,16 +449,20 @@ const generateWeeklyReport = async (req, res) => {
         // Get the start and end of the current week
         const startOfWeek = moment().startOf('week');
         const endOfWeek = moment().endOf('week');
-
+        
+        console.log('Start of Week:', startOfWeek.toDate());
+        console.log('again debug :',moment(startOfWeek).format('DD-MM-YYYY'));
+        console.log('End of Week:', endOfWeek.toDate());
+        console.log('again debug :',moment(endOfWeek).format('DD-MM-YYYY'));
         const weeklyOrders = await Orders.aggregate([
             {
                 $match: {
-                    date: { $gte: startOfWeek.toDate(), $lte: endOfWeek.toDate() }
+                    createdAt: { $gte: startOfWeek.toDate(), $lte: endOfWeek.toDate() }
                 }
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { $week: "$createdAt" },
                     totalOrders: { $sum: 1 },
                     totalCouponDiscount: { $sum: "$couponDiscount" },
                     products: { $push: "$Products" }
@@ -412,10 +486,33 @@ const generateWeeklyReport = async (req, res) => {
                     totalCouponDiscount: { $first: "$totalCouponDiscount" }, 
                     totalSubTotal: { $sum: "$products.subTotal" }
                 }
+            },
+            {
+                $addFields: {
+                    weekRange: {
+                        $let: {
+                            vars: {
+                                startOfWeek: { $dateToString: { format: "%d-%b-%Y", date: startOfWeek.toDate() } },
+                                endOfWeek: { $dateToString: { format: "%d-%b-%Y", date: endOfWeek.toDate() } }
+                            },
+                            in: { $concat: ["$$startOfWeek", " to ", "$$endOfWeek"] }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: "$weekRange",
+                    totalOrders: 1,
+                    totalCouponDiscount: 1,
+                    totalSubTotal: 1
+                }
             }
         ]);
-        
-        console.log('Weekly orders shown when the weekly button is clicked:', weeklyOrders);
+        // console.log('Weekly orders shown in the DOM when the weekly button is clicked------------:', weeklyOrders);
+
+      
+    
 
         res.render('reports', {
             report: weeklyOrders, 
@@ -429,22 +526,24 @@ const generateWeeklyReport = async (req, res) => {
 };
 
 
+
+
 //-------------- monthly report ------------------------------
 const generateMonthlyReport = async (req, res) => {
     try {
         // Get the start and end of the current month
-        const startOfMonth = moment().startOf('month');
-        const endOfMonth = moment().endOf('month');
+        const startOfMonth = moment().startOf('month').toDate();
+        const endOfMonth = moment().endOf('month').toDate();
 
         const monthlyOrders = await Orders.aggregate([
             {
                 $match: {
-                    date: { $gte: startOfMonth.toDate(), $lte: endOfMonth.toDate() }
+                    date: { $gte: startOfMonth, $lte: endOfMonth }
                 }
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { month: { $month: "$date" }, year: { $year: "$date" } },
                     totalOrders: { $sum: 1 },
                     totalCouponDiscount: { $sum: "$couponDiscount" },
                     products: { $push: "$Products" }
@@ -467,6 +566,36 @@ const generateMonthlyReport = async (req, res) => {
                     totalOrders: { $first: "$totalOrders" },
                     totalCouponDiscount: { $first: "$totalCouponDiscount" }, 
                     totalSubTotal: { $sum: "$products.subTotal" }
+                }
+            },
+            {
+                $addFields: {
+                    startOfMonth: { $dateFromParts: { year: "$_id.year", month: "$_id.month", day: 1 } },
+                    endOfMonth: { $dateFromParts: { year: "$_id.year", month: "$_id.month", day: 32 } }
+                }
+            },
+            {
+                $addFields: {
+                    endOfMonth: { $subtract: ["$endOfMonth", { $multiply: [24, 60, 60, 1000] }] }
+                }
+            },
+            {
+                $addFields: {
+                    monthRange: {
+                        $concat: [
+                            { $dateToString: { format: "%d-%b-%Y", date: "$startOfMonth" } },
+                            " to ",
+                            { $dateToString: { format: "%d-%b-%Y", date: "$endOfMonth" } }
+                        ]
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: "$monthRange",
+                    totalOrders: 1,
+                    totalCouponDiscount: 1,
+                    totalSubTotal: 1
                 }
             }
         ]);
@@ -487,22 +616,23 @@ const generateMonthlyReport = async (req, res) => {
 
 
 
+
 //-------------------------- yearly report ------------------------------
 const generateYearlyReport = async (req, res) => {
     try {
         // Get the start and end of the current year
-        const startOfYear = moment().startOf('year');
-        const endOfYear = moment().endOf('year');
+        const startOfYear = moment().startOf('year').toDate();
+        const endOfYear = moment().endOf('year').toDate();
 
         const yearlyOrders = await Orders.aggregate([
             {
                 $match: {
-                    date: { $gte: startOfYear.toDate(), $lte: endOfYear.toDate() }
+                    date: { $gte: startOfYear, $lte: endOfYear }
                 }
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    _id: { year: { $year: "$date" } },
                     totalOrders: { $sum: 1 },
                     totalCouponDiscount: { $sum: "$couponDiscount" },
                     products: { $push: "$Products" }
@@ -526,6 +656,19 @@ const generateYearlyReport = async (req, res) => {
                     totalCouponDiscount: { $first: "$totalCouponDiscount" }, 
                     totalSubTotal: { $sum: "$products.subTotal" }
                 }
+            },
+            {
+                $addFields: {
+                    yearRange: { $toString: "$_id.year" }
+                }
+            },
+            {
+                $project: {
+                    _id: "$yearRange",
+                    totalOrders: 1,
+                    totalCouponDiscount: 1,
+                    totalSubTotal: 1
+                }
             }
         ]);
 
@@ -541,6 +684,7 @@ const generateYearlyReport = async (req, res) => {
         res.redirect('/error');
     }
 };
+
 
 
 

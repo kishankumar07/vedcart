@@ -12,7 +12,7 @@ const bannerSchema=mongoose.Schema({
     },
     description:{
         type:String,
-        required:true
+        required:false
     },
     location: {
         type: String,

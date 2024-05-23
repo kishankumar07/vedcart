@@ -85,7 +85,7 @@
                       
                             <tr>
                                 <td><a href="#" class="fw-bold"><%= ++orderCounter %></a></td>
-                                <td><%= order._id %></td>
+                                <td><%= order.orderId %></td>
                                 <td style="color:
                                     <% if (order.orderStatus === 'cancelled' || order.orderStatus === 'returned') { %>
                                         red;

@@ -365,17 +365,17 @@
                             >
                               <div>
                                 <p class="text-muted mb-2">
-                                  Order ID
-                                  <span class="fw-bold text-body">
-                                    <%= order._id %>
+                                  Order ID :
+                                  <span class="fw-bold text-primary">
+                                    <%= order.orderId %>
                                   </span>
                                 </p>
                                 <p class="text-muted mb-0">
-                                  Place On
-                                  <span class="fw-bold text-body">
+                                  Place On :
+                                  <span class="fw-bold text-primary">
                                     <%= moment(order.date).format('DD-MM-YYYY') %>
                                   </span> at:
-                                  <span class="fw-bold text-body">
+                                  <span class="fw-bold text-primary">
                                     <%= moment(order.date).format('HH:mm:ss') %>
                                   </span>
                                 </p>

@@ -1,13 +1,32 @@
 <%- include('./layouts/header') %>
+<!-- iziToast CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/css/iziToast.min.css">
+<!-- iziToast JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/izitoast/1.4.0/js/iziToast.min.js"></script>
+
 
 <!-- css for the offer modals select option fields -->
 <style>
   .large-dropdown {
-      width: 100%; /* Adjust the width as needed */
+      width: 100%; 
       height: 45px; 
       font-size: 18px; 
   }
 </style>
+
+<!-- To display error messages if any in the product list page at admin side using the library iziToast -->
+<% if(message && message.length!==0) {%>
+
+  <script>
+     iziToast.error({
+            title: '<%= message %>',
+            position: 'topRight',
+            theme: 'dark',
+        });
+  </script>
+
+<% } %>
+
 
 <section class="content-main">
   <div class="content-header">
@@ -98,7 +117,7 @@
                     <% } else if(product.quantity <=5) { %>
                     <span style="color: rgb(224, 75, 75)"> <%=product.quantity%> </span>
                     <% } else if(product.quantity <=15) { %>
-                    <span style="color: #3b5e33"> <%=product.quantity%></span>
+                    <span style="color: #ff9900"> <%=product.quantity%></span>
                     <% }else{ %>
                     <span style="color: #3b5e33"> <%=product.quantity%></span>
                     <% } %>
@@ -139,10 +158,9 @@
                        
 
 
-                      <%}else{%>
+                      <% } else { %>
                         <span class="badge rounded-pill alert-warning"><a href="" data-toggle="modal" data-target="#productModal<%= product._id %>">Apply Offer</a></span><br>
                         <span>No offer</span>
-
 
                           <% } %>
                   </td>
@@ -229,7 +247,7 @@
 			<span aria-hidden="true">&times;</span>
 		  </button>
 		</div>
-    <!-- <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/35cef27e-8ad8-4a75-8508-b8cfaa7e44d9/AjXOG6UmKP.json" background="transparent" speed="1" style="width: 450px; height: 300px" direction="1" playMode="normal" loop autoplay></dotlottie-player> -->
+    <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/35cef27e-8ad8-4a75-8508-b8cfaa7e44d9/AjXOG6UmKP.json" background="transparent" speed="1" style="width: 450px; height: 300px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
     <div class="modal-body">
       <div class="">
         <div class="custom_select">
@@ -361,7 +379,7 @@
   });
 
   //==========For deleting the product from the listing individually
-  function confirmDelete(productId) {
+  async function confirmDelete(productId) {
     Swal.fire({
       title: "Are you sure?",
       text: "You are about to delete this product. This action cannot be undone.",
@@ -369,13 +387,45 @@
       showCancelButton: true,
       confirmButtonText: "Yes, delete it",
       cancelButtonText: "Cancel",
-    }).then((result) => {
+    }).then(async(result) => {
       if (result.isConfirmed) {
-        // If confirmed, redirect to the delete product route with the product ID
-        window.location.href = `/admin/deleteProduct?id=${productId}`;
+     try{
+      
+      let response = await fetch(`/admin/deleteProduct?id=${productId}`,{
+        method:"DELETE",
+        body:JSON.stringify({id:productId}),
+        headers:{
+          "Content-Type":"application/json",
+        },
+      });
+      if(!response.ok){
+        let data = await response.json();
+        throw new Error(data.message || 'Failed to delete the product');
       }
-    });
-  }
+      let data = await response.json();
+
+      if(data&&data.message){
+        Swal.fire({
+              icon: "success",
+              title: "Success",
+              text: data.message,
+            }).then(() => {
+              // Redirect to the product list page
+              window.location.href = "/admin/product";
+            });
+      }
+
+     }catch(error){
+      Swal.fire({
+              icon: "error",
+              title: "Error",
+              text: error.message,
+            });
+     }
+    }
+   })
+}
+   
 
   // ================   Function to handle search   ====================
 
@@ -491,24 +541,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 try {
 
-
-
                     const response = await axios.patch("/admin/applyProductOffer", {
                         productId,
                         offerId
                     });
 
-                    if (response.data.success) {
-                                        
-                        window.location.reload()
-                    
-                    } else {
-                        // Handle failure, e.g., show an error message
-                        console.error("Failed to apply category offer");
-                    }
+                   
+                   if(response.data.success){
+                      window.location.reload();
+                   }else{
+                    Swal.fire({
+                      title: 'Error',
+                      text: response.data.message || 'Offer was not applied',
+                      icon: 'error',
+                      showConfirmButton: false,
+                      timer: 3000,
+                  });
+               }
+
                 } catch (error) {
-                    console.error("Error applying category offer:", error);
-                    window.location.href='/error'
+                    console.error("Error applying Product offer:", error.response?.data?.message);
+                    Swal.fire({
+                  title: 'Error',
+                  text: error.response?.data?.message || error.message || 'An error occurred while applying the offer',
+                  icon: 'error',
+                  showConfirmButton: false,
+                    timer: 2000,
+              })
                 }
             });
         });
@@ -521,8 +580,6 @@ document.addEventListener("DOMContentLoaded", function () {
 async function removeOffer(productId,flag) {
     try {
         
-    
-      
 if(flag === String(1)){
 
   // case when offer is expired and still showing on admin side, so inorder to remove without any swal message .Flag was set to 1 when swal not needed
@@ -550,6 +607,7 @@ if(flag === String(1)){
   Toast.fire({
       icon: "success",
       title: "Updated Successfully"
+      
   }).then((result) => {
       if (result.isConfirmed) {
           // Reload the page after the user clicks OK
@@ -589,12 +647,14 @@ else{
                 const isConfirmed = await Swal.fire({
                 title: 'Offer Removed',
                 icon: 'success',
-                confirmButtonText: 'OK',
+                showConfirmButton: false,
+                    timer: 1000,
             });
-
-            if (isConfirmed.value) {
-                window.location.reload();
-            }
+            setTimeout(()=>{
+              window.location.reload();
+            },1500)
+                
+            
             } else {
                 console.error('Error removing offer:', response.statusText);
             }

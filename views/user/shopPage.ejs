@@ -83,7 +83,7 @@
               <li class="breadcrumb-item active" aria-current="page">
 
                 <% if (query.category) { %>
-                    <%= category.find(cat => cat._id.toString() === query.category).name %>
+                    <%= category.find(cat => cat._id.toString() === query.category)?.name %>
                 <% } else { %>
                     All
                 <% } %>
@@ -657,11 +657,11 @@ console.log('searchParams is :',searchParams)
 
 
 
-//===========wishlisting a product==============================
+//===========   wishlisting a product  ==============================
 
-function wishList(event,productId,userId){
+async function wishList(event,productId,userId){
     event.preventDefault();
-  // console.log('this is the user id at wishlist addition :',typeof userId);
+  console.log(`onclick wishlist , userId present is ${userId} and it's type is ${typeof userId}`)
   // console.log('this is the product id at wishlist add : ',productId);
 
   //case if the usr is not logged in
@@ -680,56 +680,104 @@ function wishList(event,productId,userId){
             window.location.href = '/signin';
         }
     });
+    return;
   }
 
 else{
-  //if the user is already logged-----------
-  fetch(`/productaddtowishlist?productId=${productId}&userId=${userId}`, {
-            method: 'POST', // Use POST or PATCH for updating data
-            headers: {
-            'Content-Type': 'application/json',
-             },
+
+  try {
+    const response = await fetch(`/productaddtowishlist?productId=${productId}&userId=${userId}`, {
+      method: 'POST',
+      body:JSON.stringify({id:productId}),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      let data = await response.json();
+      console.log('network not ok ,response data :',data)
+      throw new Error(data.message || "Error adding product to wishlist");
+    }
+
+    const data = await response.json();
+
+    if (data.success) {
+      Swal.fire({
+        title: data.message || "Added to wishlist",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } else {
+      Swal.fire({
+        title: data.message || "Already in the wishlist",
+        icon: "warning",
+        timer: 2500,
+        showConfirmButton: false
+      });
+    }
+  }catch(error){
+    console.error('Error adding product to wishlist:', error.message);
+    Swal.fire({
+      title: "Error",
+      text: error.message || "Error adding product to wishlist",
+      icon: "error",
+      timer: 2500,
+      showConfirmButton: false
+    });
+  }
+
+
+
+   //if the user is already logged-----------
+  // fetch(`/productaddtowishlist?productId=${productId}&userId=${userId}`, {
+  //           method: 'POST', 
+  //           body:JSON.stringify({id:productId}),
+  //           headers: {
+  //           'Content-Type': 'application/json',
+  //            },
         
-    }).then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
+  //   }).then(response => {
+  //           if (!response.ok) {
+  //               throw new Error(`HTTP error! Status: ${response.status}`);
+  //           }
            
-            return response.json();
-        })
-        .then(data => {
+  //           return response.json();
+  //       })
+  //       .then(data => {
             
-            if(data.success===true)
-            {
+  //           if(data.success===true)
+  //           {
               
-              Swal.fire({
-          title: "Added to Wishlist",
-          // text: "OTP Successfully sent to <%= locals.email%>",
-          icon: "success",
-          timer: 2500,
-          showConfirmButton: false, // This removes the button
-        });
+  //             Swal.fire({
+  //         title: "Added to Wishlist",
+  //         // text: "OTP Successfully sent to <%= locals.email%>",
+  //         icon: "success",
+  //         timer: 2500,
+  //         showConfirmButton: false, // This removes the button
+  //       });
             
-            }
+  //           }
         
-            else{
-              Swal.fire({
-          title: "Already added to wishlist",
-          // text: "OTP Successfully sent to <%= locals.email%>",
-          icon: "warning",
-          timer: 2500,
-          showConfirmButton: false, // This removes the button
-        });
+  //           else{
+  //             Swal.fire({
+  //         title: "Already added to wishlist",
+  //         // text: "OTP Successfully sent to <%= locals.email%>",
+  //         icon: "warning",
+  //         timer: 2500,
+  //         showConfirmButton: false, // This removes the button
+  //       });
 
               
-            }})
+  //           }})
                    
            
         
         
-        .catch(error => {
-            console.error('Error at adding product to wishlist:', error);
-        });
+  //       .catch(error => {
+  //           console.error('Error at adding product to wishlist:', error);
+  //       });
 
 }
 

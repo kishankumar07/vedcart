@@ -29,7 +29,7 @@ const loadOfferListingPage = async (req, res) => {
         });
     } catch (error) {
         console.log('error at offer listing page: ',error)
-      res.redirect("/error")
+      res.status(500).redirect("/error")
     }
 };
 
@@ -41,7 +41,7 @@ let loadAddOffer = async(req,res)=>{
         res.render('addOffer')
     }catch(err){
         console.log('error at loadAddOffer controller : ',err);
-        res.redirect('/error');
+        res.status(500).redirect('/error');
     }
 }
 
@@ -78,7 +78,7 @@ let createOffer= async(req,res)=>{
         }
     }catch(err){
         console.log('error at createOffer controller : ',err)
-        return res.status(500).json({error:"Internal server error"})
+        return res.status(500).redirect('/error')
         
     }
 }
@@ -109,7 +109,7 @@ let changeOfferStatus = async(req,res)=>{
 
     }catch(err){
         console.log('error at changing the offer status',err)
-        res.status(500).json({ error: "Internal server error" });
+        res.status(500).redirect("/error");
     }
 }
 
@@ -136,7 +136,7 @@ let loadEditOffer = async (req, res) => {
         res.render('editOffer', { offerData, moment });
     } catch (err) {
         console.log('Error at loading the edit offer page:', err);
-        res.redirect('/error');
+        res.status(500).redirect('/error');
     }
 }
 
@@ -185,7 +185,7 @@ let offerEdited = async(req,res)=>{
         }
     }catch(err){
         console.log('error at offerEdited controller : ',err)
-        return res.status(500).json({error:"Internal server error"})
+        return res.status(500).redirect('/error')
         
     }
 }
@@ -210,7 +210,7 @@ const deleteOffer = async (req,res)=>{
       }
     } catch (error) {
         console.log('error while deleting offer at delete offer controller',error)
-        return res.status(500).json({ error: "Internal server error" });
+         res.status(500).redirect('/error');
         
     }
 }
@@ -218,18 +218,24 @@ const deleteOffer = async (req,res)=>{
 
 
 //======== apply category offer ===================
-const applyCategoryOffer= async (req,res)=>{
+const applyCategoryOffer = async (req, res) => {
     try {
-        
-        const {categoryId,offerId} = req.body
-        await Category.updateOne({_id:categoryId},
-            {$set:{offer:offerId}
-        })
-        res.json({success:true})
+
+      const { categoryId, offerId } = req.body;
+      console.log('this is the req.body :',req.body)
+      await Category.updateOne(
+        { _id: categoryId },
+        { $set: { offer: offerId } }
+      );
+      res.json({
+        success: true,
+        message: 'Offer applied successfully',
+      });
     } catch (error) {
-      res.redirect("/error")
+      console.error('Error applying offer:', error);
+      res.status(500).redirect('/error');
     }
-}
+  };
 
 //========= remove category offer ============
 const removeCategoryOffer = async (req, res) => {
@@ -246,7 +252,7 @@ const removeCategoryOffer = async (req, res) => {
         })
         res.json({ success: true });
     } catch (error) {
-        res.redirect("/500");
+        res.status(500).redirect("/error");
     }
 };
 
@@ -255,14 +261,32 @@ const removeCategoryOffer = async (req, res) => {
 const applyProductOffer = async (req,res)=>{
     console.log('reached here')
     try {
-        const {offerId,productId}=req.body
+        let {offerId,productId} = req.body;
 
-        await Products.updateOne({_id:productId},
-            {$set:{offer:offerId}
-        })
-        res.json({success:true})
+        //necessary check for existance of the above mentioned input fields from the backend
+        if(!offerId ||!productId){
+            return res.status(400).json({message:"Offer Id and Product Id are required"})
+        }
+
+        //check for product existance
+        let product = await Products.findOne({_id:productId});
+        if(!product){
+            return res.status(400).json({message:"Product not found"});
+        }
+
+        let offer = await Offer.findOne({_id:offerId});
+        if(!offer){
+            return res.status(400).json({message:"Offer not found"})
+        };
+
+        await Products.updateOne({ _id:productId },{ $set: {offer:offerId} });
+
+        res.json({success:true});
+
+
     } catch (error) {
       console.log('error at apply product offer :',error)
+      res.status(500).redirect('/error')
     }
 }
 
@@ -279,15 +303,6 @@ const removeProductOffer = async (req,res)=>{
       console.log('error at the remove product offer :',error)
     }
 }
-
-
-
-
-
-
-
-
-
 
 
 

@@ -21,17 +21,17 @@
       </ol>
 
       <nav class="product-pager ml-auto" aria-label="Product">
-        <% if (relatedProd.length > 0) { %>
-            <% let currentIndex = relatedProd.findIndex(product => product._id.toString() === aProductFoundFromDb._id.toString()); %>
-            <% let prevIndex = currentIndex > 0 ? currentIndex - 1 : relatedProd.length - 1; %>
-            <% let nextIndex = currentIndex < relatedProd.length - 1 ? currentIndex + 1 : 0; %>
+        <% if (relatedProds.length > 0) { %>
+            <% let currentIndex = relatedProds.findIndex(product => product._id.toString() === aProductFoundFromDb._id.toString()); %>
+            <% let prevIndex = currentIndex > 0 ? currentIndex - 1 : relatedProds.length - 1; %>
+            <% let nextIndex = currentIndex < relatedProds.length - 1 ? currentIndex + 1 : 0; %>
     
-            <a class="product-pager-link product-pager-prev" href="/productPage?id=<%= relatedProd[prevIndex]._id %>" aria-label="Previous">
+            <a class="product-pager-link product-pager-prev" href="/productPage?id=<%= relatedProds[prevIndex]._id %>" aria-label="Previous">
                 <i class="icon-angle-left"></i>
                 <span>Prev</span>
             </a>
     
-            <a class="product-pager-link product-pager-next" href="/productPage?id=<%= relatedProd[nextIndex]._id %>" aria-label="Next">
+            <a class="product-pager-link product-pager-next" href="/productPage?id=<%= relatedProds[nextIndex]._id %>" aria-label="Next">
                 <span>Next</span>
                 <i class="icon-angle-right"></i>
             </a>
@@ -108,15 +108,58 @@
               </div>
               <!-- End .rating-container -->
 
+
+
+
+
+
+
+
+
+
               <div class="product-price">
-                Rs.<%= aProductFoundFromDb.price %>
+                <% if (aProductFoundFromDb.offer || aProductFoundFromDb.category.offer) { %>
+                    <div class="row">
+
+
+                      <br>
+                      <span class="original-price" style="margin-left: 10px;text-decoration: line-through;">₹<%= aProductFoundFromDb.price %></span>
+                      <% 
+                         const productOffer = aProductFoundFromDb?.offer;
+                         const categoryOffer = aProductFoundFromDb.category ? aProductFoundFromDb.category.offer : null;
+                         const discount = productOffer && categoryOffer ? Math.max(productOffer.discount, categoryOffer.discount) : (productOffer ? productOffer.discount : (categoryOffer ? categoryOffer.discount : 0));
+                      %>
+                      <% if (discount > 0) { %>
+                          <span class="offer-price" style="color: red; font-size: 20px;">
+                              (<%= discount %> % Off)
+                          </span>
+                      <% } %>
+                      
+
+
+                    </div>
+                    <span class="w-100" style="color: rgb(0, 170, 0);font-size: 30px;">₹<%= aProductFoundFromDb.offerprice %>
+                            </span>
+
+                    <% } else { %>
+                      <span class="original-price  " style="margin-left: 10px;">₹
+                        <%= aProductFoundFromDb.price %>
+                    </span>
+                            <% } %>
+
+
               </div>
+
+
+
+
+
+
               <!-- End .product-price -->
 
               <div class="product-content">
                 <p>
-                  Sed egestas, ante et vulputate volutpat, eros pede semper est,
-                  vitae luctus metus libero eu augue. Morbi purus libero.
+                  <%= aProductFoundFromDb.description %>
                 </p>
               </div>
               <!-- End .product-content -->
@@ -124,7 +167,7 @@
               <div class="product-details-action">
                 <div class="details-action-col">
                   <div class="product-details-quantity">
-                    <input type="number" id="qty" class="form-control" value="1" min="1" max="<%=products.quantity%>" step="1" data-decimals="0" required readonly onkeydown="return false;">
+                    <input type="number" id="qty" class="form-control" value="1" min="1" max="<%=aProductFoundFromDb.quantity%>" step="1" data-decimals="0" required readonly onkeydown="return false;">
                   </div>
                   <!-- End .product-details-quantity -->
 
@@ -452,14 +495,14 @@
                 }'
       >
    
-         <% for(let i=0;i< relatedProd.length;i++) { %>
+         <% relatedProds.forEach((prod,index)=> { %>
                
            
         <div class="product product-7 text-center">
           <figure class="product-media">
             <a href="product.html">
               <img
-                src="/adminAssets/imgs/category/<%= relatedProd[i].images[0] %>"
+                src="/adminAssets/imgs/category/<%= prod.images[0] %>"
                 alt="Product image"
                 class="product-image"
               />
@@ -492,23 +535,65 @@
 
           <div class="product-body">
             <div class="product-cat">
-              <a href="#"><%= relatedProd[i].category.name%></a>
+              <a href="#"><%= prod.category.name%></a>
             </div>
             <!-- End .product-cat -->
             <h3 class="product-title">
-              <a href="product.html"><%= relatedProd[i].name %></a>
+              <a href="product.html"><%= prod.name %></a>
             </h3>
             <!-- End .product-title -->
-            <div class="product-price">Rs. <%=relatedProd[i].price %></div>
+
+
+
+
+
+
+            <div class="product-price">
+              <% if (prod?.offer || prod?.category?.offer) { %>
+                  <div class="row">
+
+
+                    <br>
+                    <span class="original-price" style="margin-left: 10px;text-decoration: line-through;">₹<%= prod.price %></span>
+                    <% 
+                       const productOffer = prod?.offer;
+                       const categoryOffer = prod.category ? prod.category.offer : null;
+                       const discount = productOffer && categoryOffer ? Math.max(productOffer.discount, categoryOffer.discount) : (productOffer ? productOffer.discount : (categoryOffer ? categoryOffer.discount : 0));
+                    %>
+                    <% if (discount > 0) { %>
+                        <span class="offer-price" style="color: red; font-size: 16px;">
+                            (<%= discount %> % Off)
+                        </span>
+                    <% } %>
+                    
+
+
+                  </div>
+                  <span class="w-100" style="color: rgb(0, 170, 0);font-size: 25px;">₹<%= prod.offerprice %>
+                          </span>
+
+                  <% } else { %>
+                    <span class="original-price  " style="margin-left: 10px;">₹
+                      <%= prod.price %>
+                  </span>
+                          <% } %>
+
+
+            </div>
             <!-- End .product-price -->
 
+
+
+
+
+
  <!-- stock part -->
- <% if (relatedProd[i].quantity === 0) { %>
+ <% if (prod.quantity === 0) { %>
     <h5 style="color: red;">OUT OF STOCK!</h5>
-    <% } else if(relatedProd[i].quantity ===1) { %>
-        <span style="color: #4eb44e;">Only <%=relatedProd.quantity%> left!</span>
-        <% } else if(relatedProd.quantity <=15) { %>
-            <span style="color: #40a240;"> Hurry Only <%=relatedProd.quantity%> items left!</span>
+    <% } else if(prod.quantity ===1) { %>
+        <span style="color: #4eb44e;">Only <%=prod.quantity%> left!</span>
+        <% } else if(prod.quantity <=15) { %>
+            <span style="color: #40a240;"> Hurry Only <%=prod.quantity%> items left!</span>
             <% } %>
 
           <!-- stock part ends -->
@@ -518,18 +603,18 @@
 
             <div class="ratings-container">
               <div class="ratings">
-                <div class="ratings-val" style="width: 0%"></div>
+                <div class="ratings-val" style="width: 50%"></div>
                 <!-- End .ratings-val -->
               </div>
               <!-- End .ratings -->
-              <span class="ratings-text">( 0 Reviews )</span>
+              <span class="ratings-text">( 4 Reviews )</span>
             </div>
             <!-- End .rating-container -->
           </div>
           <!-- End .product-body -->
         </div>
         <!-- End .product -->
-        <% } %>
+        <% }) %>
        
       </div>
       <!-- End .owl-carousel -->

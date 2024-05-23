@@ -421,11 +421,6 @@ for (let file of files) {
       }
 
 
-
-
-
-
-
         let formData = new FormData();
         formData.append("productName", document.getElementById("productName").value);
 
@@ -469,12 +464,13 @@ for (let file of files) {
                   title: 'Success!',
                   text: 'Product added successfully',
                   icon: 'success',
-                  confirmButtonText: 'OK',
-              }).then((result) => {
-                  if (result.isConfirmed) {
-                      window.location.href = '/admin/product';
-                  }
-              });
+                  showConfirmButton: false,
+                    timer: 1000,
+                })
+                setTimeout(()=>{
+                    window.location.href = '/admin/product';
+                },1500)
+                   
           } else {
             console.log('data.message from server is :',data.message)
             throw new Error(data.message || 'An error occurred while adding the product');
@@ -500,7 +496,6 @@ Toast.fire({
     title: errorMessage
 });
       }
-
 
     });
        

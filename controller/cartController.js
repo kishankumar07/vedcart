@@ -16,6 +16,13 @@ const loadCart = async (req, res) => {
   try {
       const userId = req.session.userData;
     let message = req.flash('message');
+    let cart =await Cart.findOne({userId:userId}).populate({
+      path:"products.productId",
+      model: 'Product',
+    })
+    let totalPriceOfCartProducts = cart?.products.reduce((acc,curr)=>{
+           return acc + curr.totalPrice;
+    },0)
 
 console.log('message from checkout page by flash',message)
 
@@ -79,11 +86,11 @@ let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoS
 
 // console.log('this is the grandTotal for checkout ::',grandTotalForCheckOut);
 
-          res.render("cart", { userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock,message });
+          res.render("cart", { cart,totalPriceOfCartProducts,userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock,message });
 
       } else {
         console.log('cart page loaded with no cart data else case')
-          res.render("cart", { cartData,userNameforProfile,category });
+          res.render("cart", { cart,totalPriceOfCartProducts,cartData,userNameforProfile,category });
       }
   } catch (error) {
     console.log('error loading  at catch block ,cart page :::',error);

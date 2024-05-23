@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>dcart</title>
+    <title>vedCart</title>
     <meta name="keywords" content="HTML5 Template">
     <meta name="description" content="Molla - Bootstrap eCommerce Template">
     <meta name="author" content="p-themes">
@@ -37,7 +37,10 @@
     <link rel="stylesheet" href="/userAssets/home/assets/css/skins/skin-demo-13.css">
     <link rel="stylesheet" href="/userAssets/home/assets/css/demos/demo-13.css">
     <script src="https://cdn.lordicon.com/lordicon.js"></script>
-   
+ 
+
+
+    
 
 </head>
 
@@ -55,7 +58,7 @@
                         </button>
                         
                         <a href="/" class="logo">
-                            <img src="/userAssets/home/assets/images/demos/demo-13/logo_web.webp" alt="Molla Logo" width="105" height="25">
+                            <img src="/userAssets/home/assets/images/demos/demo-13/logo_web.webp" alt="vedCart Logo" width="105" height="25">
                         </a>
                     </div><!-- End .header-left -->
 
@@ -168,18 +171,62 @@
                                     delay="2000"
                                     style="width:40px;height:40px">
                                 </lord-icon>
-                                    <!-- <span class="cart-count">2</span> -->
+                                    <span class="cart-count">2</span>
                                     <span class="cart-txt">Cart</span>
                                 </a>
-                                <% } %>
+                               
+                            
+                            
+                            
                                 <div class="dropdown-menu dropdown-menu-right">
                                    
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                        <div class="dropdown-cart-products">
+                                            <% if(cart && cart?.products && cart?.products?.length !==0) {%>
+                                            <% cart.products.forEach((item,index)=> {%>
+                                            <div class="product">
+                                                <div class="product-cart-details">
+                                                    <h4 class="product-title">
+                                                        <a href="/productPage?id=<%= item.productId.id %>"><%= item.productId.name %></a>
+                                                    </h4>
+                            
+                                                    <span class="cart-product-info">
+                                                        <span class="cart-product-qty"><%= item.quantity %></span>
+                                                        x ₹<%= item.productId.offerprice ? item.productId.offerprice : item.productId.price %>
+                                                    </span>
+                                                </div><!-- End .product-cart-details -->
+                            
+                                                <figure class="product-image-container">
+                                                    <a href="product.html" class="product-image">
+                                                        <img src="/adminAssets/imgs/category/<%= item.productId.images[0] %>" alt="product">
+                                                    </a>
+                                                </figure>
+                                                <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
+                                            </div><!-- End .product -->
 
-                                    <div class="dropdown-cart-action">
-                                        <a href="/cart" class="btn btn-primary">View Cart</a>
-                                        <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
-                                    </div><!-- End .dropdown-cart-total -->
+                                            
+                                            <% }) %>
+
+                                            <div class="dropdown-cart-total">
+                                                <span>Total</span>
+                                
+                                                <span class="cart-total-price">₹<%= totalPriceOfCartProducts %></span>
+                                            </div><!-- End .dropdown-cart-total -->
+                                          <% }else{ %>
+                                            <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/39e3eb45-7c4d-40b4-b99e-6e44219446b7/F3b6kldNwX.json" background="transparent" speed="1" style="width: 30px; height: 30px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+                                            <p>Oops.. Empty cart !</p>
+                                            <% } %>
+                                        </div><!-- End .cart-product -->
+                            
+                                        
+                            
+                                        <div class="dropdown-cart-action">
+                                            <a href="/cart" class="btn btn-primary">View Cart</a>
+                                            <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
+                                        </div><!-- End .dropdown-cart-total -->
+                                    </div><!-- End .dropdown-menu -->
                                 </div><!-- End .dropdown-menu -->
+                                <% } %>
                             </div><!-- End .cart-dropdown -->
                         </div>
                     </div><!-- End .header-right -->
@@ -189,50 +236,127 @@
             <div class="header-bottom sticky-header">
                 <div class="container">
                     <div class="header-left">
-<script>
-    function toggleDropdown() {
-    var dropdownMenu = document.getElementById("dropdownMenu");
-    if (dropdownMenu.style.display === "none") {
-        dropdownMenu.style.display = "block";
-    } else {
-        dropdownMenu.style.display = "none";
-    }
-}
 
-</script>
 
-                        <div class="dropdown category-dropdown" data-visible="false">
-                            <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static" title="Browse Categories" onclick="toggleDropdown()">
+                        <div class="dropdown category-dropdown show is-on" data-visible="true">
+                            <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-display="static" title="Browse Categories">
                                 Browse Categories
                             </a>
-
-
-
-                                       
-                            <div id="dropdownMenu" class="dropdown-menu" style="display: none;">
+                            
+                            <div class="dropdown-menu show">
                                 <nav class="side-nav">
                                     <ul class="menu-vertical sf-arrows">
-
-                                   <% if(category.length>0) {%>
-                                            <% for(let i=0;i< category.length;i++) {%>
-                                                 <li class="megamenu-container">
-                                                      <a class="sf-with-ul" href="#"><%=category[i].name %></a>
-                                 
-                                                   </li>
-                                             <% } %>
-                               `   <% } %>
-`
+                                        
                                        
+                                        <% if(categoriesWithProducts && categoriesWithProducts.length > 0) { %>
+                                            <%categoriesWithProducts.forEach((cat,index)=>{%>
+                                        <li class="megamenu-container">
+                                            <a class="sf-with-ul" href="#"> <%= cat.name %></a>
+                            
+                                            <div class="megamenu" style="width: 700px;">
+                                                <div class="row no-gutters">
+                                                    <div class="col-md-8">
+                                                        <div class="menu-col">
+                                                            <div class="row">
+                                                                <div hidden class="col-md-6">
+                                                                    <div class="menu-title">More details</div><!-- End .menu-title -->
+                                                                    <ul>
+                                                                        <li><a href="#"><strong>New Arrivals</strong></a></li>
+                                                                        <li><a href="#"><strong>Best Sellers</strong></a></li>
+                                                                        <li><a href="#"><strong>Trending</strong></a></li>
+                                                                        
+                                                                    </ul>
+                                                                </div><!-- End .col-md-6 -->
+                            
+                                                                <div class="col-md-9">
+                                                                    <div class="menu-title">Products</div><!-- End .menu-title -->
+                                                                    <ul >
+                                                                       <% cat.products.forEach((prod,index)=>{ %>
+                                                                        <li><a href="#" style="font-family: 'Dancing Script', cursive; font-size: 16px; color: #029a49;"><%= index + 1 %>. <%= prod.name %></a></li>
+                                                                        <% }) %>
+                                                                    </ul>
+                                                                </div><!-- End .col-md-6 -->
+                                                            </div><!-- End .row -->
+                                                        </div><!-- End .menu-col -->
+                                                    </div><!-- End .col-md-8 -->
+                            
+                                                    <div class="col-md-4">
+                                                        <div class="banner banner-overlay">
+                                                            <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/63f92b03-9df2-4ec9-9a02-cf1f719c3f2c/QUWZQKsool.json" background="#FFFFFF" speed="1" style="width: 300px; height: 300px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+                                                        </div><!-- End .banner banner-overlay -->
+                                                    </div><!-- End .col-md-4 -->
+                                                </div><!-- End .row -->
+                            
+                                                <div class="menu-col menu-brands">
+                                                    <div class="row">
+                                                        <div class="col-lg-2">
+                                                            <a href="#" class="brand">
+                                                                <img src="/userAssets/home/assets/images/brands/11.jpg" alt="Brand Name">
+                                                            </a>
+                                                        </div><!-- End .col-lg-2 -->
+                            
+                                                        <div class="col-lg-2">
+                                                            <a href="#" class="brand">
+                                                                <img src="/userAssets/home/assets/images/brands/22.webp" alt="Brand Name">
+                                                            </a>
+                                                        </div><!-- End .col-lg-2 -->
+                            
+                                                        <div class="col-lg-2">
+                                                            <a href="#" class="brand">
+                                                                <img src="/userAssets/home/assets/images/brands/33.png" alt="Brand Name">
+                                                            </a>
+                                                        </div><!-- End .col-lg-2 -->
+                            
+                                                        <div class="col-lg-2">
+                                                            <a href="#" class="brand">
+                                                                <img src="/userAssets/home/assets/images/brands/44.webp" alt="Brand Name">
+                                                            </a>
+                                                        </div><!-- End .col-lg-2 -->
+                            
+                                                        <div class="col-lg-2">
+                                                            <a href="#" class="brand">
+                                                                <img src="/userAssets/home/assets/images/brands/55.jpeg" alt="Brand Name">
+                                                            </a>
+                                                        </div><!-- End .col-lg-2 -->
+                            
+                                                        <div class="col-lg-2">
+                                                            <a href="#" class="brand">
+                                                                <img src="/userAssets/home/assets/images/brands/66.jpeg" alt="Brand Name">
+                                                            </a>
+                                                        </div><!-- End .col-lg-2 -->
+                                                    </div><!-- End .row -->
+                                                </div><!-- End .menu-brands -->
+                                            </div><!-- End .megamenu -->
+                                        </li>
+                                        <% }) %>
+                            `              <% } %>
+                            
+                            
                                     </ul><!-- End .menu-vertical -->
                                 </nav><!-- End .side-nav -->
                             </div><!-- End .dropdown-menu -->
-                        </div><!-- End .category-dropdown -->
-
+                            </div><!-- End .category-dropdown -->
 
 
 
 
                     </div><!-- End .col-lg-3 -->
+
+
+                    <!-- <script>
+                        function toggleDropdown() {
+                        var dropdownMenu = document.getElementById("dropdownMenu");
+                        if (dropdownMenu.style.display === "none") {
+                            dropdownMenu.style.display = "block";
+                        } else {
+                            dropdownMenu.style.display = "none";
+                        }
+                    }
+                    
+                    </script> -->
+
+
+
                     <div class="header-center">
                         <nav class="main-nav">
                             <ul class="menu sf-arrows">

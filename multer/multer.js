@@ -26,7 +26,8 @@ const fileFilter = function (req, file, callback) {
 
   const upload=multer({
     storage:storage,
-    fileFilter:fileFilter
+    fileFilter:fileFilter,
+    limits: { files: 3 }
   })
 
 // ------------------ for banner image setting ---------------------------
