@@ -73,7 +73,7 @@ const adminDashboard = async (req, res) => {
           
           
           ])
-          console.log('orders is :',orders)
+          console.log('when admin dashboard is loaded the order values are  :',orders)
         res.render('dashboard',{orders});
 
     } catch (error) {

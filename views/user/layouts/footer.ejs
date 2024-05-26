@@ -1,5 +1,30 @@
 
 
+<div class="cta cta-horizontal cta-horizontal-box bg-primary">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-2xl-5col">
+                <h3 class="cta-title text-white">Join Our Newsletter</h3><!-- End .cta-title -->
+                <p class="cta-desc text-white">Subcribe to get information about products and coupons</p><!-- End .cta-desc -->
+            </div><!-- End .col-lg-5 -->
+            
+            <div class="col-3xl-5col">
+                <form action="#">
+                    <div class="input-group">
+                        <input type="email" class="form-control form-control-white" placeholder="Enter your Email Address" aria-label="Email Adress" required>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-white-2" type="submit"><span>Subscribe</span><i class="icon-long-arrow-right"></i></button>
+                        </div><!-- .End .input-group-append -->
+                    </div><!-- .End .input-group -->
+                </form>
+            </div><!-- End .col-lg-7 -->
+        </div><!-- End .row -->
+    </div><!-- End .container -->
+</div><!-- End .cta -->
+
+
+</main><!-- End .main -->
+
 <footer class="footer footer-2">
     <div class="icon-boxes-container">
         <div class="container">
@@ -64,8 +89,8 @@
             <div class="row">
                 <div class="col-sm-12 col-lg-6">
                     <div class="widget widget-about">
-                        <img src="/userAssets/home/assets/images/demos/demo-13/logo-footer.png" class="footer-logo" alt="Footer Logo" width="105" height="25">
-                        <p>Praesent dapibus, neque id cursus ucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus. </p>
+                        <img src="/userAssets/home/assets/images/demos/demo-13/logo_web.webp" alt="vedCart Logo" width="105" height="25"><br>
+                        <p>At VedCart, we blend ancient wisdom with modern convenience to bring you the finest Ayurvedic products. Explore our range of natural remedies, wellness solutions, and holistic health products designed to nurture your body, mind, and soul. Embrace the power of Ayurveda for a healthier, balanced life with VedCart. </p>
                         
                         <div class="widget-about-info">
                             <div class="row">
@@ -89,8 +114,8 @@
                         <h4 class="widget-title">Information</h4><!-- End .widget-title -->
 
                         <ul class="widget-list">
-                            <li><a href="about.html">About Molla</a></li>
-                            <li><a href="#">How to shop on Molla</a></li>
+                            <li><a href="about.html">About vedCart</a></li>
+                            <li><a href="#">How to shop on vedCart</a></li>
                             <li><a href="faq.html">FAQ</a></li>
                             <li><a href="contact.html">Contact us</a></li>
                             <li><a href="login.html">Log in</a></li>
@@ -132,7 +157,7 @@
 
     <div class="footer-bottom">
         <div class="container">
-            <p class="footer-copyright">Copyright © 2019 Molla Store. All Rights Reserved.</p><!-- End .footer-copyright -->
+            <p class="footer-copyright">Copyright © <span id="current-year"></span> vedCart Store. All Rights Reserved.</p>
             <ul class="footer-menu">
                 <li><a href="#">Terms Of Use</a></li>
                 <li><a href="#">Privacy Policy</a></li>
@@ -354,7 +379,13 @@
 </div><!-- End .mobile-menu-wrapper -->
 </div><!-- End .mobile-menu-container -->
 
-
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+            var currentYear = new Date().getFullYear();
+            document.getElementById("current-year").textContent = currentYear;
+        });
+   
+</script>
 
 
 
@@ -369,7 +400,7 @@
 <script src="/userAssets/home/assets/js/jquery.magnific-popup.min.js"></script>
 <script src="/userAssets/home/assets/js/jquery.plugin.min.js"></script>
 <script src="/userAssets/home/assets/js/jquery.countdown.min.js"></script>
-<!-- <script src="assets/js/jquery.elevateZoom.min.js"></script> -->
+<script src="assets/js/jquery.elevateZoom.min.js"></script>
 
 <!-- Main JS File -->
 <script src="/userAssets/home/assets/js/main.js"></script>
@@ -377,5 +408,5 @@
 </body>
 
 
-<!-- molla/index-13.html  22 Nov 2019 09:59:31 GMT -->
+<!-- vedcart/index-13.html  22 Nov 2019 09:59:31 GMT -->
 </html>

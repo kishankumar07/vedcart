@@ -58,6 +58,9 @@
                     src="/adminAssets/imgs/category/<%= aProductFoundFromDb.images[0] %>"
                     alt="product image"
                   />
+                  <a href="#" id="btn-product-gallery" class="btn-product-gallery">
+                    <i class="icon-arrows"></i>
+                </a>
                 </figure>
                 <!-- End .product-main-image -->
 
@@ -167,11 +170,12 @@
               <div class="product-details-action">
                 <div class="details-action-col">
                   <div class="product-details-quantity">
-                    <input type="number" id="qty" class="form-control" value="1" min="1" max="<%=aProductFoundFromDb.quantity%>" step="1" data-decimals="0" required readonly onkeydown="return false;">
+
+                    <input type="number" id="qty" class="form-control" value="1" min="1" max="<%= aProductFoundFromDb.quantity %>" step="1" data-decimals="0" required readonly onkeydown="return false;">
                   </div>
                   <!-- End .product-details-quantity -->
 
-                  <a href="#" class="btn-product btn-cart" onclick="addtoCart('<%= aProductFoundFromDb.id %>','<%= user %>');return false;"
+                  <a href="#" class="btn-product btn-cart" onclick="addToCart('<%= aProductFoundFromDb.id %>','<%= user %>');return false;"
                     ><span>add to cart</span></a
                   >
                 </div>
@@ -182,7 +186,7 @@
 
 
                 <div class="details-action-wrapper">
-                  <a onclick="wishList('<%= aProductFoundFromDb._id %>','<%=  user%>')" href="#" title="Wishlist"><span>Add to Wishlist</span></a>
+                  <a onclick="wishList(event,'<%= aProductFoundFromDb._id %>','<%=  user%>')" href="#" title="Wishlist"><span>Add to Wishlist</span></a>
                 </div>
                 <!-- End .details-action-wrapper -->
               </div>
@@ -316,27 +320,20 @@
             <div class="product-desc-content">
               <h3>Information</h3>
               <p>
-                Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec
-                odio. Quisque volutpat mattis eros. Nullam malesuada erat ut
-                turpis. Suspendisse urna viverra non, semper suscipit, posuere
-                a, pede. Donec nec justo eget felis facilisis fermentum. Aliquam
-                porttitor mauris sit amet orci.
+                Ayurveda, a natural system of medicine, originated in India more than 3,000 years ago. The term Ayurveda is derived from the Sanskrit words ayur (life) and veda (science or knowledge). Thus, Ayurveda translates to knowledge of life. Based on the idea that disease is due to an imbalance or stress in a person's consciousness, Ayurveda encourages certain lifestyle interventions and natural therapies to regain a balance between the body, mind, spirit, and the environment.
               </p>
 
-              <h3>Fabric & care</h3>
+              <h3> Benefits of Ayurvedic herbs</h3>
               <ul>
-                <li>Faux suede fabric</li>
-                <li>Gold tone metal hoop handles.</li>
-                <li>RI branding</li>
-                <li>Snake print trim interior</li>
-                <li>Adjustable cross body strap</li>
-                <li>
-                  Height: 31cm; Width: 32cm; Depth: 12cm; Handle Drop: 61cm
-                </li>
+                <li>Balance your dosha’s and provide complete relief from an existing illness. </li>
+                <li>They are treating as a whole individual, so this type of treatment can give you a side advantage to cure other health problems with the main disease.  </li>
+                <li>It is a natural line of treatment with no or fewer benefits.</li>
+                <li>It improves vitality and provides strength.r</li>
+                <li>They boost your immunity and increase your natural power of healing</li>
+               
               </ul>
 
-              <h3>Size</h3>
-              <p>one size</p>
+             
             </div>
             <!-- End .product-desc-content -->
           </div>
@@ -348,16 +345,25 @@
             aria-labelledby="product-shipping-link"
           >
             <div class="product-desc-content">
-              <h3>Delivery & returns</h3>
-              <p>
-                We deliver to over 100 countries around the world. For full
-                details of the delivery options we offer, please view our
-                <a href="#">Delivery information</a><br />
-                We hope you’ll love every purchase, but if you ever need to
-                return an item you can do so within a month of receipt. For full
-                details of how to make a return, please view our
-                <a href="#">Returns information</a>
-              </p>
+             
+              <h2>Delivery & Returns</h2>
+
+<h3>Global Delivery</h3>
+<p>We proudly deliver to over 100 countries worldwide, ensuring that your favorite products reach you no matter where you are. For comprehensive details on our delivery options, including estimated delivery times and shipping costs, please visit our <a href="#">Delivery Information</a>.</p>
+
+<h3>Hassle-Free Returns</h3>
+<p>We are committed to ensuring your complete satisfaction with every purchase. If for any reason you need to return an item, you can do so within 30 days of receiving your order. Our return process is straightforward and designed to be as convenient as possible. For step-by-step instructions on how to return an item, please view our <a href="#">Returns Information</a>.</p>
+
+<h3>Why Shop with Us?</h3>
+<ul>
+    <li><strong>Fast and Reliable Shipping:</strong> With multiple delivery options, you can choose the one that best suits your needs.</li>
+    <li><strong>Easy Returns:</strong> Our no-hassle returns policy ensures that you can shop with confidence.</li>
+    <li><strong>Customer Support:</strong> Our dedicated customer support team is here to assist you with any questions or concerns you may have.</li>
+</ul>
+
+<p>Thank you for choosing us for your shopping needs. We are dedicated to providing you with an exceptional shopping experience from start to finish.</p>
+
+<p>For more information, please visit our <a href="#">Delivery Information</a> and <a href="#">Returns Information</a> pages.</p>
             </div>
             <!-- End .product-desc-content -->
           </div>
@@ -373,7 +379,7 @@
               <div class="review">
                 <div class="row no-gutters">
                   <div class="col-auto">
-                    <h4><a href="#">Samanta J.</a></h4>
+                    <h4><a href="#">Viswanathan</a></h4>
                     <div class="ratings-container">
                       <div class="ratings">
                         <div class="ratings-val" style="width: 80%"></div>
@@ -386,21 +392,17 @@
                   </div>
                   <!-- End .col -->
                   <div class="col">
-                    <h4>Good, perfect size</h4>
+                    <h4>Good, impovement from insomnia</h4>
 
                     <div class="review-content">
                       <p>
-                        Lorem ipsum dolor sit amet, consectetur adipisicing
-                        elit. Ducimus cum dolores assumenda asperiores facilis
-                        porro reprehenderit animi culpa atque blanditiis commodi
-                        perspiciatis doloremque, possimus, explicabo, autem
-                        fugit beatae quae voluptas!
+                        "I've struggled with insomnia for years and have tried countless remedies with little success. But ever since I started using your products, my life has completely changed! Not only do I fall asleep faster, but I also stay asleep throughout the night. I wake up feeling refreshed and ready to tackle the day. This product has been a game-changer for my sleep health. Highly recommended for anyone struggling with sleeplessness!"
                       </p>
                     </div>
                     <!-- End .review-content -->
 
                     <div class="review-action">
-                      <a href="#"><i class="icon-thumbs-up"></i>Helpful (2)</a>
+                      <a href="#"><i class="icon-thumbs-up"></i>Helpful (21)</a>
                       <a href="#"
                         ><i class="icon-thumbs-down"></i>Unhelpful (0)</a
                       >
@@ -416,7 +418,7 @@
               <div class="review">
                 <div class="row no-gutters">
                   <div class="col-auto">
-                    <h4><a href="#">John Doe</a></h4>
+                    <h4><a href="#">Narendran</a></h4>
                     <div class="ratings-container">
                       <div class="ratings">
                         <div class="ratings-val" style="width: 100%"></div>
@@ -433,16 +435,13 @@
 
                     <div class="review-content">
                       <p>
-                        Sed, molestias, tempore? Ex dolor esse iure hic veniam
-                        laborum blanditiis laudantium iste amet. Cum non
-                        voluptate eos enim, ab cumque nam, modi, quas iure illum
-                        repellendus, blanditiis perspiciatis beatae!
+                        "I've been dealing with indigestion for as long as I can remember, and nothing seemed to help until I discovered your products. It's been an absolute lifesaver! Since I started using it, my digestion has significantly improved. I no longer experience the discomfort and bloating that used to plague me after every meal. This product is gentle yet incredibly effective. I can finally enjoy my meals without the fear of indigestion. Highly recommended for anyone suffering from digestive issues!
                       </p>
                     </div>
                     <!-- End .review-content -->
 
                     <div class="review-action">
-                      <a href="#"><i class="icon-thumbs-up"></i>Helpful (0)</a>
+                      <a href="#"><i class="icon-thumbs-up"></i>Helpful (7)</a>
                       <a href="#"
                         ><i class="icon-thumbs-down"></i>Unhelpful (0)</a
                       >
@@ -500,7 +499,7 @@
            
         <div class="product product-7 text-center">
           <figure class="product-media">
-            <a href="product.html">
+            <a href="/productPage?id=<%= prod._id %>">
               <img
                 src="/adminAssets/imgs/category/<%= prod.images[0] %>"
                 alt="Product image"
@@ -525,7 +524,7 @@
             <!-- End .product-action-vertical -->
 
             <div class="product-action">
-              <a href="#" class="btn-product btn-cart"
+              <a href="#" class="btn-product btn-cart" 
                 ><span>add to cart</span></a
               >
             </div>
@@ -633,28 +632,28 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script> -->
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
-  $(document).ready(function () {
-    // Function to initialize Elevate Zoom
-    function initializeZoom() {
-      $("#product-zoom").elevateZoom();
-    }
+  // $(document).ready(function () {
+  //   // Function to initialize Elevate Zoom
+  //   function initializeZoom() {
+  //     $("#product-zoom").elevateZoom();
+  //   }
 
-    // Initialize Zoom when the main image is fully loaded
-    $("#product-zoom").on("load", function () {
-      initializeZoom();
-    });
+  //   // Initialize Zoom when the main image is fully loaded
+  //   $("#product-zoom").on("load", function () {
+  //     initializeZoom();
+  //   });
 
-    // Bind click event handler to each gallery item
-    $(".product-gallery-item").on("click", function (e) {
-      e.preventDefault();
-      var imageSrc = $(this).data("image");
-      $("#product-zoom").attr("src", imageSrc);
-    });
-  });
+  //   // Bind click event handler to each gallery item
+  //   $(".product-gallery-item").on("click", function (e) {
+  //     e.preventDefault();
+  //     var imageSrc = $(this).data("image");
+  //     $("#product-zoom").attr("src", imageSrc);
+  //   });
+  // });
 
   //for each image box selecting it glows blue color
   function highlightBox(element) {
@@ -669,15 +668,18 @@
   }
 
 
-//wishlist part 
+
+
  
-      
-function wishList(productId,userId){
-  console.log('this is the user id at wishlist addition :',userId);
-  console.log('this is the product id at wishlist add : ',productId);
+  //------------------ wishlist part ------------------------    
+
+async function wishList(event,productId,userId){
+    event.preventDefault();
+  console.log(`onclick wishlist , userId present is ${userId} and it's type is ${typeof userId}`)
+  // console.log('this is the product id at wishlist add : ',productId);
 
   //case if the usr is not logged in
-  if(!userId){
+  if(!userId ||userId === String(null) ){
     Swal.fire({
         title: 'Login to Purchase',
         text: 'To make a purchase, please log in.',
@@ -692,133 +694,148 @@ function wishList(productId,userId){
             window.location.href = '/signin';
         }
     });
+    return;
   }
 
+else{
 
+  try {
+    const response = await fetch(`/wishlist?productId=${productId}&userId=${userId}`, {
+      method: 'POST',
+      body:JSON.stringify({id:productId}),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
 
-  //if the user is already logged-----------
+    if (!response.ok) {
+      let data = await response.json();
+      console.log('network not ok ,response data :',data)
+      throw new Error(data.message || "Error adding product to wishlist");
+    }
 
-        fetch(`/productaddtowishlist?productId=${productId}&userId=${userId}`, {
-            method: 'POST', // Use POST or PATCH for updating data
-            headers: {
-            'Content-Type': 'application/json',
-             },
-        
-    }).then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-           
-            return response.json();
-        })
-        .then(data => {
-            
-            if(data.success===true)
-            {
-               
-              Swal.fire({
-          title: "Added to Wishlist",
-          // text: "OTP Successfully sent to <%= locals.email%>",
-          icon: "success",
-          timer: 2500,
-          showConfirmButton: false, // This removes the button
-        });
-            }
+    const data = await response.json();
 
-            else{
-              
-              Swal.fire({
-          title: "Already added to wishlist",
-          // text: "OTP Successfully sent to <%= locals.email%>",
-          icon: "warning",
-          timer: 2500,
-          showConfirmButton: false, // This removes the button
-        });
-            }
-           
-            
-            
-           
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-
-
+    if (data.success) {
+      Swal.fire({
+        title: data.message || "Added to wishlist",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } else {
+      Swal.fire({
+        title: data.message || "Already in the wishlist",
+        icon: "warning",
+        timer: 2500,
+        showConfirmButton: false
+      });
+    }
+  }catch(error){
+    console.error('Error adding product to wishlist:', error.message);
+    Swal.fire({
+      title: "Error",
+      text: error.message || "Error adding product to wishlist",
+      icon: "error",
+      timer: 2500,
+      showConfirmButton: false
+    });
+  }
 }
-
-   
-
+}
     
 
   
 
      // = = = = = = = add product to cart = = = = = = = = = = = = = = =
 
-function addtoCart(productId,userId) {
+
+     function addToCart(productId, userId) {
+    console.log('product id at single product page is:', productId)
+    console.log('userid is :', userId)
+
+    // Check if user is logged in
+    if (!userId || userId === 'null') {
+        Swal.fire({
+            title: 'Login to Purchase',
+            text: 'To make a purchase, please log in.',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Login'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = '/signin';
+            }
+        });
+    } else {
+
+         let quantity = parseInt(document.getElementById('qty').value);
 
 
-
-    if(!userId){
-    Swal.fire({
-        title: 'Login to Purchase',
-        text: 'To make a purchase, please log in.',
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Login'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            
-            window.location.href = '/signin';
-        }
-    });
-  }
-else{
-    const quantity = 1; // Replace with desired quantity
-                        // Make an AJAX request to the backend
-
-
-                        fetch(`/addTocart/${productId}/${quantity}/${userId}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                quantity: quantity,
-                            }),
-                        })
-                        .then((response) => {
-                            if (response.status === 401) {
-                                throw new Error('User not authenticated. Please login first.');
-                            }
-                            return response.json();
-                        })
-                        
-                        .then((data) => {
-                            console.log('Response from the backend while product added to cart:', data);
-                
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Product added to cart!',
-                                showConfirmButton: false,
-                                timer: 500, 
-
-                            })})
-                           
-
-                        .catch((error) => {
-                            console.error('Error at product addition to the cart :', error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error adding to cart',
-                                text: error.message || 'An error occurred while adding the product to the cart.',
-                            });
-                        });
-                 }
-
-     }
+        fetch(`/addToCart/${productId}/${quantity}/${userId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                quantity: quantity,
+            }),
+        })
+            .then((response) => {
+                if (response.status === 401) {
+                    throw new Error('User not authenticated. Please login first.');
+                }
+                if (response.status === 400) {
+                    return response.json(); // Product already in cart or user blocked by admin
+                }
+                return response.json(); // Product added to cart successfully
+            })
+            .then((data) => {
+                if (data && data.error === "Product already in the cart.") {
+                    // Product already in cart, show warning message
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Product already in cart!',
+                        text: 'Proceed to the cart page ?',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Go to Cart'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/cart';
+                        }
+                    });
+                } else if (data && data.error === "You're blocked by the admin") {
+                    // User is blocked by admin, show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Blocked by admin',
+                        text: 'You have been blocked by the admin. Please contact support for further assistance.',
+                    });
+                } else {
+                    // Product added to cart successfully
+                    console.log('Response from the backend while product added to cart:', data);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Product added to cart!',
+                        showConfirmButton: false,
+                        timer: 500,
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('Error at product addition to the cart :', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error adding to cart',
+                    text: error.message || 'An error occurred while adding the product to the cart.',
+                });
+            });
+    }
+}
 //------------------------ increment the quantity --------
 async function updateQuantity(cartId, productId) {
 

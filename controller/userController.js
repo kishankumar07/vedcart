@@ -44,7 +44,7 @@ const loadIndex = async (req, res) => {
  // Access common data attached by the middleware
  const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
 
-
+ console.log('at loadIndex controller res.locals------------------------------------------- :',res.locals)
 
 let [upcomingProducts,banner,category,productData] = await Promise.all([
 
@@ -497,7 +497,7 @@ const signout = async (req, res) => {
 
 
 
-//============== a product page selected====================
+//============== single product view  ====================
 
 const aProductPage = async (req, res) => {
   try {
@@ -507,52 +507,46 @@ const aProductPage = async (req, res) => {
     const currentDate = new Date();
     let queriedProductId = req.query.id;
   
-    const aProductFoundFromDb = await Product.findById(queriedProductId).populate({
-      path: 'category',
-      populate: {
+    let [aProductFoundFromDb,product] = await Promise.all([
+      Product.findById(queriedProductId).populate({
+        path: 'category',
+        populate: {
+          path: 'offer',
+          match: {
+            startingDate: { $lte: currentDate },
+            endDate: { $gte: currentDate },
+          },
+        },
+      })
+      .populate({
         path: 'offer',
         match: {
           startingDate: { $lte: currentDate },
           endDate: { $gte: currentDate },
         },
-      },
-    })
-    .populate({
-      path: 'offer',
-      match: {
-        startingDate: { $lte: currentDate },
-        endDate: { $gte: currentDate },
-      },
-    })
-    
+      }),
+
+      Product.find({ status: "active" }).populate({
+        path: 'category',
+        populate: {
+          path: 'offer',
+          match: {
+            startingDate: { $lte: currentDate },
+            endDate: { $gte: currentDate },
+          },
+        },
+      })
+      .populate({
+        path: 'offer',
+        match: {
+          startingDate: { $lte: currentDate },
+          endDate: { $gte: currentDate },
+        },
+      })
+    ])
+   
     let relatedProductCatId = aProductFoundFromDb.category.id;
-
-
-
-    let product = await Product.find({ status: "active" }).populate({
-      path: 'category',
-      populate: {
-        path: 'offer',
-        match: {
-          startingDate: { $lte: currentDate },
-          endDate: { $gte: currentDate },
-        },
-      },
-    })
-    .populate({
-      path: 'offer',
-      match: {
-        startingDate: { $lte: currentDate },
-        endDate: { $gte: currentDate },
-      },
-    })
-
-
-
 let relatedProds = product.filter(prod=>prod.category._id.toString() === relatedProductCatId)
-
-
-
 
     res.render("aProductPage", {
       user:userId,
@@ -561,7 +555,6 @@ let relatedProds = product.filter(prod=>prod.category._id.toString() === related
       userNameforProfile,
       categoriesWithProducts,
       product,
-      
       relatedProds,
       aProductFoundFromDb,
     });
@@ -571,193 +564,6 @@ let relatedProds = product.filter(prod=>prod.category._id.toString() === related
   }
 };
 
-// const aProductPage = async (req, res) => {
-//   try {
-//     let user = req.session.userData;
-//     let queriedProduct = req.query.id;
-//     let relatedProd = [];
-
-//     const aProductFoundFromDb = await Product.findById(queriedProduct)
-//       .populate({
-//         path: "category",
-//         model: "Category",
-//       })
-//       .exec();
-//     let relatedProductCat = aProductFoundFromDb.category;
-
-//     let category = await Category.find({ status: "active" });
-
-//     let product = [];
-//     const pro = await Product.find({ status: "active" })
-//       .populate({
-//         path: "category",
-//         model: "Category",
-//       })
-//       .exec();
-
-//     pro.forEach((e) => {
-//       if (e.category.status == "active") {
-//         product.push(e);
-//       }
-//     });
-
-//     for (let i = 0; i < product.length; i++) {
-//       if (
-//         product[i].category._id.toString() === relatedProductCat._id.toString()
-//       ) {
-//         relatedProd.push(product[i]);
-
-//       }
-//     }
-
-//     res.render("aProductPage", {
-//       user,
-//       category,
-//       product,
-//       relatedProd,
-//       aProductFoundFromDb,
-//     });
-//   } catch (error) {
-//     console.error("Error during aProductPage:", error);
-//     res.redirect("/error");
-//   }
-// };
-
-//============== wish list page ===================
-const wishList = async (req, res) => {
-  try {
-    let user = req.session.userData;
-    let userNameforProfile = await User.findById(user);
-    let cart =await Cart.findOne({userId:user}).populate({
-      path:"products.productId",
-      model: 'Product',
-    })
-    let totalPriceOfCartProducts = cart?.products.reduce((acc,curr)=>{
-           return acc + curr.totalPrice;
-    },0)
-
-    let category = await Category.find({ status: "active" });
-    const wishlist = await Wishlist.findOne({ user: user }).populate({
-      path:'products.product',
-      model:'Product',
-    })
-    // let product = await Product.find({ status: "active" }).populate("category").exec();
-
-    console.log('wishlist at wishlist controller: ',wishlist);
-    res.render("wishlist", { cart,totalPriceOfCartProducts,userNameforProfile, user, category, wishlist });
-  } catch (error) {
-    console.error("Error during wishlist loading:", error);
-    res.redirect("/error");
-  }
-};
-
-//==========add to wishlist list page====================
-
-
-const addProductToWishList = async (req, res) => {
-  try {
-
-console.log('wishlist controller was invoked --------------------------')
-
-    let user = req.session.userData;
-    if (!user) {
-console.log(`case to check if user is not there  and the value is :${user}`)
-      return res.status(401).json({ success: false, message: "Unauthorized access" });
-    }
-       let productId = req.body.id;
-     const product = await Product.findById(productId);
-
-
-    if (!product) {
-console.log('debug check this console works, if no product found:',product)
-      return res.status(404).json({ success: false, message: "Product not found" });
-
-
-    }
-    // Check if the user already has a wishlist document
-    const wishFind = await Wishlist.findOne({ user }).populate({
-      path:'products.product',
-      model:'Product',
-    })
-
-console.log( ` this is the wishlist found while adding to wishlist by user with id: ${user}`)
-console.log(wishFind);
-    
-
-    if (wishFind) {
-      // User already has a wishlist document
-      const existingProduct = wishFind.products.find(
-        (prod) => prod.product.id === product.id
-      );
-     
-
-      if (existingProduct) {
-        console.log('this is the existing product and so warning message will comes ------------------------------',existingProduct)
-       return res.json({ success: false, message: "Already in wishlist" });
-      } else {
-
-        console.log('wishlist is alreay present but not existing product------------------')
-        // Product is not in the wishlist, add it
-        wishFind.products.push({
-          product: product._id,
-          
-        });
-
-        await wishFind.save();
-       return res.json({ success: true, message: "Added to wishlist" });
-      }
-    } else {
-
-      console.log(' since no exiting wishlist present,new wishlist is created-------------------------')
-      // User does not have a wishlist document, create a new one
-      const newWishlist = new Wishlist({
-        user: user,
-        products: [
-          {
-            product: product._id,
-           
-          },
-        ],
-      });
-
-      await newWishlist.save();
-      res.json({ success: true, message: "Added to wishlist" });
-    }
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).redirect('/error')
-  }
-};
-
-
-//==========remove a product from wishlist======================
-
-const productremovefromwish = async (req, res) => {
-  try {
-    const product = await Product.findById(req.query.productId);
-    console.log("this is the wishfound from remove wish:", product);
-
-    const currentUser = await User.findById(req.query.userId);
-
-    // Ensure productId is included in the request query parameters
-    if (!req.query.productId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Product ID is required." });
-    }
-
-    // Correctly use the productId in the $pull operation
-    await Wishlist.updateOne(
-      { user: currentUser._id },
-      { $pull: { products: { product: product.id } } }
-    );
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error("Error removing product from wishlist:", error);
-    res.json({ success: false });
-  }
-};
 
 
 
@@ -769,23 +575,18 @@ const loadUserProfile = async (req, res) => {
 
 //It is found that the orders is actually an array of that users all orders, because the Array.isArray(orders) returned true 
 
+ // Access common data attached by the middleware
+ const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
 
 
-    const userId = req.session.userData;
+    
 
-    if (!userId) {
+    if (!us-erId) {
       res.redirect("/")
     }
 
     let category = await Category.find({ status: "active" });
-    const userNameforProfile  = await User.findById(userId);
-    let cart =await Cart.findOne({userId:userId}).populate({
-      path:"products.productId",
-      model: 'Product',
-    })
-    let totalPriceOfCartProducts = cart?.products.reduce((acc,curr)=>{
-           return acc + curr.totalPrice;
-    },0)
+ 
     // console.log('this is the full user details of this user :',userNameforProfile);
 
    // Query orders sorted by createdAt field in descending order
@@ -819,7 +620,7 @@ const loadUserProfile = async (req, res) => {
   
 
 
-    res.render("userProfile", { cart,totalPriceOfCartProducts,moment,userNameforProfile , orders,category,states,orders });
+    res.render("userProfile", { cart,totalPriceOfCartProducts,moment,categoriesWithProducts,userNameforProfile ,userId, orders,category,states,orders });
   } catch (error) {
     console.log('error at loading userProfilePage',error)
    res.redirect("/error")
@@ -1085,8 +886,17 @@ const getPaginationParams = (totalItems, currentPage) => {
 };
 
 const applyPagination = (query, page) => {
+console.log('debugging part ----------------------------------------%%$$$$$$----------------------------------')
+
+console.log('this is the value of the page at apply page nation : ',page);
+
+
   const skip = (page - 1) * ITEMS_PER_PAGE;
-  return query.skip(skip).limit(ITEMS_PER_PAGE);
+
+console.log('this is the skip value : ',skip)
+
+  // return query.skip(skip).limit(ITEMS_PER_PAGE);
+  return query.slice(skip,skip+ITEMS_PER_PAGE)
 };
 
 
@@ -1094,16 +904,12 @@ const applyPagination = (query, page) => {
 
 let shopPage = async (req, res) => {
   try {
-    const user = req.session.userData;
-    const userNameforProfile = await User.findById(user);
-    let cart =await Cart.findOne({userId:user}).populate({
-      path:"products.productId",
-      model: 'Product',
-    })
-    let totalPriceOfCartProducts = cart?.products.reduce((acc,curr)=>{
-           return acc + curr.totalPrice;
-    },0)
    
+    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
+
+   console.log('at shopPage controller res.locals------------------------------------- :',res.locals)
+   
+    let category = await Category.find({ status :{ $ne : "blocked" } })
 
 //----------   ------- [banner part] -----   ----------
     const banners = await Banner.find(); 
@@ -1131,7 +937,7 @@ banners.forEach(x=>{
     }
 
     
-    let productQuery =  Product.find(filters)
+    let productQuery = await Product.find(filters)
       .populate({
         path: 'category',
         populate: {
@@ -1149,7 +955,7 @@ banners.forEach(x=>{
           endDate: { $gte: new Date() }
         }
       });
-// console.log('product query is :',productQuery)
+// console.log('product query count is :',productQuery)
       
     
     if (req.query.price) {
@@ -1166,25 +972,31 @@ if (req.query.sort) {
   const sortOption = req.query.sort;
   if (sortOption === 'nameAsc') {
 
-console.log('a-z sorting worked----------------------------------------')
+console.log('a-z sorting worked and the value is ----------------------------------------',sortOption)
 
     productQuery = productQuery.sort({ name: 1 }); 
   } else if (sortOption === 'nameDesc') {
 
-console.log('z-a sorting worked=======================================')
+console.log('z-a sorting worked and the value is =======================================',sortOption)
 
     productQuery = productQuery.sort({ name: -1 }); 
   } else if (sortOption === 'date') {
+    console.log('latest product sort option worked----------------------------- :',sortOption)
     productQuery = productQuery.sort({ createdAt: -1 });
   }
 }
 
 
     const totalProducts = await Product.countDocuments(filters);
+    console.log('total products :',totalProducts)
     const currentPage = +req.query.page || 1;
+    console.log('currentPage is :',currentPage)
     const { totalPages, hasNextPage, hasPrevPage } = getPaginationParams(totalProducts, currentPage);
+    console.log('totalPages are :',totalPages)
+    console.log('hasNextPage :',hasNextPage)
+    console.log('hasPrevPage :',hasPrevPage)
 
-    const product = await applyPagination(productQuery, currentPage).exec();
+    const product = await applyPagination(productQuery, currentPage);
 
 
 
@@ -1198,23 +1010,32 @@ console.log('z-a sorting worked=======================================')
 
     res.render('shopPage', {
       userNameforProfile,
+      cart,
+      categoriesWithProducts,
+      totalPriceOfCartProducts,
       category,
-      user,
-      banners: arr[0],
+      user:userId,
+      banners: arr[2],
       product: updatedProducts,
       pagination: {
         currentPage,
         totalPages,
         hasNextPage,
-        hasPrevPage
+        hasPrevPage,
       },
       query: req.query 
     });
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error('Error fetching products at shop page:', error);
     res.status(500).json({ message: 'Failed to fetch products' });
   }
 };
+
+
+
+//------------------ search query ----------------
+
+
 
 
 
@@ -1222,6 +1043,7 @@ console.log('z-a sorting worked=======================================')
 
 module.exports = {
   loadIndex,
+  
   verifyLogin,
   signinUser,
   signUpUser,
@@ -1233,9 +1055,6 @@ module.exports = {
   verifyEmail,
   shopPage,
   aProductPage,
-  wishList,
-  addProductToWishList,
-  productremovefromwish,
   loadUserProfile,
   editProfile,
   changePassword,

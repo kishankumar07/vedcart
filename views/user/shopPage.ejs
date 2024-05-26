@@ -87,7 +87,7 @@
                 <% } else { %>
                     All
                 <% } %>
-
+                  
             </li>
             </ol>
           </div>
@@ -100,7 +100,7 @@
             <div class="row">
               <div class="col-lg-9 col-xl-4-5col">
                 <div 
-                  class="category-banners-slider owl-carousel owl-simple owl-nav-inside"
+                  class="category-banners-slider owl-carousel owl-simple owl-nav-inside "
                   data-toggle="owl"
                   data-owl-options='{
                                     "nav": false,
@@ -116,10 +116,10 @@
                       <img src="/uploads/banners/<%= banners %>" alt="Banner">
                   </a>
 
-                  <div hidden class="banner-content banner-content-right">
-                      <h3 class="banner-subtitle"><a href="#">Amazing Value</a></h3><!-- End .banner-subtitle -->
-                      <h2 class="banner-title"><a href="#">High Performance 4K TVs</a></h2><!-- End .banner-title -->
-                      <a href="#" class="banner-link">Shop Now <i class="icon-long-arrow-right"></i></a>
+                  <div  class="banner-content banner-content-right">
+                      <h3 hidden class="banner-subtitle"><a href="#">Amazing Value</a></h3><!-- End .banner-subtitle -->
+                      <h2 class="banner-title text-white"><a href="#">Stay tuned for exciting offers..!</a></h2><!-- End .banner-title -->
+                      <a hidden href="#" class="banner-link">Shop Now <i class="icon-long-arrow-right"></i></a>
                   </div><!-- End .banner-content -->
               </div><!-- End .banner -->
                  
@@ -169,6 +169,7 @@
                         </div>
                     </div>
                     <!-- End .toolbox-sort -->
+                    <button hidden onclick="resetFilters()" class="btn btn-secondary">Reset Filters</button>
                 </div>
                 <!-- End .toolbox-right -->
                 
@@ -256,7 +257,7 @@
                           </div>
                           <!-- End .product-cat -->
                           <h3 class="product-title">
-                            <a href="product.html"><%= product.name %></a>
+                            <a href="#"><%= product.name %></a>
                           </h3>
                           <!-- End .product-title -->
                           <div class="product-price">
@@ -396,6 +397,17 @@
                     <div class="widget-body">
                       <div class="filter-items">
                         <div class="filter-item">
+                          <div class="custom-control custom-radio">
+                          <input
+                            type="radio"
+                            class="custom-control-input"
+                            id="category-all"
+                            name="filter-category"
+                            onclick="filterByCategory('all')" <% if (!query.category || query.category === 'all') { %>checked<% } %>
+                          />
+                          <label class="custom-control-label" for="category-all">All</label>
+                        </div>
+
 
                             <% category.forEach((category,index)=>{ %>
                                
@@ -498,55 +510,24 @@
         </div>
         <!-- End .page-content -->
 
-        <div class="cta cta-horizontal cta-horizontal-box bg-primary">
-          <div class="container">
-            <div class="row align-items-center">
-              <div class="col-lg-5">
-                <h3 class="cta-title text-white">Join Our Newsletter</h3>
-                <!-- End .cta-title -->
-                <p class="cta-desc text-white">
-                  Subcribe to get information about products and coupons
-                </p>
-                <!-- End .cta-desc -->
-              </div>
-              <!-- End .col-lg-5 -->
-
-              <div class="col-lg-7">
-                <form action="#">
-                  <div class="input-group">
-                    <input
-                      type="email"
-                      class="form-control form-control-white"
-                      placeholder="Enter your Email Address"
-                      aria-label="Email Adress"
-                      required
-                    />
-                    <div class="input-group-append">
-                      <button class="btn btn-outline-white-2" type="submit">
-                        <span>Subscribe</span
-                        ><i class="icon-long-arrow-right"></i>
-                      </button>
-                    </div>
-                    <!-- .End .input-group-append -->
-                  </div>
-                  <!-- .End .input-group -->
-                </form>
-              </div>
-              <!-- End .col-lg-7 -->
-            </div>
-            <!-- End .row -->
-          </div>
-          <!-- End .container -->
-        </div>
-        <!-- End .cta -->
-      </main>
-      <!-- End .main -->
+       
 
 
 
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
       <script>
      
+
+
+// alternative way to reset any filters applied --------------
+     function resetFilters() {
+  window.location.href = '/shop';
+}
+
+
+
+
+
         // Function to handle sorting products
 function sortProducts(input) {
   const sortValue = input.value;
@@ -573,15 +554,16 @@ console.log('this is the sortValue ::::',sortValue)
 // Function to handle selecting a category for filtering
 function filterByCategory(categoryId) {
   const searchParams = new URLSearchParams(window.location.search);
-
 console.log('searchParams at filterByCategory is :',searchParams)
 
-  searchParams.set('category', categoryId);
-  // Remove other filtering options when changing the category
+if(categoryId === 'all'){
+  searchParams.delete('category');
+}else{
+  searchParams.set('category',categoryId)
+}
 
-  // setTimeout(() => {
   window.location.href = `/shop?${searchParams.toString()}`;
-// }, 60000000);
+
 }
 
 
@@ -603,11 +585,6 @@ console.log('searchParams at filterbyprice is :',searchParams)
 }
 
 
-
-
-
-
-
 // Function to handle searching for products
 function searchProducts() {
     const searchInput = document.getElementById('searchInput').value;
@@ -625,12 +602,6 @@ console.log('searchParams is :',searchParams)
         window.location.href = `/shop?${searchParams.toString()}`;
     // }, 60000); // Delay for 10 seconds (10000 milliseconds)
 }
-
-
-
-
-
-
 
     window.addEventListener('DOMContentLoaded', (event) => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -686,7 +657,7 @@ async function wishList(event,productId,userId){
 else{
 
   try {
-    const response = await fetch(`/productaddtowishlist?productId=${productId}&userId=${userId}`, {
+    const response = await fetch(`/wishlist?productId=${productId}&userId=${userId}`, {
       method: 'POST',
       body:JSON.stringify({id:productId}),
       headers: {
@@ -730,54 +701,6 @@ else{
 
 
 
-   //if the user is already logged-----------
-  // fetch(`/productaddtowishlist?productId=${productId}&userId=${userId}`, {
-  //           method: 'POST', 
-  //           body:JSON.stringify({id:productId}),
-  //           headers: {
-  //           'Content-Type': 'application/json',
-  //            },
-        
-  //   }).then(response => {
-  //           if (!response.ok) {
-  //               throw new Error(`HTTP error! Status: ${response.status}`);
-  //           }
-           
-  //           return response.json();
-  //       })
-  //       .then(data => {
-            
-  //           if(data.success===true)
-  //           {
-              
-  //             Swal.fire({
-  //         title: "Added to Wishlist",
-  //         // text: "OTP Successfully sent to <%= locals.email%>",
-  //         icon: "success",
-  //         timer: 2500,
-  //         showConfirmButton: false, // This removes the button
-  //       });
-            
-  //           }
-        
-  //           else{
-  //             Swal.fire({
-  //         title: "Already added to wishlist",
-  //         // text: "OTP Successfully sent to <%= locals.email%>",
-  //         icon: "warning",
-  //         timer: 2500,
-  //         showConfirmButton: false, // This removes the button
-  //       });
-
-              
-  //           }})
-                   
-           
-        
-        
-  //       .catch(error => {
-  //           console.error('Error at adding product to wishlist:', error);
-  //       });
 
 }
 

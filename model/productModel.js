@@ -51,6 +51,10 @@ let productSchema = new mongoose.Schema({
 }, 
 { timestamps: true }) // Adding timestamps option
 
+
+// Create text index on the 'name' field for text search
+productSchema.index({ name: 'text' });
+
 module.exports = mongoose.model('Product',productSchema);
 
 

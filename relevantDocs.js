@@ -1,6 +1,29 @@
 //for google users later on for address management
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // --=======================  razorpay details ====================
 key_id,
 rzp_test_Mjpyug9KzUZ3Wb,
@@ -44,7 +67,28 @@ const userId = req.session.userData;
 
 
 
- const banners = await Banner.find(); 
+ .search-results {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 1000;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 5px 5px;
+    display: none; /* Initially hidden */
+    border: 2px solid red; /* Temporary border for debugging */
+}
+
+.search-results-list li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ced4da;
+    background-color: lightgreen; /* Temporary background color for debugging */
+}
 
 
 
@@ -53,14 +97,78 @@ const userId = req.session.userData;
 
 
 
+ let debounceTimer;
 
+function debounce(func, delay) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(func, delay);
+}
 
+function handleSearchInputChange(event) {
+    const searchInput = event.target.value.trim();
 
+    if (searchInput) {
+        debounce(() => fetchSearchResults(searchInput), 300); // Adjust the delay as needed
+    } else {
+        clearSearchResults();
+    }
+}
 
+function handleSearchResultClick(event) {
+    const productName = event.target.textContent;
+    console.log('Clicked on product:', productName);
+    // Add your logic here, such as navigating to the product page
+}
 
+async function fetchSearchResults(query) {
+    try {
+        const response = await fetch(`/search?query=${query}`);
+        const data = await response.json();
 
+        const searchResultsContainer = document.getElementById('searchResults');
+        searchResultsContainer.innerHTML = '';
 
+        if (data.length > 0) {
+            const dropdownList = document.createElement('ul');
+            dropdownList.classList.add('search-results-list');
 
+            data.forEach(product => {
+                const listItem = document.createElement('li');
+                listItem.textContent = product.name;
+                dropdownList.appendChild(listItem);
+            });
+
+            searchResultsContainer.appendChild(dropdownList);
+            searchResultsContainer.style.display = 'block'; // Show dropdown
+        } else {
+            searchResultsContainer.style.display = 'none'; // Hide dropdown if no results
+        }
+    } catch (error) {
+        console.error('Error fetching search results:', error);
+    }
+}
+
+function clearSearchResults() {
+    const searchResultsContainer = document.getElementById('searchResults');
+    searchResultsContainer.innerHTML = '';
+    searchResultsContainer.style.display = 'none'; // Hide dropdown
+}
+
+// Event listeners
+const searchInput = document.getElementById('q');
+searchInput.addEventListener('input', handleSearchInputChange);
+
+const searchForm = document.querySelector('form[action="#"]');
+searchForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const searchInputValue = searchInput.value.trim();
+    if (searchInputValue) {
+        fetchSearchResults(searchInputValue);
+    }
+});
+
+const searchResultsContainer = document.getElementById('searchResults');
+searchResultsContainer.addEventListener('click', handleSearchResultClick);
 
 
 

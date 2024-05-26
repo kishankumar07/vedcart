@@ -6,7 +6,8 @@ const Category = require('../model/categoryModel');
 const fetchCommonData = async (req, res, next) => {
     try {
 
-      if (req.session.userData) {
+      console.log('what is at session now :',req.session.userData)
+     
 
         const userId = req.session.userData;
         const [userNameforProfile, cart, categoriesWithProducts] = await Promise.all([
@@ -56,11 +57,9 @@ const fetchCommonData = async (req, res, next) => {
 
         res.locals.commonData = { userNameforProfile, cart,userId, categoriesWithProducts, totalPriceOfCartProducts };
 
+         
+           
 
-          }else{
-              // If user is not logged in, initialize common data as empty in res.locals
-      res.locals.commonData = {};
-          }
               // Continue to the next middleware
         next();
 

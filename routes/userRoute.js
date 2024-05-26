@@ -9,6 +9,7 @@ let userAuth = require("../middleware/userAuth");
 let cartController  = require('../controller/cartController')
 let couponController = require('../controller/couponController');
 let orderController  = require('../controller/orderController')
+let wishlistController = require('../controller/wishlistController');
 const {aProductPage,shopProduct,loadProductSearchQuery}=require('../controller/productController');
 // const GoogleSignIn = require('../model/googleModel');
 const googleModel = require("../model/googleModel");
@@ -21,11 +22,11 @@ router.set("views", path.join(__dirname, "../views/user"));
 router.get("/error", userController.errorPage);
 
 
+
+
+
+
 //=====User login==================================
-
-
-
-
 
 router.get("/", userController.loadIndex);
 router.get("/signin",userAuth.isLoggedOut, userController.signinUser); // If no session it will render login page
@@ -111,17 +112,12 @@ router.post('/removeCoupon',userAuth.isLoggedIn,userAuth.isBlocked,couponControl
 
 
 
-
-
-
-
-
 //----------  w i s h l i s t --------------------------------
-router.get("/wishlist",userAuth.isLoggedIn,userAuth.isBlocked, userController.wishList);
+router.get("/wishlist",userAuth.isLoggedIn,userAuth.isBlocked, wishlistController.wishList);
 
-router.post('/productaddtowishlist',userAuth.isLoggedIn,userAuth.isBlocked,userController.addProductToWishList)
+router.post('/wishlist',userAuth.isLoggedIn,userAuth.isBlocked,wishlistController.addProductToWishList)
 
-router.post('/productremovefromwishlist',userAuth.isLoggedIn,userAuth.isBlocked,userController.productremovefromwish)
+router.delete('/wishlist',userAuth.isLoggedIn,userAuth.isBlocked,wishlistController.productremovefromwish)
 
 
 
