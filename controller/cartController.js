@@ -14,83 +14,83 @@ const Coupons = require("../model/couponModel")
 
 const loadCart = async (req, res) => {
   try {
-      const userId = req.session.userData;
-    let message = req.flash('message');
-    let cart =await Cart.findOne({userId:userId}).populate({
-      path:"products.productId",
-      model: 'Product',
-    })
-    let totalPriceOfCartProducts = cart?.products.reduce((acc,curr)=>{
-           return acc + curr.totalPrice;
-    },0)
-
-console.log('message from checkout page by flash',message)
-
-      let userNameforProfile = await User.findById(userId);
-
-      let category = await Category.find({ status: "active" });
-      
-      const cartData = await Cart.findOne({ userId: userId }).populate({
-          path: "products.productId",
-          model: "Product",
-      });
-      console.log('cart ddataaaa -----------------------------------------',cartData)
+         let message = req.flash('message');
+         const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
+   
+    let [category , cartData] = await Promise.all([
+      Category.find({status:'active'}),
+      Cart.findOne({userId}).populate({
+        path:"products.productId",
+        model:'Product',
+      })
+    ]);
+       
+    
 
       if (!cartData) {
-
         console.log('cart page loaded with no cart data 1st case')
-          res.render("cart", { cartData: { products: [] },userNameforProfile,category });
-          // res.render("cart", { userNameforProfile,category });
-
-          return;
+         return res.render("cart", { cartData: { products: [] },userNameforProfile,category, cart, categoriesWithProducts, totalPriceOfCartProducts,userId });
       }
+
       const productsWithZeroStock = cartData.products.filter(product => product.quantity === 0);
 
 
 
       // case if there is products in the cart at least one
       if (cartData.products.length > 0) {
-          // cartData.products.forEach((product) => {
-          //     const productPrice =  product.productPrice;
-          //     product.productTotalPrice = productPrice * product.quantity;
-          // });
+          const productIds = cartData.products.map(product => product.productId._id)
+
+          const productsDetailsInCart = await Product.find({ _id: { $in: productIds } }).populate({
+            path: 'category',
+            populate: {
+              path: 'offer',
+            }
+          }).populate({
+            path: 'offer'
+          });
 
 
 
 
-        //subtotalwithnoshipping charge is the thing at the right most part of the cart page
+// Update cartData with applied offers
+cartData.products.forEach(cartProduct => {
+  const product = productsDetailsInCart.find(product => product._id.equals(cartProduct.productId._id));
+  if (product) {
+    const chosenOffer = chooseOffer(product.offer, product.category.offer);
+    if (chosenOffer) {
+      const discount = chosenOffer.discount ? Math.round(product.price * (chosenOffer.discount / 100)) : 0;
+      cartProduct.appliedOffer = chosenOffer.name;
+      cartProduct.appliedOfferDiscount = chosenOffer.discount;
+      cartProduct.offerprice = product.price - discount;
+      console.log(`Applied offer: ${cartProduct.appliedOffer}, Discount: ${cartProduct.appliedOfferDiscount}, Offer price: ${cartProduct.offerprice}`);
+    } else {
+      cartProduct.offerprice = product.price;
+      console.log(`No offer applied. Original price: ${cartProduct.offerprice}`);
+    }
+  } else {
+    req.flash('message', "Product does not exist");
+    return res.redirect('/cart');
+  }
+});
+
+
+      // Calculate subtotal, shipping charges, and grand total
         const subtotalWithNoShippingCharge = cartData.products.reduce((total, product) => {
-          let totalPrice = 0; 
-          if (product.productId?.offerprice) {
-              totalPrice = product.productId?.offerprice * product.quantity;
-              console.log('total price when offer price applied at loadCart suddenly',totalPrice)
-          } else if (product.productId?.price) {
-              totalPrice = product.productId?.price * product.quantity;
-              console.log('total price when no offer applied at loadCart suddenly',totalPrice)
-          }
-          return total + totalPrice; 
-      }, 0);
-      console.log('subtotals with no shipping charges :',subtotalWithNoShippingCharge)
+          const price = product.offerprice || product.productId.price;
+          return total + price * product.quantity;
+        }, 0);
+
 
 
 let shippingCharges = subtotalWithNoShippingCharge > 500 ? 'free shipping' :'₹40.00'
 
 let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoShippingCharge : subtotalWithNoShippingCharge + 40;
 
-
-// console.log('shipping charge  :: ',shippingCharges);
-
-       
-
-
-
-// console.log('this is the grandTotal for checkout ::',grandTotalForCheckOut);
-
-          res.render("cart", { cart,totalPriceOfCartProducts,userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock,message });
+          res.render("cart", { categoriesWithProducts,cart,totalPriceOfCartProducts,userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock });
 
       } else {
-        console.log('cart page loaded with no cart data else case')
-          res.render("cart", { cart,totalPriceOfCartProducts,cartData,userNameforProfile,category });
+        
+          res.render("cart", { cart,totalPriceOfCartProducts,cartData,userNameforProfile,category,categoriesWithProducts,userId });
       }
   } catch (error) {
     console.log('error loading  at catch block ,cart page :::',error);
@@ -100,9 +100,9 @@ let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoS
 
 
 
+
+
 //==========================    add to cart   ==========================
-
-
 
 const addToCart = async (req, res) => {
   try {
@@ -306,192 +306,146 @@ let updatedGrandTotal = updatedShippingCharges ==='free delivery' ? totalOfSubTo
 };
 
 
+
+
+
+
+// Helper function to choose the appropriate offer for a product
+const chooseOffer = (productOffer, categoryOffer) => {
+  if (!productOffer && !categoryOffer) return null;
+  if (!productOffer) return categoryOffer;
+  if (!categoryOffer) return productOffer;
+  return productOffer.discount > categoryOffer.discount ? productOffer : categoryOffer;
+};
+
 //=========== Load the checkout ====================
 
 const loadCheckout = async (req, res) => {
   try {
-   
-      const userId = req.session.userData;
+    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts, userId } = res.locals.commonData;
+    const couponCode = req.query.coupon || '';
 
+    if (!userId) {
+      console.log("User has no session, redirecting to signin page from checkout load controller");
+      req.flash('message', "Please login to continue");
+      return res.redirect("/signin");
+    }
 
-
-      const coupon = await Coupons.find(
-        { status: true, 'userUsed.used': { $ne: true } }, 
+    // Fetch categories, cart data, and coupons concurrently
+    const [category, cartData, coupons] = await Promise.all([
+      Category.find({ status: 'active' }),
+      Cart.findOne({ userId }).populate({
+        path: 'products.productId',
+        model: 'Product',
+      }),
+      Coupons.find(
+        { status: true, 'userUsed.used': { $ne: true } },
         { couponName: 1, description: 1, minAmount: 1, discount: 1, couponCode: 1, expiryDate: 1, status: 1, userUsed: 1 }
-    );
-    
+      )
+    ]);
 
-// console.log('coupons available at checkout load are:',coupon)
+    if (!cartData) {
+      console.log('User has no existing cart at checkout, redirecting to /cart');
+      return res.redirect('/cart');
+    }
 
+    if (cartData.products.length === 0) {
+      console.log('User has a cart but no products, redirecting to cart page');
+      return res.redirect('/cart');
+    }
 
-// console.log('this is the user id :',userId)
-const couponCode = req.query.coupon || ''
+    const hasZeroQuantity = cartData.products.some(product => product.productId.quantity === 0);
+    if (hasZeroQuantity) {
+      console.log('At least one product has a quantity of 0, cannot proceed to checkout.');
+      req.flash('message', "Either of the product is out of stock");
+      return res.redirect('/cart');
+    }
 
-      let userNameforProfile = await User.findById(userId);
+    const productIds = cartData.products.map(product => product.productId._id);
 
-      // console.log('this is the user value at loadCheckout :',userNameforProfile);
+    // Fetch product details concurrently
+    const productsDetailsInCart = await Product.find({ _id: { $in: productIds } }).populate({
+      path: 'category',
+      populate: {
+        path: 'offer',
+      }
+    }).populate({
+      path: 'offer'
+    });
 
-    let category = await Category.find({'status': 'active'})
+    // Update cartData with applied offers
+    cartData.products.forEach(cartProduct => {
+      const product = productsDetailsInCart.find(product => product._id.equals(cartProduct.productId._id));
+      if (product) {
+        const chosenOffer = chooseOffer(product.offer, product.category.offer);
+        if (chosenOffer) {
+          const discount = chosenOffer.discount ? Math.round(product.price * (chosenOffer.discount / 100)) : 0;
+          cartProduct.appliedOffer = chosenOffer.name;
+          cartProduct.appliedOfferDiscount = chosenOffer.discount;
+          cartProduct.productId.offerprice = product.price - discount;
+          console.log(`Applied offer: ${cartProduct.appliedOffer}, Discount: ${cartProduct.appliedOfferDiscount}, Offer price: ${cartProduct.productId.offerprice}`);
+        } else {
+          cartProduct.productId.offerprice = product.price;
+          console.log(`No offer applied. Original price: ${cartProduct.productId.offerprice}`);
+        }
+      } else {
+        req.flash('message', "Product does not exist");
+        return res.redirect('/cart');
+      }
+    });
 
+    // Calculate total price, shipping charges, and grand total
+    let totalWithoutDiscount = cartData.products.reduce((total, product) => {
+      const price = product.productId.offerprice || product.productId.price;
+      return total + price * product.quantity;
+    }, 0);
 
-    // very important to note that it should be findONe not find
-    
-  //   const cartData = await Cart.findOne({ userId }).populate({
-  //     path: "products.productId",
-  //     model: "Product",
-  // });
-//   const cartData = await Cart.findOne({ userId }).populate({
-//     path: "products.productId",
-//     model: "Product",
-//     populate: {
-//         path: "category",
-//         model:'Category',
-//         populate:{
-//           path:'offer',
-//           model:'Offer'
-//         }
-//     }
-// });
+    let totalWithDiscount = totalWithoutDiscount;
+    let couponNameForDisplay;
 
+    if (couponCode) {
+      const couponSelected = await Coupons.findOne({ couponCode });
+      if (couponSelected) {
+        couponNameForDisplay = couponSelected.couponName;
+        const discountAmount = couponSelected.discount;
+        totalWithDiscount -= discountAmount;
+        console.log('After coupon application, this is the total with discount:', totalWithDiscount);
+      }
+    }
 
+    let shippingCharges = totalWithDiscount > 500 ? 'Free shipping' : '₹40.00';
+    let grandTotal = shippingCharges === 'Free shipping' ? totalWithDiscount : totalWithDiscount + 40;
 
-// const Cart = require('./models/Cart');
+    console.log('Coupon name at checkout:', couponNameForDisplay);
 
-// Query the cart collection and populate the products with category and offer information
-const cartData = await Cart.findOne({ userId }).populate({
-  path: 'products.productId',
-  model: 'Product',
-});
-
-
-console.log('cart data at checkout page: ',cartData)
-
-    let states = [
-      'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 
-      'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 
-      'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 
-      'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 
+    const states = [
+      'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+      'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+      'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+      'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
       'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'
     ];
 
-
-// console.log('this the founded cart at checkout ::',cartFound);
-      if (!userId) {
-  console.log("user has no session so redirecting to signin Paage from checkout load controller")
-  req.flash('message',"Please login to continue")
-         return res.redirect("/signin");
-
-
-      } else if(!cartData){
-      console.log('user has no existing cart at checkout so redirected to /cart');
-      res.redirect('/cart')
-      }
-      
-      
-      else if (cartData && cartData?.products && cartData?.products?.length === 0){
-
-      console.log('user has a cart and has no products so redirected to cart page')
-
-        res.redirect('/cart')
-      } else {
-        
-        const hasZeroQuantity = cartData.products.some(product => product.productId.quantity === 0);
-        if (hasZeroQuantity) {
-            console.log('At least one product has a quantity of 0, cannot proceed to checkout.');
-            req.flash('message',"Either of the product is out of stock")
-           return res.redirect('/cart')
-        }
-      }
-
-  
-      // Extract product IDs from cartData
-      const productIds = cartData.products.map(product => product.productId._id);
-
-
-
-
-      // Query Product model to get details of the products in the cart
-      const productsInCart = await Product.find({ _id: { $in: productIds } }).populate({
-        path:'category',
-        populate:{
-          path:'offer',
-        }
-      }).populate({
-        path:'offer'
-      })
-
-
-
-// console.log('these are theproducts in cart at checkout page;::',productsInCart)
-
-
-// Update cartData with applied offers
-// this part is to show the available offers in that table below the address part
-cartData.products.forEach(cartProduct => {
-  const product = productsInCart.find(product => product._id.equals(cartProduct.productId._id));
-  if (product) {
-      if (product.offer) {
-          cartProduct.appliedOffer = product.offer.name;
-          cartProduct.appliedOfferDiscount = product.offer.discount;
-      } else if (product.category && product.category.offer) {
-          cartProduct.appliedOffer = product.category.offer.name;
-          cartProduct.appliedOfferDiscount = product.category.offer.name;
-      }
-  }
-});
-
-
-
-      // Calculate total price, shipping charges, and grand total
-      let totalWithoutDiscount = productsInCart.reduce((total, product) => {
-          const price = product.offerprice || product.price;
-
-       
-
-          const quantity = cartData.products.find(item => item.productId.equals(product._id)).quantity;
-          return total + price * quantity;
-      }, 0);
-
-let totalWithDiscount = totalWithoutDiscount;
-
-
-
-
-
-console.log('total with discount:',totalWithDiscount);
-
-
-
-
-
-
-let couponNameForDisplay;
-
-//this following thing will work in the case of coupon application, it has nothing to do with the offer
-if (couponCode) {
-  const couponSelected = await Coupons.findOne({ couponCode });
-
-  if (couponSelected) {
-    couponNameForDisplay = couponSelected.couponName;
-      const discountAmount = couponSelected.discount;
-      totalWithDiscount -= discountAmount;
-
-      console.log('afterr coupon application this is the total with discoutn :',totalWithDiscount)
-  }
-}
-
-let shippingCharges = totalWithDiscount >500 ? 'Free shipping' : '₹40.00'
-
-
-let grandTotal = shippingCharges === 'Free shipping' ? totalWithDiscount : totalWithDiscount + 40;
-
-console.log('couponname at checkout :',couponNameForDisplay)
-
-          res.render("checkout", { couponNameForDisplay,couponCode,coupon,shippingCharges,grandTotal,cartData,userNameforProfile,category,states,totalWithoutDiscount,totalWithDiscount });
-      
+    res.render("checkout", {
+      couponNameForDisplay,
+      cart,
+      categoriesWithProducts,
+      couponCode,
+      coupon:coupons,
+      shippingCharges,
+      grandTotal,
+      cartData,
+      userNameforProfile,
+      category,
+      states,
+      totalPriceOfCartProducts,
+      totalWithoutDiscount,
+      totalWithDiscount,
+      userId
+    });
   } catch (error) {
-    console.log('error occured at load checkout page : ',error);
-     res.redirect("/error");
+    console.log('Error occurred at load checkout page:', error);
+    res.redirect("/error");
   }
 };
 

@@ -38,7 +38,12 @@
     <link rel="stylesheet" href="/userAssets/home/assets/css/demos/demo-13.css">
     <script src="https://cdn.lordicon.com/lordicon.js"></script>
  
+<style>
+    .dropdown-menu {
+    display: none;
+}
 
+</style>
     
 
 </head>
@@ -80,7 +85,7 @@
                         <div class="header-dropdown-link">
 
                     
-                            <% console.log('debugger at header.ejs  for userNameforProfile :',userNameforProfile) %>
+                            
 
                             <% if(userNameforProfile && userNameforProfile.isVerified ) { %>
                                
@@ -160,7 +165,7 @@
                             <% } %>
 
 
-<% console.log('debugger at header.ejs for cart : ',cart) %>
+
                             
                             <div class="dropdown cart-dropdown">
                                 <% if(userNameforProfile && userNameforProfile.isVerified ) { %>
@@ -201,7 +206,7 @@
                                                         <img src="/adminAssets/imgs/category/<%= item.productId.images[0] %>" alt="product">
                                                     </a>
                                                 </figure>
-                                                <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
+                                                <a hidden href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
                                             </div><!-- End .product -->
 
                                             
@@ -238,12 +243,12 @@
                     <div class="header-left">
 
 
-                        <div class="dropdown category-dropdown show is-on" data-visible="true">
-                            <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" data-display="static" title="Browse Categories">
+                        <div class="dropdown category-dropdown">
+                            <a href="#" class="dropdown-toggle" role="button" aria-haspopup="true" aria-expanded="false" title="Browse Categories">
                                 Browse Categories
                             </a>
                             
-                            <div class="dropdown-menu show">
+                            <div class="dropdown-menu">
                                 <nav class="side-nav">
                                     <ul class="menu-vertical sf-arrows">
                                         
@@ -403,7 +408,52 @@
 
 
      
-      
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Get the specific category dropdown elements
+                const categoryDropdown = document.querySelector('.category-dropdown');
+                const categoryDropdownToggle = categoryDropdown.querySelector('.dropdown-toggle');
+                const categoryDropdownMenu = categoryDropdown.querySelector('.dropdown-menu');
+        
+                categoryDropdownToggle.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    categoryDropdownMenu.classList.toggle('show');
+                });
+        
+                // Close the dropdown if clicked outside
+                document.addEventListener('click', function (event) {
+                    if (!categoryDropdown.contains(event.target)) {
+                        categoryDropdownMenu.classList.remove('show');
+                    }
+                });
+            });
+        </script>
+        
+        
       
         
       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        

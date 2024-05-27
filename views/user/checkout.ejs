@@ -226,7 +226,7 @@
 					</h3><!-- End .product-title -->
 				</div><!-- End .product -->
 			</td>
-			<td class="price-col">₹<%= product?.productId?.offerprice ? product?.productId?.offerprice : product?.productId?.price %></td>
+			<td class="price-col">₹<%= product.productId.offerprice ? product.productId.offerprice : product.productId.price %></td>
 
 			
 
@@ -306,15 +306,15 @@
 
 		                					<tbody>
 
-												<% cartData.products.forEach(cartData => { %>
+												<% cartData.products.forEach(cartProduct => { %>
 											
-		                						<tr>
-		                							<td><a href="#"><%= cartData.name %></a></td>
-		                							<td>₹ <%= cartData?.productId?.offerprice ? cartData?.productId?.offerprice : cartData?.productId?.price %>.00</td>
-		                						</tr>
+													<tr>
+														<td><a href="#"><%= cartProduct.name %></a></td>
+														<td>₹ <%= cartProduct.productId ?.offerprice ? cartProduct.productId?.offerprice : cartProduct.productId.price %>.00</td>
+													</tr>
 										<%	}) %>
 		                					
-										<% if (totalWithoutDiscount - totalWithDiscount> 0) { %>
+										<% if (totalWithoutDiscount - totalWithDiscount > 0) { %>
 											<tr>
 												<td class="in-stock">Discount:</td>
 												

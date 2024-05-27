@@ -141,8 +141,7 @@ iziToast.warning({
                         </div>
                       </td>
                       <td style="padding-left: 5%;" class="price-col">
-                        ₹<%= product?.productId?.offerprice ? product?.productId?.offerprice : product?.productId?.price %>.00
-                     
+                        ₹<%= product.offerprice || product.productId.price %>.00
                       </td>
 
 
@@ -164,9 +163,8 @@ iziToast.warning({
                       </td>
 
 
-                      <td class="total-col" id="subtotal-<%= product.productId.id %>">
-                        ₹<%= (product.productId.offerprice ? (product.productId.offerprice * product.quantity) : (product?.productId?.price) * product.quantity) %>.00
-                       
+                      <td class="total-col" id="subtotal-<%= product.productId._id %>">
+                        ₹<%= (product.offerprice || product.productId.price) * product.quantity %>.00
                       </td>
                       
 

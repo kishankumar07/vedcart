@@ -1043,7 +1043,6 @@ console.log('z-a sorting worked and the value is ===============================
 
 module.exports = {
   loadIndex,
-  
   verifyLogin,
   signinUser,
   signUpUser,
