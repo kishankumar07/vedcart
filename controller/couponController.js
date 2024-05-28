@@ -34,6 +34,9 @@ const couponView = async (req, res) => {
         const coupons = await Coupon.find()
             .skip((page - 1) * limit)
             .limit(limit);
+
+            //first clear for any existing messages
+        req.flash('success','')
         let success = req.flash('success')
 
         console.log('the success at coupon view at admin side: ',success)
@@ -56,6 +59,10 @@ const couponView = async (req, res) => {
 //============== add a coupon ===================
 const addCouponDetails = async (req, res) => {
     try {
+        //there is backend validation for 
+        //1) coupon name 
+        // 2) coupon code
+        // so if either name or code is duplicate then iziToast warning message will be coming.
         const { name, code, min, discount, description, expiryDate } = req.body;
 
      
@@ -112,15 +119,21 @@ const editCoupon = async (req, res) => {
         const couponId = req.body.id; 
         const { name, code, min, discount, description, expiryDate } = req.body;
 
-        const existingCoupon = await Coupon.findOne({
+// emergency validation for existing coupon name and existing coupon code
+        const existingCouponByName = await Coupon.findOne({
+            couponName :{ $regex : new RegExp("^" + name + "$","i") },_id : { $ne : couponId }
+        })
+        if (existingCouponByName) {
+            req.flash('message', 'Coupon with the same name already exists.');
+            return res.redirect(`/admin/editCoupon?id=${couponId}`);
+        }
+        const existingCouponByCode = await Coupon.findOne({
             couponCode: { $regex: new RegExp("^" + code + "$", "i") },
             _id: { $ne: couponId },
         });
 
-// console.log('this is the existing coupon :',existingCoupon)
-
-        if (existingCoupon) {
-            req.flash('message', 'Coupon with the same name already exists.');
+        if (existingCouponByCode) {
+            req.flash('message', 'Coupon with the same code already exists.');
         return res.redirect(`/admin/editCoupon?id=${couponId}`);
         }
 

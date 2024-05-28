@@ -42,7 +42,7 @@ const loadIndex = async (req, res) => {
     const currentDate = new Date();
 
  // Access common data attached by the middleware
- const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
+ const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
 
  console.log('at loadIndex controller res.locals------------------------------------------- :',res.locals)
 
@@ -78,7 +78,7 @@ let [upcomingProducts,banner,category,productData] = await Promise.all([
 
 
     const product = productData.filter((product) => product.category.status !== "blocked");
-    res.render("home", { categoriesWithProducts,cart, userNameforProfile, user:userId, banner, product, upcomingProducts, category,totalPriceOfCartProducts });
+    res.render("home", { categoriesWithProducts,cart, userNameforProfile, user:userId, banner, product, upcomingProducts, category,totalPriceOfCartProducts,cartProductCount,wishlistProductCount });
   } catch (error) {
     console.log("Error happens in userController loadIndex function:", error);
     res.status(500).redirect('/error');
@@ -502,7 +502,7 @@ const signout = async (req, res) => {
 const aProductPage = async (req, res) => {
   try {
    
-    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
+    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
    
     const currentDate = new Date();
     let queriedProductId = req.query.id;
@@ -554,9 +554,12 @@ let relatedProds = product.filter(prod=>prod.category._id.toString() === related
       totalPriceOfCartProducts,
       userNameforProfile,
       categoriesWithProducts,
+      wishlistProductCount,
       product,
       relatedProds,
       aProductFoundFromDb,
+      cartProductCount
+      
     });
   } catch (error) {
     console.error("Error during aProductPage rendering:", error);
@@ -576,7 +579,7 @@ const loadUserProfile = async (req, res) => {
 //It is found that the orders is actually an array of that users all orders, because the Array.isArray(orders) returned true 
 
  // Access common data attached by the middleware
- const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
+ const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
 
 
     
@@ -620,7 +623,7 @@ const loadUserProfile = async (req, res) => {
   
 
 
-    res.render("userProfile", { cart,totalPriceOfCartProducts,moment,categoriesWithProducts,userNameforProfile ,userId, orders,category,states,orders });
+    res.render("userProfile", { cart,totalPriceOfCartProducts,moment,categoriesWithProducts,userNameforProfile ,userId, orders,category,states,orders,cartProductCount,wishlistProductCount });
   } catch (error) {
     console.log('error at loading userProfilePage',error)
    res.redirect("/error")
@@ -905,7 +908,7 @@ console.log('this is the skip value : ',skip)
 let shopPage = async (req, res) => {
   try {
    
-    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
+    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
 
    console.log('at shopPage controller res.locals------------------------------------- :',res.locals)
    
@@ -958,12 +961,18 @@ banners.forEach(x=>{
 // console.log('product query count is :',productQuery)
       
     
+  // Convert to array if necessary
+  productQuery = Array.isArray(productQuery) ? productQuery : await productQuery.exec();
+
+
     if (req.query.price) {
       const priceRange = req.query.price;
       if (priceRange === 'low-to-high') {
-        productQuery = productQuery.sort({ price: 1 }); 
+        productQuery = productQuery.sort((a, b) => a.price - b.price);
+
       } else if (priceRange === 'high-to-low') {
-        productQuery = productQuery.sort({ price: -1 }); 
+        productQuery = productQuery.sort((a, b) => b.price - a.price);
+
       }
     }
 
@@ -974,15 +983,15 @@ if (req.query.sort) {
 
 console.log('a-z sorting worked and the value is ----------------------------------------',sortOption)
 
-    productQuery = productQuery.sort({ name: 1 }); 
+productQuery = productQuery.sort((a, b) => a.name.localeCompare(b.name)); // Ascending
   } else if (sortOption === 'nameDesc') {
 
 console.log('z-a sorting worked and the value is =======================================',sortOption)
 
-    productQuery = productQuery.sort({ name: -1 }); 
+productQuery = productQuery.sort((a, b) => b.name.localeCompare(a.name)); // Descending
   } else if (sortOption === 'date') {
     console.log('latest product sort option worked----------------------------- :',sortOption)
-    productQuery = productQuery.sort({ createdAt: -1 });
+    productQuery = productQuery.sort((a, b) => b.createdAt - a.createdAt); // Latest
   }
 }
 
@@ -1011,6 +1020,8 @@ console.log('z-a sorting worked and the value is ===============================
     res.render('shopPage', {
       userNameforProfile,
       cart,
+      wishlistProductCount,
+      cartProductCount,
       categoriesWithProducts,
       totalPriceOfCartProducts,
       category,
@@ -1032,8 +1043,21 @@ console.log('z-a sorting worked and the value is ===============================
 };
 
 
+//------------ about page ---------------------------
 
-//------------------ search query ----------------
+let loadAboutPage = async(req,res)=>{
+try{
+  const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
+
+  res.render('about',{
+    userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount
+  })
+}catch(err){
+  console.log('error loading the about page :',err);
+  res.redirect('/error')
+}
+}
+
 
 
 
@@ -1060,7 +1084,7 @@ module.exports = {
   addAddressatProfile,
   editAddress,
   removeAddress,
-  
+  loadAboutPage
 };
 
 

@@ -20,10 +20,6 @@
 
 
 
-
-
-
-
 // --=======================  razorpay details ====================
 key_id,
 rzp_test_Mjpyug9KzUZ3Wb,

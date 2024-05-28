@@ -15,7 +15,7 @@ const Coupons = require("../model/couponModel")
 const loadCart = async (req, res) => {
   try {
          let message = req.flash('message');
-         const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
+         const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
    
     let [category , cartData] = await Promise.all([
       Category.find({status:'active'}),
@@ -86,11 +86,11 @@ let shippingCharges = subtotalWithNoShippingCharge > 500 ? 'free shipping' :'₹
 
 let grandTotalForCheckOut = subtotalWithNoShippingCharge > 500 ? subtotalWithNoShippingCharge : subtotalWithNoShippingCharge + 40;
 
-          res.render("cart", { categoriesWithProducts,cart,totalPriceOfCartProducts,userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock });
+          res.render("cart", { categoriesWithProducts,cart,totalPriceOfCartProducts,userId,cartData,userNameforProfile,category,shippingCharges,grandTotalForCheckOut,subtotalWithNoShippingCharge,message,productsWithZeroStock,cartProductCount,wishlistProductCount });
 
       } else {
         
-          res.render("cart", { cart,totalPriceOfCartProducts,cartData,userNameforProfile,category,categoriesWithProducts,userId });
+          res.render("cart", { cart,totalPriceOfCartProducts,cartData,userNameforProfile,category,categoriesWithProducts,userId,cartProductCount,wishlistProductCount });
       }
   } catch (error) {
     console.log('error loading  at catch block ,cart page :::',error);
@@ -322,7 +322,7 @@ const chooseOffer = (productOffer, categoryOffer) => {
 
 const loadCheckout = async (req, res) => {
   try {
-    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts, userId } = res.locals.commonData;
+    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts, userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
     const couponCode = req.query.coupon || '';
 
     if (!userId) {
@@ -441,7 +441,9 @@ const loadCheckout = async (req, res) => {
       totalPriceOfCartProducts,
       totalWithoutDiscount,
       totalWithDiscount,
-      userId
+      userId,
+      cartProductCount,
+      wishlistProductCount
     });
   } catch (error) {
     console.log('Error occurred at load checkout page:', error);

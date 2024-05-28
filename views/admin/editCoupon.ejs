@@ -178,54 +178,60 @@
 
     // Coupon Name
     if (couponName === "") {
-      document.getElementById("couponNameErr").textContent =
-        "Coupon name is required.";
-      hasError = true;
-    }
+  document.getElementById("couponNameErr").textContent =
+    "Coupon name is required.";
+  hasError = true;
+} else if (couponName !== document.getElementById("coupon_name").value) {
+  document.getElementById("couponNameErr").textContent =
+    "Coupon name should not contain leading or trailing spaces.";
+  hasError = true;
+}
 
     // Description
-    if (couponDescription === "") {
-      document.getElementById("couponDescriptionErr").textContent =
-        "Description is required.";
-      hasError = true;
-    }
+    var couponDescription = document.getElementById("coupon_description").value.trim();
+if (couponDescription === "") {
+  document.getElementById("couponDescriptionErr").textContent =
+    "Description is required.";
+  hasError = true;
+} else if (couponDescription !== document.getElementById("coupon_description").value) {
+  document.getElementById("couponDescriptionErr").textContent =
+    "Description should not contain leading or trailing spaces.";
+  hasError = true;
+}
 
     // Coupon Code
-    if (couponCode === "") {
-      document.getElementById("couponCodeErr").textContent =
-        "Coupon code is required.";
-      hasError = true;
-    }
-
+    var couponCode = document.getElementById("coupon_code").value.trim();
+if (couponCode === "") {
+  document.getElementById("couponCodeErr").textContent =
+    "Coupon code is required.";
+  hasError = true;
+} else if (couponCode !== document.getElementById("coupon_code").value) {
+  document.getElementById("couponCodeErr").textContent =
+    "Coupon code should not contain leading or trailing spaces.";
+  hasError = true;
+}
     // Minimum Amount
-    if (minAmount === "") {
-      document.getElementById("minAmountErr").textContent =
-        "Minimum amount is required.";
-      hasError = true;
-    } else if (isNaN(minAmount)) {
-      document.getElementById("minAmountErr").textContent =
-        "Minimum amount must be a number.";
-      hasError = true;
-    } else if (minAmount < 0) {
-      document.getElementById("minAmountErr").textContent =
-        "Minimum amount cannot be negative.";
-      hasError = true;
-    }
+   
+if (minAmount === "") {
+  document.getElementById("minAmountErr").textContent =
+    "Minimum amount is required.";
+  hasError = true;
+} else if (isNaN(minAmount) || minAmount < 0) {
+  document.getElementById("minAmountErr").textContent =
+    "Minimum amount must be a positive number.";
+  hasError = true;
+}
 
     // Discount Amount
     if (discountAmount === "") {
-      document.getElementById("discountErr").textContent =
-        "Discount amount is required.";
-      hasError = true;
-    } else if (isNaN(discountAmount)) {
-      document.getElementById("discountErr").textContent =
-        "Discount amount must be a number.";
-      hasError = true;
-    } else if (discountAmount < 0) {
-      document.getElementById("discountErr").textContent =
-        "Discount amount cannot be negative.";
-      hasError = true;
-    } else if (parseFloat(discountAmount) > parseFloat(minAmount)) {
+  document.getElementById("discountErr").textContent =
+    "Discount amount is required.";
+  hasError = true;
+} else if (isNaN(discountAmount) || discountAmount < 0) {
+  document.getElementById("discountErr").textContent =
+    "Discount amount must be a positive number.";
+  hasError = true;
+} else if (parseFloat(discountAmount) > parseFloat(minAmount)) {
   document.getElementById("discountErr").textContent =
     "Discount amount cannot exceed the minimum amount.";
   hasError = true;

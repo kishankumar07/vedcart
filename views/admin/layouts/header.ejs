@@ -31,59 +31,46 @@
             </div>
             <nav>
                 <ul class="menu-aside">
-                    <li class="menu-item ">
+                    <li id="dashboard-menu" class="menu-item">
                         <a class="menu-link" href="/admin/dashboard">
                             <i class="icon material-icons md-home"></i>
                             <span class="text">Dashboard</span>
                         </a>
                     </li>
-                    <li class="menu-item has-submenu">
-                        <a class="menu-link" href="page-products-list.html">
+                    <li id="product-menu" class="menu-item">
+                        <a class="menu-link" href="/admin/product">
                             <i class="icon material-icons md-shopping_bag"></i>
                             <span class="text">Products</span>
                         </a>
-                        <div class="submenu">
-                            <a href="/admin/product">Product List</a>
-                            
-                        </div>
+                       
                     </li>
                     <!-- //Categories -->
-                    <li class="menu-item has-submenu">
-                        <a class="menu-link" href="page-products-list.html">
+                    <li id="category-menu" class="menu-item">
+                        <a class="menu-link" href="/admin/category">
                             <i class="icon material-icons md-category"></i>
 
-                            <span class="text">Category</span>
+                            <span class="text">Categories</span>
                         </a>
-                        <div class="submenu">
-                          
-                             <a href="/admin/category">Categories</a>
-                        </div>
+                      
                     </li>
 
-                    <li class="menu-item has-submenu">
-                        <a class="menu-link" href="page-orders-1.html">
+                    <li id="orders-menu" class="menu-item">
+                        <a class="menu-link" href="/admin/orders">
                             <i class="icon material-icons md-shopping_cart"></i>
                             <span class="text">Orders</span>
                         </a>
-                        <div class="submenu">
-                            
-                            <a href="/admin/orders">Order list </a>
-                           
-                        </div>
+                        
                     </li>
                     
                     </li>
-                    <li class="menu-item has-submenu">
-                        <a class="menu-link" href="page-transactions-1.html">
+                    <li id="coupon-menu" class="menu-item">
+                        <a class="menu-link" href="/admin/coupon">
                             <i class="icon material-icons md-monetization_on"></i>
                             <span class="text">Coupons</span>
                         </a>
-                        <div class="submenu">
-                            <a href="/admin/coupon"> Coupons</a>
-                            
-                        </div>
+                        
                     </li>
-                    <li class="menu-item has-submenu">
+                    <li id="offers-menu" class="menu-item has-submenu">
                         <a class="menu-link" href="page-transactions-2.html">
                             <i class="icon material-icons md-local_offer"></i>
 
@@ -96,20 +83,20 @@
                         </div>
                     </li>
                    
-                    <li class="menu-item">
+                    <li id="users-menu" class="menu-item">
                         <a class="menu-link" href="/admin/users">
                             <i class="icon material-icons md-person"></i>
                             <span class="text" > Users </span>
                         </a>
                     </li>
-                    <li class="menu-item">
+                    <li id="banner-menu" class="menu-item">
                         <a class="menu-link" href="/admin/banner">
                             <i class="icon material-icons md-flag"></i>
 
                             <span class="text" > Banners </span>
                         </a>
                     </li>
-                    <li class="menu-item">
+                    <li id="reports-menu" class="menu-item">
                         <a class="menu-link" href="page-reviews.html">
                             <i class="icon material-icons md-comment"></i>
                             <span class="text">Reports</span>
@@ -181,5 +168,38 @@
             </header>
 
 
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const path = window.location.pathname;
+        
+        // Remove 'active' class from all menu items
+        document.querySelectorAll('.menu-aside .menu-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Add 'active' class to the current menu item
+        if (path.startsWith("/admin/dashboard")) {
+            document.getElementById("dashboard-menu").classList.add('active');
+        } else if (path.startsWith("/admin/product")) {
+            document.getElementById("product-menu").classList.add('active');
+        } else if (path.startsWith("/admin/category")) {
+            document.getElementById("category-menu").classList.add('active');
+        } else if (path.startsWith("/admin/orders")) {
+            document.getElementById("orders-menu").classList.add('active');
+        } else if (path.startsWith("/admin/coupon")) {
+            document.getElementById("coupon-menu").classList.add('active');
+        } else if (path.startsWith("/admin/offer") || path.startsWith("/admin/addOffer")) {
+            document.getElementById("offers-menu").classList.add('active');
+        } else if (path.startsWith("/admin/users")) {
+            document.getElementById("users-menu").classList.add('active');
+        } else if (path.startsWith("/admin/banner")) {
+            document.getElementById("banner-menu").classList.add('active');
+        } else if (path.startsWith("/page-reviews")) {
+            document.getElementById("reports-menu").classList.add('active');
+        }
+    });
+</script>
 
 

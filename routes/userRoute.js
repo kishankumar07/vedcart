@@ -43,7 +43,7 @@ router.post('/verify-email',userController.verifyEmail)
 
 router.get("/shop", userController.shopPage);
 
-// router.get("/shopNew", userController.shopPage);
+
 
 router.get("/productPage", userController.aProductPage);
 router.get('/loadProductSearchQuery',loadProductSearchQuery)
@@ -118,6 +118,16 @@ router.get("/wishlist",userAuth.isLoggedIn,userAuth.isBlocked, wishlistControlle
 router.post('/wishlist',userAuth.isLoggedIn,userAuth.isBlocked,wishlistController.addProductToWishList)
 
 router.delete('/wishlist',userAuth.isLoggedIn,userAuth.isBlocked,wishlistController.productremovefromwish)
+
+
+
+//---------about page------------------------------
+router.get('/about',userController.loadAboutPage)
+
+
+
+
+
 
 
 

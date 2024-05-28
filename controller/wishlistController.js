@@ -8,12 +8,12 @@ let User = require('../model/userModel')
 
 const wishList = async (req, res) => {
     try {
-        const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId } = res.locals.commonData;
+        const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
       const wishlist = await Wishlist.findOne({ user: userId }).populate({
         path:'products.product',
         model:'Product',
       })
-      res.render("wishlist", { cart,totalPriceOfCartProducts,userNameforProfile, user:userId, wishlist,categoriesWithProducts });
+      res.render("wishlist", { cart,totalPriceOfCartProducts,userNameforProfile, user:userId, wishlist,categoriesWithProducts,cartProductCount,wishlistProductCount });
     } catch (error) {
       console.error("Error during wishlist loading:", error);
       res.status(500).redirect("/error");

@@ -1,8 +1,9 @@
-let Product = require("../model/productModel");
+
 const User = require('../model/userModel');
 const Cart = require('../model/cartModel');
 const Category = require('../model/categoryModel');
-
+let Product = require("../model/productModel");
+let Wishlist = require("../model/wishListModel");
 
 // helper function to find the greatest of product or category offer present
 const chooseOffer = (productOffer, categoryOffer) => {
@@ -16,13 +17,15 @@ const chooseOffer = (productOffer, categoryOffer) => {
 const fetchCommonData = async (req, res, next) => {
     try {
 
-      console.log('what is at session now at fetchCommonData middleware:',req.session.userData)
+      console.log('this is the user id of the user at session:',req.session.userData)
      
       if(req.session.userData){
         const userId = req.session.userData;
-        const [userNameforProfile, cart, categoriesWithProducts] = await Promise.all([
-            User.findById(userId),
-            Cart.findOne({ userId }).populate({ path: "products.productId", model: 'Product' }),
+        const [userNameforProfile, cart, wishlist, categoriesWithProducts] = await Promise.all([
+            User.findById(userId), 
+            Cart.findOne({ userId }).populate({ path: "products.productId", 
+            model: 'Product' }),
+            Wishlist.findOne({user:userId}),
             Category.aggregate([
                 {
                   $match: {
@@ -61,11 +64,11 @@ const fetchCommonData = async (req, res, next) => {
               ])
         //after aggregation if the id field is not required, then specify _id:0 
             ]);
-       
+      console.log('cart value debugger if this is null, it will show empty cart imoji animation : ',cart)
            
             let productIds = cart?.products.map(product =>product.productId._id);
 
-        
+        console.log('debugger point for productIds :',productIds)
 
  const productsDetailsInCart = await Product.find({ _id: { $in: productIds } }).populate({
       path: 'category',
@@ -77,7 +80,8 @@ const fetchCommonData = async (req, res, next) => {
     });
 
 
-    cart.products.forEach(cartProduct => {
+//the optional chaining below this line is necessary in the sense that ,if a new user logins without any cart data , then without error it will be handled
+    cart?.products.forEach(cartProduct => {
       const product = productsDetailsInCart.find(product => product._id.equals(cartProduct.productId._id));
       if (product) {
         const chosenOffer = chooseOffer(product.offer, product.category.offer);
@@ -98,13 +102,21 @@ const fetchCommonData = async (req, res, next) => {
     });
 
 
-
+            // to find the total of cart products to be displayed
             let totalPriceOfCartProducts = cart?.products.reduce((total,product)=>{
              let price = product.productId.offerprice || product.productId.price;
              return total + price * product.quantity;
             },0)
       
-        res.locals.commonData = { userNameforProfile, cart,userId, categoriesWithProducts, totalPriceOfCartProducts };
+            //to display the count of cart items at header
+            const cartProductCount = cart?.products.reduce((count, product) => count + product.quantity, 0) || 0;
+
+            // to count the total of wishlist items 
+            const wishlistProductCount = wishlist?.products.length || 0;
+
+console.log('wishlist count at header : ::  :: :::',wishlistProductCount)
+
+        res.locals.commonData = { userNameforProfile, cart,userId, categoriesWithProducts, totalPriceOfCartProducts,cartProductCount,wishlistProductCount };
           }else{
             res.locals.commonData = {}
           }

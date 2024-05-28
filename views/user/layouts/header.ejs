@@ -159,7 +159,7 @@
                                 delay="1500"
                                 style="width:40px;height:35px">
                             </lord-icon>
-                                <!-- <span class="wishlist-count">3</span> -->
+                                <span class="wishlist-count"><%= wishlistProductCount %></span>
                                 <span class="wishlist-txt">Wishlist</span>
                             </a>
                             <% } %>
@@ -176,7 +176,7 @@
                                     delay="2000"
                                     style="width:40px;height:40px">
                                 </lord-icon>
-                                    <span class="cart-count">2</span>
+                                    <span class="cart-count"><%= cartProductCount %></span>
                                     <span class="cart-txt">Cart</span>
                                 </a>
                                
@@ -218,8 +218,8 @@
                                                 <span class="cart-total-price">₹<%= totalPriceOfCartProducts %></span>
                                             </div><!-- End .dropdown-cart-total -->
                                           <% }else{ %>
-                                            <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/39e3eb45-7c4d-40b4-b99e-6e44219446b7/F3b6kldNwX.json" background="transparent" speed="1" style="width: 30px; height: 30px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
-                                            <p>Oops.. Empty cart !</p>
+                                            <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/39e3eb45-7c4d-40b4-b99e-6e44219446b7/F3b6kldNwX.json" background="transparent" speed="1" style="width: 300px; height: 250px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+                                            <h4>Oops.. Empty cart !</h4>
                                             <% } %>
                                         </div><!-- End .cart-product -->
                             
@@ -365,36 +365,24 @@
                     <div class="header-center">
                         <nav class="main-nav">
                             <ul class="menu sf-arrows">
-                                <li class="megamenu-container active">
+                                <li id="home-menu" class="megamenu-container">
                                     <a href="/" >Home</a>
 
                                    
                                 </li>
-                                <li>
-                                    <a href="/shop" >Shop</a>
-
-                                   
+                                <li id="shop-menu">
+                                    <a href="/shop">Shop</a>
                                 </li>
-                                <li>
-                                    <a href="product.html" >Product</a>
-
-                                   
+                                <li id="about-menu">
+                                    <a href="/about">About</a>
                                 </li>
-                                <li>
-                                    <a href="#" >Pages</a>
-
-                                  
+                                <li id="contact-menu">
+                                    <a href="/contact">Contact Us</a>
                                 </li>
-                                <li>
-                                    <a href="blog.html" >Blog</a>
-
-                                  
+                                <li id="blog-menu">
+                                    <a href="/blog">Blog</a>
                                 </li>
-                                <li>
-                                    <a href="elements-list.html" >Elements</a>
-
-                                    
-                                </li>
+                               
                             </ul><!-- End .menu -->
                         </nav><!-- End .main-nav -->
                     </div><!-- End .col-lg-9 -->
@@ -426,6 +414,30 @@
                         categoryDropdownMenu.classList.remove('show');
                     }
                 });
+
+// ----------  for highlighting the field which is active of the menu bar   -----------------
+                const path = window.location.pathname;
+        
+        console.log('this is the path :',path)
+        // Remove 'active' class from all menu items
+        document.querySelectorAll('.main-nav .menu li').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        // Add 'active' class to the current menu item
+        if (path === "/") {
+            document.getElementById("home-menu").classList.add('active');
+        } else if (path.startsWith("/shop")) {
+            document.getElementById("shop-menu").classList.add('active');
+        } else if (path.startsWith("/about")) {
+            document.getElementById("about-menu").classList.add('active');
+        } else if (path.startsWith("/contact")) {
+            document.getElementById("contact-menu").classList.add('active');
+        } else if (path.startsWith("/blog")) {
+            document.getElementById("blog-menu").classList.add('active');
+        }
+
+
             });
         </script>
         
