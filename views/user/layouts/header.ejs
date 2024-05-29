@@ -43,6 +43,34 @@
     display: none;
 }
 
+.compare-dropdown .dropdown-menu {
+    padding: 10px;
+    min-width: 200px;
+}
+
+.compare-dropdown .dropdown-cart-products .product {
+    padding: 10px 0;
+}
+
+.compare-dropdown .dropdown-divider {
+    margin: 0;
+    border-top: 1px solid #e9ecef;
+}
+
+.compare-dropdown .sign-up-link {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.compare-dropdown .sign-up-link:hover {
+    text-decoration: underline;
+}
+
+
+
+
+
+
 </style>
     
 
@@ -104,26 +132,52 @@
                                         <span class="compare-txt">Hello   <%=userNameforProfile.name%></span>
                                     </a>
     
-                                    <div class="dropdown-menu dropdown-menu-right" style="padding: 0;width: 111px;">
-                                        <ul class="compare-products">
-                                            <li class="compare-product">
-                                                <h4 class="compare-product-title"><a style="margin: 20%;" href="/userProfile">Profile</a></h4>
-                                            </li>
+                                    <div class="dropdown-menu dropdown-menu-right" style="border-radius: 10%;">
+                                        <div class="dropdown-cart-products" style="padding-left: 10%;padding-right: 15%;">
                                            
-                                        </ul>
-    
-                                        <div class="compare-actions">
-                                          
-                                            <a href="/signout" class="btn btn-outline-primary-2" ><span>Logout</span><i class="icon-long-arrow-right"></i></a>
-                                        </div>
-                                    </div><!-- End .dropdown-menu -->     
+                                           
+                                           
+                                            <div class="product d-flex align-items-center">
+                                              <span>
+                                                <script src="https://cdn.lordicon.com/lordicon.js"></script>
+                                                <lord-icon
+                                                    src="https://cdn.lordicon.com/mprbsyfz.json"
+                                                    trigger="loop"
+                                                    delay="500"
+                                                    stroke="bold"
+                                                    style="width:35px;height:35px">
+                                                </lord-icon>
+                                    
+                                    
+                                              </span>
+                                              <span style="display: inline-block;margin-left: 10px;font-size: 12px;"><a href="/userProfile">My profile</a></span>
+                                            </div><!-- End .product -->
+                                            <hr class="dropdown-divider">
+                                            <div class="product d-flex align-items-center">
+                                                <span>
+                                    
+                                                    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+                                                    <lord-icon
+                                                        src="https://cdn.lordicon.com/gtzytosd.json"
+                                                        trigger="loop"
+                                                        delay="500"
+                                                        stroke="bold"
+                                                        style="width:30px;height:30px">
+                                                    </lord-icon>
+                                                </span>
+                                                <span style="display: inline-block;margin-left: 10px;font-size: 12px;"><a href="/signout">Logout</a></span>
+                                              </div><!-- End .product -->
+                                        </div><!-- End .cart-product -->
+                                    
+                                       
+                                    </div><!-- End .dropdown-menu -->  
                                 </div><!-- End .compare-dropdown -->
 
 
                         
                             <% } else { %>
                               
-                                <div class="dropdown compare-dropdown">
+                                <div class="dropdown compare-dropdown" >
                                 
                                 
                                     <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static" title="Compare Products" aria-label="Compare Products">
@@ -138,14 +192,47 @@
                                         <span class="compare-txt">Login to explore more</span>
                                     </a>
     
-                                    <div class="dropdown-menu dropdown-menu-right" style="padding: 0;width: 111px;">
-                                        
-    
-                                        <div class="compare-actions">
-                                          
-                                            <a href="/signin" class="btn btn-outline-primary-2" ><span>Login</span><i class="icon-long-arrow-right"></i></a>
-                                        </div>
-                                    </div><!-- End .dropdown-menu -->     
+                                    <div class="dropdown-menu dropdown-menu-right" style="border-radius: 10%;">
+                                        <div class="dropdown-cart-products" style="padding-left: 20px;padding-right: 20px;">
+                                            <div class="product d-flex justify-content-between align-items-center">
+                                              <span>New Customer ?</span>
+                                              <span class="justify-content-space-around"><a href="/signup">Sign up</a></span>
+                                            </div><!-- End .product -->
+                                            <hr class="dropdown-divider">
+                                            <div class="product d-flex align-items-center">
+                                              <span>
+                                                <script src="https://cdn.lordicon.com/lordicon.js"></script>
+                                                <lord-icon
+                                                    src="https://cdn.lordicon.com/mprbsyfz.json"
+                                                    trigger="loop"
+                                                    delay="500"
+                                                    stroke="bold"
+                                                    style="width:35px;height:35px">
+                                                </lord-icon>
+
+
+                                              </span>
+                                              <span style="display: inline-block;margin-left: 10px;font-size: 12px;"><a href="/userProfile">My profile</a></span>
+                                            </div><!-- End .product -->
+                                            <hr class="dropdown-divider">
+                                            <div class="product d-flex align-items-center">
+                                                <span>
+
+                                                    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+                                                    <lord-icon
+                                                        src="https://cdn.lordicon.com/ahzcfkrc.json"
+                                                        trigger="loop"
+                                                        delay="500"
+                                                        stroke="bold"
+                                                        style="width:40px;height:40px">
+                                                    </lord-icon>
+                                                </span>
+                                                <span style="display: inline-block;margin-left: 10px;font-size: 12px;"><a href="/orderdetails">Orders</a></span>
+                                              </div><!-- End .product -->
+                                        </div><!-- End .cart-product -->
+                                    
+                                       
+                                    </div><!-- End .dropdown-menu -->  
                                 </div><!-- End .compare-dropdown -->
 
                                 <% } %>
@@ -183,9 +270,9 @@
                             
                             
                             
-                                <div class="dropdown-menu dropdown-menu-right">
+                                <div class="dropdown-menu dropdown-menu-right" style="padding: 1rem 3rem;">
                                    
-                                    <div class="dropdown-menu dropdown-menu-right">
+                                    <div class="dropdown-menu dropdown-menu-right" style="border-radius: 8%;">
                                         <div class="dropdown-cart-products">
                                             <% if(cart && cart?.products && cart?.products?.length !==0) {%>
                                             <% cart.products.forEach((item,index)=> {%>
@@ -218,8 +305,8 @@
                                                 <span class="cart-total-price">₹<%= totalPriceOfCartProducts %></span>
                                             </div><!-- End .dropdown-cart-total -->
                                           <% }else{ %>
-                                            <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/39e3eb45-7c4d-40b4-b99e-6e44219446b7/F3b6kldNwX.json" background="transparent" speed="1" style="width: 300px; height: 250px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
-                                            <h4>Oops.. Empty cart !</h4>
+                                            <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/39e3eb45-7c4d-40b4-b99e-6e44219446b7/F3b6kldNwX.json" background="transparent" speed="1" style="width: 250px; height: 290px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+                                            <h4 class="mb-5 text-warning">Oops.. Empty cart !</h4>
                                             <% } %>
                                         </div><!-- End .cart-product -->
                             

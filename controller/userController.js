@@ -44,7 +44,7 @@ const loadIndex = async (req, res) => {
  // Access common data attached by the middleware
  const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
 
- console.log('at loadIndex controller res.locals------------------------------------------- :',res.locals)
+//  console.log('at loadIndex controller res.locals------------------------------------------- :',res.locals)
 
 let [upcomingProducts,banner,category,productData] = await Promise.all([
 
@@ -584,7 +584,7 @@ const loadUserProfile = async (req, res) => {
 
     
 
-    if (!us-erId) {
+    if (!userId) {
       res.redirect("/")
     }
 

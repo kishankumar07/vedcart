@@ -29,7 +29,7 @@ const loadCart = async (req, res) => {
 
       if (!cartData) {
         console.log('cart page loaded with no cart data 1st case')
-         return res.render("cart", { cartData: { products: [] },userNameforProfile,category, cart, categoriesWithProducts, totalPriceOfCartProducts,userId });
+         return res.render("cart", { cartData: { products: [] },userNameforProfile,category, cart, categoriesWithProducts,cartProductCount, totalPriceOfCartProducts,userId,wishlistProductCount });
       }
 
       const productsWithZeroStock = cartData.products.filter(product => product.quantity === 0);
@@ -242,9 +242,12 @@ const updateCartItemCount = async (req, res) => {
     const { cartId, productId, quantity } = req.body;
 
     const existingCart = await Cart.findById(cartId);
-
+    const product = await Product.findById(productId);
     if (!existingCart) {
         return res.status(404).json({ success: false, message: "Cart not found" });
+    }
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
 
     const productToUpdate = existingCart.products.find((proId) => proId.productId.equals(productId))
@@ -252,20 +255,18 @@ const updateCartItemCount = async (req, res) => {
     if (!productToUpdate) {
         return res.status(404).json({ success: false, message: "Product not found in cart" });
     }
+//Backend validation for checking the stock whether the EOL reached
+    if (quantity > product.quantity) {
+      console.log('quantity exceeded at quantity increment',quantity)
+      return res.status(400).json({ success: false, message: `Exceeded the available stock of ${product.name}` });
+    }
+   
 
-    // const maxQuentity = productToUpdate.quentity
-    // console.log("max",quentity);
-    // if(maxQuentity<quentity){
-    //     return res.status(400).json({ success: false, message: `Exceeded maximum quantity limit (${maxQuentity}).` });
-    // }
-
-    // Assuming existingCart is an instance of your cart model
+   
     productToUpdate.quantity = quantity;
     productToUpdate.totalPrice = quantity * productToUpdate.productPrice;
 
     const updatedCart = await existingCart.save();
-
-    // const updatedTotalPrice = productToUpdate.totalPrice;
 
 
     const totalOfSubTotals = existingCart.products.reduce((total, product) => {
@@ -288,20 +289,9 @@ let updatedGrandTotal = updatedShippingCharges ==='free delivery' ? totalOfSubTo
   });
 
 
-
-
-
-
-
-    // res.json({
-    //     success: true,
-    //     message: "Quantity updated successfully",
-    //     // updatedTotalPrice,
-    //     // totalPriceTotal,
-    // });
 } catch (error) {
-    res.redirect("/500")
-    res.status(500).json({ success: false, message: "Internal server error" });
+   console.log('error at incrementing quantity at cart : ',error)
+   res.status(500).redirect('/error')
 }
 };
 
@@ -349,7 +339,7 @@ const loadCheckout = async (req, res) => {
       return res.redirect('/cart');
     }
 
-    if (cartData.products.length === 0) {
+    if (cartData?.products.length === 0) {
       console.log('User has a cart but no products, redirecting to cart page');
       return res.redirect('/cart');
     }

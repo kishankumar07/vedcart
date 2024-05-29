@@ -493,15 +493,17 @@ const loadOrderDetailsPage = async (req, res) => {
   //=================== successful placement====================
   const orderSuccess = async (req, res) => {
     try {
+        const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
+
         const orderid = req.query.orderId
-        let userId = req.session.userData;
+        
         let category = await Category.find({ status: "active" });
-        let userNameforProfile = await User.findById(userId)
+       
       
      let orderPlacedByTheUser = await Orders.findOne({_id:orderid})
     //  console.log('this is the order placed',orderPlacedByTheUser);
      
-      res.render("successPage", { orderPlacedByTheUser,userNameforProfile,category });
+      res.render("successPage", { orderPlacedByTheUser,category,userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount });
 
     } catch (error) {
       console.log(error.message);

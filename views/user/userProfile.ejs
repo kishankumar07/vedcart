@@ -34,11 +34,11 @@
   <div
     class="page-header text-center"
     style="
-      background-image: url('/userAssets/home/assets/images/profilePage.webp');
+      background-image: url('/userAssets/home/assets/images/profile.avif');
     "
   >
     <div class="container">
-      <h1 style="color: azure" class="page-title">My Account</h1>
+      <h1 style="color: rgb(255, 255, 255)" class="page-title mt-5">My Account</h1>
     </div>
     <!-- End .container -->
   </div>
@@ -351,7 +351,7 @@
 
                     <% console.log('orders at userProfile is :',orders) %>
 
-                    <% if(orders?.length!==0) {%>
+                    <% if(orders?.length!==0) { %>
                     <% orders.forEach(order=> { %>
                     <div class="row align-items-center h-100">
                       <div class="col-md-10 col-lg-8 col-xl-6">
@@ -448,7 +448,12 @@
                     </div>
                     <% }); %>
                     <% }else {%>
-                      <td colspan="7">Order details unavailable for this user</td>
+                      <td colspan="7">
+                        Order details unavailable for this user                     
+                      </td><div>
+                        <a href="/shop" class="btn btn-outline-primary-2"><span>GO SHOP</span><i class="icon-long-arrow-right"></i></a>
+                      </div>
+                      
                       <% } %>
                   </div>
                 </section>
@@ -561,19 +566,19 @@ aria-hidden="true"
                   <div class="col-lg-6">
                   <div class="card card-dashboard">
                     <div class="card-body">
-                      <h3 class="card-title">Wallet Information</h3>
+                      <h3 class="card-title text-center">Wallet </h3>
                       <!-- End .card-title -->
 
                       <% if(userNameforProfile?.wallet !== 0) {%>
-                      <p>
+                      <p class="text-center" style="font-size: medium">
                         Wallet Balance : ₹<%= userNameforProfile.wallet %>
 
                        
-                        <!-- <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/5154e78e-684f-4826-bc12-d121a055f545/DdWUNPZxpJ.json" background="#FFFFFF" speed="1" style="width: 200px; height: 200px" direction="1" playMode="normal" loop autoplay></dotlottie-player> -->
+                        <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/5154e78e-684f-4826-bc12-d121a055f545/DdWUNPZxpJ.json" background="#FFFFFF" speed="1" style="width: 300px; height: 250px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
                         <br>
                         <button
                         type="button"
-                        class="btn btn-primary"
+                        class="btn btn-primary text-center"
                         data-toggle="modal"
                         data-target="#walletHistoryModal"
                       >
@@ -581,8 +586,8 @@ aria-hidden="true"
                       </button>
                       </p>
                       <% }else{ %>
-                        <!-- <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/82fa0462-1fe7-4f73-b4e8-b7e7eb0aff75/z8x23pbnQM.json" background="#FFFFFF" speed="1" style="width: 150px; height: 150px" direction="1" playMode="normal" loop autoplay></dotlottie-player> -->
-                        Wallet Balance : ₹<%= userNameforProfile.wallet %>
+                        <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/82fa0462-1fe7-4f73-b4e8-b7e7eb0aff75/z8x23pbnQM.json" background="#FFFFFF" speed="1" style="width: 270px; height: 250px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+                       <h6 class="text-center">Wallet Balance : ₹<%= userNameforProfile.wallet %></h5> 
                         <% } %>
                         
                     </div>
@@ -592,7 +597,11 @@ aria-hidden="true"
                 </div>
               </div>
               <!-- .End .tab-pane -->
+<!-- wallet ended ------------------------------------------------------------------------------------------------------- -->
 
+
+
+<!-- address started ---------------------------------------------------------------------------------------------------- -->
               <!-- this is the tab for viewing the address, editing and deleting  the address -->
 
               <div
@@ -695,7 +704,7 @@ aria-hidden="true"
                                 class="nav-link"
                                 id="register-tab"
                                 data-toggle="tab"
-                                href="#register"
+                                href="#"
                                 role="tab"
                                 aria-controls="register"
                                 aria-selected="false"
@@ -863,162 +872,206 @@ aria-hidden="true"
                 </div>
                 <!-- End .modal-dialog -->
               </div>
-              <!-- End .modal -->
+              <!-- End .modal of address addition-->
 
               <!-- edit address modal -------------------------------------------------- -->
 
               <% userNameforProfile.addressField.forEach(address =>{ %>
-              <div
+                <div
                 class="modal fade"
                 id="editModal<%= address._id %>"
                 tabindex="-1"
                 role="dialog"
-                aria-labelledby="editModalLabel<%= address._id %>"
                 aria-hidden="true"
               >
-                <div class="modal-dialog" role="document">
+                <div class="modal-dialog modal-dialog-centered" role="document">
                   <div class="modal-content">
-                    <!-- Add your modal content here -->
-                    <div class="modal-header">
-                      <h5
-                        class="modal-title"
-                        id="editModalLabel<%= address._id %>"
-                      >
-                        Edit Address
-                      </h5>
+                    <div class="modal-body">
                       <button
                         type="button"
                         class="close"
                         data-dismiss="modal"
                         aria-label="Close"
                       >
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true"
+                          ><i class="icon-close"></i
+                        ></span>
                       </button>
-                    </div>
 
-                    <div class="modal-body">
-                      <!-- Add your form fields with predefined values here -->
-                      <form id="editForm<%= address._id %>">
-                        <!-- Example input field (replace with your actual form fields) -->
-                        <div class="modal-body mx-3">
-                          <div class="modal-body mx-3">
-                            <div class="form-group">
-                              <label for="editName<%= address._id %>"
-                                >Name</label
-                              >
-                              <input
-                                type="text"
-                                class="form-control"
-                                id="editName<%= address._id %>"
-                                value="<%= address.name %>"
-                                name="name"
-                              />
-
-                              <p id="addn" style="color: red"></p>
-                            </div>
-
-                            <div class="form-group">
-                              <label for="editMobile<%= address._id %>"
-                                >Mobile Number</label
-                              >
-                              <input
-                                type="tel"
-                                class="form-control"
-                                id="editMobile<%= address._id %>"
-                                value="<%= address.mobile %>"
-                                name="mobile"
-                                required
-                              />
-                              <p id="addm" style="color: red"></p>
-                            </div>
-
-                            <div class="form-group">
-                              <label for="editPincode<%= address._id %>"
-                                >Pincode</label
-                              >
-                              <input
-                                type="text"
-                                class="form-control"
-                                id="editPincode<%= address._id %>"
-                                value="<%= address.pincode %>"
-                                name="pincode"
-                                required
-                              />
-                              <p id="addp" style="color: red"></p>
-                            </div>
-
-                            <div class="form-group">
-                              <label for="editAddress<%= address._id %>"
-                                >Address</label
-                              >
-                              <input
-                                type="text"
-                                class="form-control"
-                                id="editAddress<%= address._id %>"
-                                value="<%= address.addressDetails %>"
-                                name="address"
-                                required
-                              />
-                              <p id="adda" style="color: red"></p>
-                            </div>
-
-                            <div class="form-group">
-                              <label for="editCity<%= address._id %>"
-                                >City</label
-                              >
-                              <input
-                                type="text"
-                                class="form-control"
-                                id="editCity<%= address._id %>"
-                                value="<%= address.city %>"
-                                name="city"
-                                required
-                              />
-                              <p id="addc" style="color: red"></p>
-                            </div>
-
-                            <div class="form-group">
-                              <label for="editState<%= address._id %>"
-                                >State</label
-                              >
-
-                              <select
-                                class="form-control"
-                                id="editState<%= address._id %>"
-                                name="state"
-                              >
-                                <option value="" selected disabled>
-                                  Select your state
-                                </option>
-                                <% states.forEach(state => { %>
-                                <option value="<%= state %>">
-                                  <%= state %>
-                                </option>
-                                <% }); %>
-                              </select>
-                            </div>
-                            <p id="adds" style="color: red"></p>
-                          </div>
-
-                          <!-- Add more fields as needed -->
-
-                          <!-- Example Save button -->
-                          <button
-                            type="button"
-                            class="btn btn-primary"
-                            onclick="saveEdit('<%= address._id %>')"
+                      <div class="form-box">
+                        <div class="form-tab">
+                          <ul
+                            class="nav nav-pills nav-fill nav-border-anim"
+                            role="tablist"
                           >
-                            Save Changes
-                          </button>
+                            <li class="nav-item">
+                              <a
+                                class="nav-link"
+                                id="editModalLabel<%= address._id %>"
+                                data-toggle="tab"
+                                href="#"
+                                role="tab"
+                                aria-controls="register"
+                                aria-selected="false"
+                                >Edit address </a
+                              >
+                            </li>
+                          </ul>
+                          <div class="tab-content" id="tab-content-5">
+                            <div
+                              class="tab-pane fade show active"
+                              id="signin"
+                              role="tabpanel"
+                              aria-labelledby="signin-tab"
+                            >
+                            <form id="editForm<%= address._id %>">
+
+                                <div class="form-group">
+                                  <label for="singin-email"> Full Name *</label>
+                                  <input
+                                    type="text"
+                                    class="form-control"
+                                    id="editName<%= address._id %>"
+                                    value="<%= address.name %>"
+                                    name="name"
+                                  />
+
+                                  <p id="addn" style="color: red"></p>
+                                </div>
+                                <!-- End .form-group -->
+
+                                <div class="row">
+                                  <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="editMobile<%= address._id %>"
+                                            >Mobile Number</label
+                                          >
+                                      <input
+                                        type="tel"
+                                        class="form-control"
+                                        id="editMobile<%= address._id %>"
+                                        value="<%= address.mobile %>"
+                                        name="mobile"
+                                      />
+
+                                      <p id="addm" style="color: red"></p>
+                                    </div>
+                                  </div>
+                                  <!-- End .form-group -->
+
+                                  <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="editPincode<%= address._id %>"
+                                            >Pincode</label
+                                          >
+                                      <input
+                                        type="text"
+                                        class="form-control"
+                                        id="editPincode<%= address._id %>"
+                                        value="<%= address.pincode %>"
+                                        name="pincode"
+                                      />
+
+                                      <p id="addp" style="color: red"></p>
+                                    </div>
+                                    <!-- End .form-group -->
+                                  </div>
+                                </div>
+
+                                <!-- Address -->
+                                <div class="form-group m-5">
+                                    <label for="editAddress<%= address._id %>"
+                                        >Address</label
+                                      >
+                                  <textarea                       
+                                    class="form-control"
+                                    id="editAddress<%= address._id %>"
+                                    name="addressDetails"
+                                    rows="3"
+                                  ><%= address.addressDetails %></textarea>
+
+                                  <p id="adda" style="color: red"></p>
+                                  <!-- <div class="text-danger" id="errorDetails"></div> -->
+                                </div>
+
+                                <div class="row">
+                                  <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="editCity<%= address._id %>"
+                                            >City</label
+                                          >
+                                      <input
+                                        type="text"
+                                        class="form-control"
+                                        id="editCity<%= address._id %>"
+                                        value="<%= address.city %>"
+                                        name="city"
+                                      />
+
+                                      <p id="addc" style="color: red"></p>
+                                    </div>
+                                    <!-- End .form-group -->
+                                  </div>
+                                  <!-- End .col-sm-6 -->
+
+                                  <div class="col-sm-6">
+                                    <div class="form-group mt-3">
+                                        
+
+                                      <select
+                                        class="form-control"
+                                        id="editState<%= address._id %>"
+                                        name="state"
+                                      >
+                                        <option value="<%= address.state %>" selected disabled>
+                                          Select your state
+                                        </option>
+                                        <% states.forEach(state => { %>
+                                        <option value="<%= state %>">
+                                          <%= state %>
+                                        </option>
+                                        <% }); %>
+                                      </select>
+                                    </div>
+                                    <p id="adds" style="color: red"></p>
+                                    <!-- End .form-group -->
+                                  </div>
+                                  <!-- End .col-sm-6 -->
+                                </div>
+                                <!-- End .row -->
+
+                                <div class="form-footer">
+                                    <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    onclick="saveEdit('<%= address._id %>')"
+                                  >
+                                    Save Changes
+                                  </button>
+                                </div>
+                                <!-- End .form-footer -->
+                              </form>
+                            </div>
+                            <!-- .End .tab-pane -->
+                          </div>
+                          <!-- End .tab-content -->
                         </div>
-                      </form>
+                        <!-- End .form-tab -->
+                      </div>
+                      <!-- End .form-box -->
                     </div>
+                    <!-- End .modal-body -->
                   </div>
+                  <!-- End .modal-content -->
                 </div>
+                <!-- End .modal-dialog -->
               </div>
               <%})%>
+<!-- address end =============================================================================================== -->
 
-              <!-- Password changing area by the user-->
+
+
+              <!-- change password area-->
 
               <div
                 class="tab-pane fade"
@@ -1291,7 +1344,7 @@ aria-hidden="true"
 
         if (!name || !mobile || !pincode || !address || !city || !state) {
           Swal.fire({
-            icon: "error",
+            icon: "warning",
             title: "Oops...",
             text: "Please fill out all fields",
           });

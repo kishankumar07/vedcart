@@ -17,7 +17,7 @@ const chooseOffer = (productOffer, categoryOffer) => {
 const fetchCommonData = async (req, res, next) => {
     try {
 
-      console.log('this is the user id of the user at session:',req.session.userData)
+      // console.log('this is the user id of the user at session at common data middleware:',req.session.userData)
      
       if(req.session.userData){
         const userId = req.session.userData;
@@ -64,11 +64,11 @@ const fetchCommonData = async (req, res, next) => {
               ])
         //after aggregation if the id field is not required, then specify _id:0 
             ]);
-      console.log('cart value debugger if this is null, it will show empty cart imoji animation : ',cart)
+      // console.log('cart value debugger if this is null, it will show empty cart imoji animation : ',cart)
            
             let productIds = cart?.products.map(product =>product.productId._id);
 
-        console.log('debugger point for productIds :',productIds)
+        // console.log('debugger point for productIds :',productIds)
 
  const productsDetailsInCart = await Product.find({ _id: { $in: productIds } }).populate({
       path: 'category',
@@ -114,7 +114,7 @@ const fetchCommonData = async (req, res, next) => {
             // to count the total of wishlist items 
             const wishlistProductCount = wishlist?.products.length || 0;
 
-console.log('wishlist count at header : ::  :: :::',wishlistProductCount)
+// console.log('wishlist count at header : ::  :: :::',wishlistProductCount)
 
         res.locals.commonData = { userNameforProfile, cart,userId, categoriesWithProducts, totalPriceOfCartProducts,cartProductCount,wishlistProductCount };
           }else{

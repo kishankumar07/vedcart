@@ -93,7 +93,7 @@ router.delete('/removeaddress/:id', userAuth.isLoggedIn,userAuth.isBlocked,userA
 
 router.get("/orderdetails",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.loadOrderDetailsPage)
   
-router.get("/orderdetails",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.loadOrderDetailsPage)
+// router.get("/orderdetails",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.loadOrderDetailsPage)
 
 
 router.get('/download-invoice',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified, orderController.loadDownloadInvoice);

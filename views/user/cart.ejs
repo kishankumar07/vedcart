@@ -16,7 +16,7 @@
 
   /* Ensure all cells in the table have equal width */
   .table-cart td {
-    width: 20%;
+    width: 45%;
   }
 
   /* Adjust quantity input width */
@@ -74,7 +74,7 @@ iziToast.warning({
 <main class="main">
   <div
     class="page-header text-center"
-    style="background-image: url('userAssets/home/assets/images/checkoutPage.jpg')"
+    style="background-image: url('userAssets/home/assets/images/checkoutPages.jpg')"
   >
     <div class="container">
       <h1 style="color: azure;" class="page-title">Shopping Cart<span></span></h1>
@@ -131,13 +131,13 @@ iziToast.warning({
                     <td class="product-col">
                         <div class="product">
                           <figure class="product-media">
-                            <a href="#">
+                            <a href="/productPage?id=<%= product.productId._id %>">
                               <img src="/adminAssets/imgs/category/<%= product.productId.images[0] %>" alt="Product image" />
                             </a>
                           </figure>
-                          <h3 class="product-title">
-                            <a href="#"><%= product.productId.name %></a>
-                          </h3>
+                          <h2 class="product-title text-nowrap">
+                            <a href="/productPage?id=<%= product.productId._id %>"><%= product.productId.name %></a>
+                          </h2>
                         </div>
                       </td>
                       <td style="padding-left: 5%;" class="price-col">
@@ -159,6 +159,7 @@ iziToast.warning({
                             onchange="updateQuantity('<%= cartData.id %>', '<%= product.productId._id %>')"
                             required
                           />
+                         
                         </div>
                       </td>
 
@@ -169,7 +170,7 @@ iziToast.warning({
                       
 
 
-                      <td class="remove-col">
+                      <td hidden class="remove-col">
                         <button class="btn-remove" onclick="moveToSaveForLater('<%= product._id %>');return false;">Save for Later</button>
                       </td>
 
@@ -179,7 +180,7 @@ iziToast.warning({
                         </button>
                       </td>
                     </tr>
-                    
+                   
                     <% }) %>
                     <% }else{ %>
 
@@ -203,9 +204,7 @@ iziToast.warning({
 
                 <tr>
                   <td colspan="6" class="text-end">
-                    <a href="/deleteCart" class="text-muted">
-                      <i class="fi-rs-cross-small"></i> Clear Cart
-                    </a>
+                    <a href="/cart" class="btn btn-outline-dark-2"><span>UPDATE CART</span><i class="icon-refresh"></i></a>
                   </td>
                 </tr>
               </tbody>
@@ -239,6 +238,7 @@ iziToast.warning({
              
             </div>
             <!-- End .cart-bottom -->
+           
           </div>
 
 
@@ -396,9 +396,21 @@ function showConfirmationDialog() {
 // Function to update quantity and update UI
 async function updateQuantity(cartId, productId) {
 
-  // console.log('this is the cartId',cartId);
-  // console.log('this is the product id ',productId);
-    const updatedQuantity = document.getElementById(productId).value;
+ 
+const quantityInput = document.getElementById(productId);
+const updatedQuantity = parseInt(quantityInput.value, 10);
+
+const maxQuantity = parseInt(quantityInput.max, 10);
+
+
+if (updatedQuantity > maxQuantity) {
+  Swal.fire({
+                    icon: 'info',
+                    title: 'End of the line !',
+                    text:"Last available quantity"              
+                });       
+ return
+}
 
     try {
         const response = await fetch('/updatequantity', {
@@ -409,57 +421,51 @@ async function updateQuantity(cartId, productId) {
             body: JSON.stringify({ cartId, productId, quantity: updatedQuantity }),
         });
 
+        const data = await response.json();
         if (!response.ok) {
-            throw new Error('Failed to update quantity');
+          throw new Error(data.message || 'Failed to update quantity');
         }
 
-        const data = await response.json();
+       
         
         // Update UI based on response data
         updateUI(data, productId);
     } catch (error) {
-        console.error('Error updating quantity:', error);
+        console.error('Error updating quantity at cart page:', error);
+        const errorMessage = error.message || 'An error occurred while adding the product';
+        Swal.fire({
+  icon: "info",
+  title: "Last of the lot",
+  text: errorMessage,
+               
+})
+
     }
 }
 
 // Function to update UI based on server response
 function updateUI(data, productId) {
-  // console.log('this is the data response',data);
-    // Update subtotal, product total, and shipping charges based on data from server
+ 
     const subtotalElement = document.getElementById(`subtotal-${productId}`);
-
-// console.log('subtotal element ::',subtotalElement);
-
     const shippingCostElement = document.getElementById('shipping-cost');
     const totalElement = document.getElementById('total');
-
     let totalOfSubtotals = document.getElementById('totalOfSubtotal');
 
-
     if (data.success) {
-        // Update subtotal
         subtotalElement.textContent = '₹' + data.subtotal + '.00';
-
-        // Update shipping charges
-        
-        
-
         totalOfSubtotals.textContent ='₹' + data.totalOfSubTotals + '.00';
-
-       
-      // Calculate total including subtotal and shipping charges
       shippingCostElement.textContent = data. shippingCharges;
-
-      // Update total
       totalElement.textContent = '₹' + data.grandTotalForCheckOut + '.00';
     } else {
-        // Handle error
         console.error('Failed to update quantity:', data.message);
+        displayErrorMessage(data.message);
     }
 }
 
 
 
+
+//============== proceed to checkout button-----------------
 function proceedToCheckout(cartLength) {
 
 
