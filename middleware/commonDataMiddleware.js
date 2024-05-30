@@ -90,10 +90,10 @@ const fetchCommonData = async (req, res, next) => {
           cartProduct.appliedOffer = chosenOffer.name;
           cartProduct.appliedOfferDiscount = chosenOffer.discount;
           cartProduct.productId.offerprice = product.price - discount;
-          console.log(`Applied offer: ${cartProduct.appliedOffer}, Discount: ${cartProduct.appliedOfferDiscount}, Offer price: ${cartProduct.productId.offerprice}`);
+          // console.log(`Applied offer: ${cartProduct.appliedOffer}, Discount: ${cartProduct.appliedOfferDiscount}, Offer price: ${cartProduct.productId.offerprice}`);
         } else {
           cartProduct.productId.offerprice = product.price;
-          console.log(`No offer applied. Original price: ${cartProduct.productId.offerprice}`);
+          // console.log(`No offer applied. Original price: ${cartProduct.productId.offerprice}`);
         }
       } else {
         req.flash('message', "Product does not exist");

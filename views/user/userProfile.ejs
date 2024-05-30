@@ -245,10 +245,10 @@
                                 role="tabpanel"
                                 aria-labelledby="signin-tab"
                               >
-                                <form
-                                  action="/editProfile"
-                                  method="post"
-                                  onsubmit="return editProfileValidation()"
+                                <form id="editUserProfileBasicDetails"
+                                  action="#" method="post"
+                                 
+                                 
                                 >
                                   <div class="form-group">
                                     <label for="singin-email">Name </label>
@@ -349,7 +349,7 @@
                   <div class="container py-5" id="taborders">
 
 
-                    <% console.log('orders at userProfile is :',orders) %>
+                   
 
                     <% if(orders?.length!==0) { %>
                     <% orders.forEach(order=> { %>
@@ -621,7 +621,7 @@ aria-hidden="true"
                     userNameforProfile.addressField.length > 0 ) { %> <%
                     userNameforProfile.addressField.forEach(address =>{ %>
 
-                    <div class="card card-dashboard">
+                      <div class="card card-dashboard" id="address-<%=address._id%>">
                       <div class="card-body">
                         <h3 class="card-title">Billing Address</h3>
                         <!-- End .card-title -->
@@ -643,7 +643,7 @@ aria-hidden="true"
                           <a
                             href="#"
                             style="float: right"
-                            onclick="removeAddress('<%=address._id%>')"
+                            onclick="removeAddress('<%=address._id%>');return false"
                             >Delete <i class="fa-solid fa-trash"></i
                           ></a>
                         </p>
@@ -1081,16 +1081,18 @@ aria-hidden="true"
               >
                 <form id="changePasswordForm">
                   <label
-                    >Current password (leave blank to leave unchanged)</label
+                    >Current password </label
                   >
                   <input
                     type="text"
                     class="form-control"
                     name="currentPassword"
                   />
+                  <p id="currentPasswordErr" style="color: red"></p>
 
-                  <label>New password (leave blank to leave unchanged)</label>
+                  <label>New password </label>
                   <input type="text" class="form-control" name="newPassword" />
+                  <p id="newPasswordErr" style="color: red"></p>
 
                   <label>Confirm new password</label>
                   <input
@@ -1098,7 +1100,7 @@ aria-hidden="true"
                     class="form-control mb-2"
                     name="confirmNewPassword"
                   />
-
+                  <p id="confirmNewPasswordErr" style="color: red"></p>
                   <button
                     type="button"
                     class="btn btn-outline-primary-2"
@@ -1108,8 +1110,7 @@ aria-hidden="true"
                     <i class="icon-long-arrow-right"></i>
                   </button>
                 </form>
-                <div id="successMessage"></div>
-                <div id="errorMessage"></div>
+               
               </div>
               <!-- .End .tab-pane -->
             </div>
@@ -1129,57 +1130,179 @@ aria-hidden="true"
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  // ==============  edit the profile valdation===================
+  // ==============  edit the basic user profile valdation ===================
 
-  function editProfileValidation() {
-    var name = document.getElementById("profileEditName").value.trim();
-    var mobile = document.getElementById("profileEditMobile").value.trim();
+  document.getElementById('editUserProfileBasicDetails').addEventListener('submit', async function (event) {
+    event.preventDefault();
 
-    // Reset error messages
-    document.getElementById("nameProfileEditErr").innerText = "";
+    const name = document.getElementById('profileEditName');
+    const mobile = document.getElementById('profileEditMobile');
+    let isValid = true;
 
-    document.getElementById("mobileProfileEditErr").innerText = "";
-
-    var isValid = true;
-
-    // Validate name
-    if (name === "") {
-      document.getElementById("nameErr").innerText = "Name is required";
+//validation for name
+    if (name.value === '') {
+      console.log('6')
+      document.getElementById('nameProfileEditErr').textContent = 'Name is required.';
       isValid = false;
-    } else if (name.length < 2 || !isNaN(name.charAt(0))) {
-      document.getElementById("nameErr").innerText =
-        "Please enter a valid name";
-      isValid = false;
-    }
-    // else if (!isNaN(name.charAt(0))) { // Check if the first character is a number
-    // //     document.getElementById('nameErr').innerText = '';
-    // //     isValid = false;
-    // // }
-
-    // Validate mobile
-    if (mobile === "") {
-      document.getElementById("mobileErr").innerText = "Mobile is required";
-      isValid = false;
-    } else if (!validateMobile(mobile)) {
-      document.getElementById("mobileErr").innerText = "Invalid mobile number";
-      isValid = false;
+    }else if(name.value !== name.value.trim()){
+      console.log('7')
+        document.getElementById('nameProfileEditErr').innerText = 'Avoid triling spaces';
+        isValid = false;
+    }else if (name.value.length < 4) {
+      console.log('9')
+      document.getElementById('nameProfileEditErr').innerText = 'Name must be minimum 4 characters long';
+        isValid = false;
+    }else if (/^[0-9]/.test(name.value)) {
+      console.log('8')
+    document.getElementById('nameProfileEditErr').innerText = 'Name should not start with a number.';
+        isValid = false;
+   }else if (/[^a-zA-Z0-9\s]/.test(name.value)) {
+    document.getElementById('nameProfileEditErr').innerText = 'name should not contain special characters.';
+        isValid = false;
+  }
+     else {
+      document.getElementById('nameProfileEditErr').textContent = '';
     }
 
-    return isValid;
+    // validation for mobile 
+    if(mobile.value === ''){
+      console.log('1')
+      document.getElementById('mobileProfileEditErr').textContent = "Mobile number is required"
+      isValid = false;
+    }else if (mobile.value !== mobile.value.trim()){
+      console.log('2')
+      document.getElementById('mobileProfileEditErr').textContent = "Avoid trailing spaces"
+      isValid = false;
+    }else if (/[a-zA-Z]/.test(mobile.value)) {
+      console.log('3')
+      document.getElementById('mobileProfileEditErr').textContent = "Mobile number should not contain letters."
+      isValid = false;
+  }else if (mobile.value.length !== 10) {
+    console.log('4')
+    document.getElementById('mobileProfileEditErr').textContent = "Mobile number should be 10 digits."
+      isValid = false;
+  }
+  const mobilePattern = /^\+?(\d{1,3})?[-. ]?(\d{1,4})?[-. ]?\d{1,4}[-. ]?\d{1,9}$/;
+   if (!mobilePattern.test(mobile.value)) {
+    console.log('5')
+    document.getElementById('mobileProfileEditErr').textContent = "Mobile number should be between 10 and 15 digits."
+      isValid = false;
   }
 
-  function validateMobile(mobile) {
-    // Simple mobile number validation regex (10 digits)
-    var mobileRegex = /^\d{10}$/;
-    return mobileRegex.test(mobile);
-  }
+
+//if any validation fails stop there
+    if (!isValid) return;
+
+let userName = name.value;
+let userPhone = mobile.value;
+
+    try {
+      const response = await fetch('/editProfile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userName, userPhone })
+      });
+
+let data = await response.json();
+if (!response.ok) {
+          throw new Error(data.message || 'Failed to update details');
+        }
+  
+
+         window.location.href = '/userProfile';
+     
+    } catch (error) {
+      console.error('Error at editing user profile at userProfile:', error);
+      Swal.fire({
+  icon: "error",
+  title: error.message || "Failed to edit the details",
+  
+               
+})
+    }
+  });
 
   //====================for change password by the user===========
 
   function changePassword() {
-    const formData = new FormData(
-      document.getElementById("changePasswordForm")
-    );
+    
+    let form = document.getElementById('changePasswordForm');
+    let formData = new FormData(form);
+
+    let currentPassword = formData.get('currentPassword');
+    let newPassword = formData.get('newPassword');
+    let confirmNewPassword = formData.get('confirmNewPassword');
+
+    const currentPasswordErr = document.getElementById("currentPasswordErr");
+  const newPasswordErr = document.getElementById("newPasswordErr");
+  const confirmNewPasswordErr = document.getElementById("confirmNewPasswordErr");
+
+  // Clear previous error messages
+  currentPasswordErr.textContent = "";
+  newPasswordErr.textContent = "";
+  confirmNewPasswordErr.textContent = "";
+
+
+
+  let valid = true;
+
+  if (!currentPassword) {
+    currentPasswordErr.textContent = "Current password is required.";
+    valid = false;
+  }
+ else if (currentPassword !== currentPassword.trim()) {
+    currentPasswordErr.textContent = "Avoid trailing spaces";
+    valid = false;
+  }
+
+    if (!newPassword) {
+      newPasswordErr.textContent = "New password is required.";
+    valid = false;
+  }
+
+ else if (newPassword !== newPassword.trim()) {
+    currentPasswordErr.textContent = "Avoid trailing spaces";
+    valid = false;
+  }
+  else if (newPassword.length < 8) {
+    newPasswordErr.textContent = "New password must be at least 8 characters long.";
+    valid = false;
+  }
+
+  if (!confirmNewPassword) {
+    confirmNewPasswordErr.textContent = "Confirm password is required.";
+  }
+
+ else if (confirmNewPassword !== confirmNewPassword.trim()) {
+    currentPasswordErr.textContent = "Avoid trailing spaces";
+    valid = false;
+  }
+
+ 
+  const hasWhitespace = /\s/.test(newPassword);
+  if (hasWhitespace) {
+    newPasswordErr.textContent = "New password cannot contain whitespace characters.";
+    valid = false;
+  }
+
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    newPasswordErr.textContent = "New password must include an uppercase letter, a lowercase letter, a number, and a special character.";
+    valid = false;
+  }
+
+  if (newPassword !== confirmNewPassword) {
+    confirmNewPasswordErr.textContent = "New password and confirm password do not match.";
+    valid = false;
+  }
+
+if(!valid) return;
+
+
+
+// if form validations are passed then move on to change the password
 
     const formObject = {};
     formData.forEach((value, key) => {
@@ -1187,7 +1310,7 @@ aria-hidden="true"
     });
 
     fetch("/changepassword", {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
@@ -1195,19 +1318,16 @@ aria-hidden="true"
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(response.data.message || "Failed to change the password");
         }
         return response.json();
       })
       .then((data) => {
-        const successMessageDiv = document.getElementById("successMessage");
-        const errorMessageDiv = document.getElementById("errorMessage");
-
+       
         if (data.success) {
           $("#changePasswordForm").load("/userProfile #changePasswordForm");
-          // successMessageDiv.textContent = data.message;
-          errorMessageDiv.textContent = "";
-          document.getElementById("changePasswordForm").reset();
+         
+          form.reset();
 
           iziToast.success({
                      title: data.message,            
@@ -1220,15 +1340,22 @@ aria-hidden="true"
 
 
         } else {
-          errorMessageDiv.textContent = data.message;
-          successMessageDiv.textContent = "";
+        
+          Swal.fire({
+  icon: "error",
+  title: data.message,
+              
+})
         }
       })
       .catch((error) => {
         console.error(
           "There was a problem changing the password:",
-          error.message
-        );
+          error.message);
+        Swal.fire({
+  icon: "error",
+  title: error.message,            
+})
       });
   }
 
@@ -1352,7 +1479,7 @@ aria-hidden="true"
         }
 
         fetch(`/updateaddress/${addressId}`, {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
@@ -1408,7 +1535,7 @@ aria-hidden="true"
   }
 
   //remove an address =====================================
-  function removeAddress(userId) {
+  function removeAddress(addressId) {
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -1419,13 +1546,13 @@ aria-hidden="true"
       confirmButtonText: "Yes, delete it!",
     }).then((result) => {
       if (result.isConfirmed) {
-        deleteAddress(userId);
+        deleteAddress(addressId);
       }
     });
   }
 
-  function deleteAddress(userId) {
-    fetch(`/removeaddress/${userId}`, {
+  function deleteAddress(addressId) {
+    fetch(`/removeaddress/${addressId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -1435,7 +1562,11 @@ aria-hidden="true"
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        $("#tabaddress").load("/profile #tabaddress");
+
+         // Remove the address element from the DOM directly
+      document.getElementById(`address-${addressId}`).remove();
+
+       
         Swal.fire({
           title: "Success!",
           text: "Address removed successfully.",
@@ -1444,8 +1575,6 @@ aria-hidden="true"
           showConfirmButton: false,
           timer: 1500,
         });
-
-        window.location.reload();
       })
       .catch((error) => {
         console.error("Error removing address:", error);

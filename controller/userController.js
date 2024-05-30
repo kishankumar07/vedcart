@@ -636,22 +636,32 @@ const loadUserProfile = async (req, res) => {
 
 const editProfile = async (req, res) => {
   try {
+    console.log('editing userProfile started')
     const userId = req.session.userData
-    const user = await User.findById(userId)
-
-    if (!user) {
-      return res.redirect('/')
+    if (!userId) {
+      req.flash('message', 'Please login to continue');
+      return res.redirect('/signin');
     }
 
-    user.name = req.body.name
-    user.mobile = req.body.mobile
+    const user = await User.findById(userId);
+    if (!user) {
+      req.flash('message', 'User not found');
+      return res.redirect('/signin');
+    }
+
+    const { userName, userPhone } = req.body;
+ 
+
+
+    user.name = userName
+    user.mobile = userPhone
 
     await user.save()
 
-    return res.redirect('/userProfile')
+   return res.status(200).json({messge:"Profile updated successfully"})
   } catch (error) {
-   res.redirect("/error")
-    console.log('error at edit profile of user',error);
+  console.error('error at edit basic profile of user at userProfile',error)
+  res.status(500).redirect('/error');
   }
 }
 
@@ -663,9 +673,12 @@ const editProfile = async (req, res) => {
 const changePassword = async (req, res) => {
   console.log('change password controller at userProfile reached');
   const userId = req.session.userData;
-  const currentPassword = req.body.currentPassword
-  const newPassword = req.body.newPassword
-  const confirmNewPassword = req.body.confirmNewPassword
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+  console.log('current password :',currentPassword)
+
+  console.log('newPassword is : ',newPassword)
+ 
+  console.log('confirmNewPassword is : ',confirmNewPassword)
 
   try {
 
@@ -678,13 +691,21 @@ const changePassword = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    if (currentPassword) {
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      return res.status(400).json({ message: 'All password fields are required.' });
+    }
+
+
       const passwordMatch = await bcrypt.compare(currentPassword, user.password)
       if (!passwordMatch) {
       
         return res.json({ message: 'Current password is incorrect' });
       }
-    }
+
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(newPassword)) {
+        return res.status(400).json({ message: 'New password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.' });
+      }
 
     if (newPassword !== confirmNewPassword) {
      
@@ -692,18 +713,18 @@ const changePassword = async (req, res) => {
     }
 
 
-    // Update the user's password
+    //if all the validations are passed, move on to update the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
     user.password = hashedPassword;
 
     await user.save()
-    // console.log('this is saved at database: ',user);
+    
 
     return res.status(200).json({ success: true, message: 'Password changed successfully' });
   } catch (error) {
-   res.redirect("/error")
-    return res.status(500).json({ error: 'Internal server error' })
+  console.error('error while updating the password at user profile : ',error);
+  res.status(500).redirect('/error');
   }
 }
 
@@ -809,9 +830,8 @@ const removeAddress = async (req, res) => {
 
     res.status(200).json({ message: 'Address removed successfully' });
   } catch (error) {
-    res.redirect("/500")
-
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.log('error at removing the address:',error)
+    res.status(500).redirect('/error')
   }
 };
 

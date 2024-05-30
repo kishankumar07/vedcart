@@ -81,13 +81,13 @@ router.get('/ordersuccess',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVer
 
 router.get('/userProfile',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.loadUserProfile)
 
-router.post('/editProfile',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.editProfile)
+router.put('/editProfile',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.editProfile)
   
-router.post('/changePassword',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.changePassword)
+router.put('/changePassword',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.changePassword)
 
 router.post("/addAddressatProfile",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.addAddressatProfile);
 
-router.post('/updateaddress/:id',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.editAddress)
+router.put('/updateaddress/:id',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.editAddress)
 
 router.delete('/removeaddress/:id', userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,userController.removeAddress);
 
