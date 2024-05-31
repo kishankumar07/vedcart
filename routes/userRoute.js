@@ -148,25 +148,9 @@ router.get('/auth/google/callback', passport.authenticate('google', { failureRed
 console.log('this is the req.user :',googleUserData);
 
 
-      // Find or create a local user based on email
-      let user = await User.findOne({ email: googleUserData.email });
-      console.log('this is the user data at google auth route: ',user);
-      if (!user) {
-          // Create a new local user
-          user = new User({
-              name: googleUserData.name,
-              email: googleUserData.email,
-              googleUser: googleUserData._id // Associate with Google user
-          });
-          await user.save();
-      } else {
-          // Update existing user to associate with Google user
-          user.googleUser = googleUserData._id;
-          await user.save();
-      }
-      
+   
       // Set user data in session
-      req.session.userData = user;
+      req.session.userData = googleUserData._id; // Store user ID in session
 
 
       console.log('user successfully logged at google auth and this is present in the session',req.session.userData);

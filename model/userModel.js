@@ -9,24 +9,21 @@ let userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
+    unique:true,
   },
   mobile: {
     type: Number,
     // require: true,
   },
   password: {
-   
-      type: String,
-      required: function () {
-        return !this.googleUser; // Password is required if user is not created via Google
-      },
-  
-},
-
-googleUser: {
-  type: String,
-  ref: "GoogleSignin", // Reference to the Google user
-},
+    type: String,
+    required: function () {
+      return !this.googleId; // Password is required if the user is not created via Google
+    },
+  },
+  googleId: {
+    type: String,
+  },
 addressField: [{
   name: {
       type: String,

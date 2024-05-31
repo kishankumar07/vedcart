@@ -44,10 +44,44 @@ const loadIndex = async (req, res) => {
  // Access common data attached by the middleware
  const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
 
-//  console.log('at loadIndex controller res.locals------------------------------------------- :',res.locals)
+// function that independently calculates the offerprice based on product and category offer present especially for trendy products and best sellers
+function calculateFinalPrice(products) {
+  return products.map(product => {
+      let finalPrice = parseFloat(product.price);
 
-let [upcomingProducts,banner,category,productData] = await Promise.all([
+      if (product.productOffer && product.productOffer.discount) {
+          finalPrice = finalPrice - (finalPrice * (product.productOffer.discount / 100));
+      }
 
+      if (product.categoryOffer && product.categoryOffer.discount) {
+          const categoryDiscountPrice = parseFloat(product.price) - (parseFloat(product.price) * (product.categoryOffer.discount / 100));
+          finalPrice = product.productOffer && product.productOffer.discount
+              ? Math.min(finalPrice, categoryDiscountPrice)
+              : categoryDiscountPrice;
+      }
+
+      if (product.offerprice) {
+          finalPrice = Math.min(finalPrice, product.offerprice);
+      }
+
+      return {
+          ...product,
+          finalPrice: finalPrice.toFixed(2)
+      };
+  });
+}
+
+// to get the trendy products and this one is later used by $unionWith -----------
+let cartAggregation = [
+  { $unwind : "$products" },
+  { $group : {
+    _id : "$products.productId" , count : { $sum : 1 }
+  } }
+]
+
+//avoiding multiple awaits using promise.all
+let [upcomingProducts,banner,category,productData,bestSeller,combinedData] = await Promise.all([
+ 
   Product.find({ date : { $gt : currentDate }}),
   Banner.find({
     status:{$ne : false}
@@ -73,12 +107,188 @@ let [upcomingProducts,banner,category,productData] = await Promise.all([
       startingDate: { $lte: currentDate },
       endDate: { $gte: currentDate },
     },
-  }).limit(7)
+  }),
+  Orders.aggregate([
+    {$unwind : "$Products"},
+    {
+      $group :{
+        _id :"$Products.productId",
+        totalOrders : { $sum : "$Products.quantity" }
+      }
+    },
+    {
+      $lookup: {
+          from: "products", 
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails"
+      }
+  },
+  { $unwind: "$productDetails" },
+  {
+    $lookup: {
+        from: "categories",
+        localField: "productDetails.category",
+        foreignField: "_id",
+        as: "categoryDetails"
+    }
+  },
+  { $unwind: "$categoryDetails" },
+  {
+    $lookup: {
+        from: "offers",
+        localField: "productDetails.offer",
+        foreignField: "_id",
+        as: "productOfferDetails"
+    }
+  },
+  { $unwind: { path: "$productOfferDetails", preserveNullAndEmptyArrays: true } },
+  {
+    $lookup: {
+        from: "offers",
+        localField: "categoryDetails.offer",
+        foreignField: "_id",
+        as: "categoryOfferDetails"
+    }
+  },
+  { $unwind: { path: "$categoryOfferDetails", preserveNullAndEmptyArrays: true } },
+  {
+    $project: {
+        _id: 0,
+        productId: "$_id",
+        name: "$productDetails.name",
+        totalOrders: 1,
+        brand: "$productDetails.brand",
+        categoryStatus:"$categoryDetails.status",
+        productStatus : "$productDetails.status",
+        price: "$productDetails.price",
+        quantity: "$productDetails.quantity",
+        offerprice: "$productDetails.offerprice",
+        image: "$productDetails.images",
+        category: "$categoryDetails.name",
+        productOffer: {
+            name: "$productOfferDetails.name",
+            discount: "$productOfferDetails.discount"
+        },
+        categoryOffer: {
+            name: "$categoryOfferDetails.name",
+            discount: "$categoryOfferDetails.discount"
+        }
+    }
+  },
+  { $sort: { totalOrders: -1 } }, 
+  { $limit: 10 }
+  ]),
+  Wishlist.aggregate([
+    { $unwind : "$products" },
+        { $group :  {
+           _id : "$products.product",count : { $sum : 1 }
+       }
+     },
+     {
+       $unionWith : {
+         coll : 'carts',
+         pipeline : cartAggregation
+       }
+     },
+     {
+       $group: {
+           _id: "$_id",
+           total_count: { $sum: "$count" }
+       }
+   },
+   { $sort: { total_count: -1 } },
+   {
+       $lookup: {
+           from: 'products',
+           localField: '_id',
+           foreignField: '_id',
+           as: 'productDetails'
+       }
+   },
+   {
+       $unwind: "$productDetails"
+   },
+   {
+
+       $lookup : {
+           from : 'categories',
+           localField : 'productDetails.category',
+           foreignField : '_id',
+           as : 'categoryDetails'
+       }
+
+   },
+   {
+       $unwind :"$categoryDetails"
+   },
+   {
+     $lookup: {
+         from: "offers",
+         localField: "productDetails.offer",
+         foreignField: "_id",
+         as: "productOfferDetails"
+     }
+   },
+   { $unwind: { path: "$productOfferDetails", preserveNullAndEmptyArrays: true } },
+   {
+     $lookup: {
+         from: "offers",
+         localField: "categoryDetails.offer",
+         foreignField: "_id",
+         as: "categoryOfferDetails"
+     }
+   },
+   { $unwind: { path: "$categoryOfferDetails", preserveNullAndEmptyArrays: true } },
+   {
+       $project: {
+           _id: 0,
+           productId: "$_id",
+           total_count: 1,
+           name: "$productDetails.name",
+           brand: "$productDetails.brand",
+           category: "$categoryDetails.name",
+           quantity: "$productDetails.quantity",
+           date: "$productDetails.date",
+           price: "$productDetails.price",
+           offerprice: "$productDetails.offerprice",
+           images: "$productDetails.images",
+           productStatus: "$productDetails.status",
+           categoryStatus : "$categoryDetails.status",
+           productOffer: {
+             name: "$productOfferDetails.name",
+             discount: "$productOfferDetails.discount"
+            },
+            categoryOffer: {
+             name: "$categoryOfferDetails.name",
+             discount: "$categoryOfferDetails.discount"
+         }
+       }
+   }
+])
 ])
 
 
-    const product = productData.filter((product) => product.category.status !== "blocked");
-    res.render("home", { categoriesWithProducts,cart, userNameforProfile, user:userId, banner, product, upcomingProducts, category,totalPriceOfCartProducts,cartProductCount,wishlistProductCount });
+//To calculate the category || offerprice of all 7 products but this one shares from shopPages function that calculate the induvidual offer price
+let productsUpdatedWithOfferPrice = await updatedProductsDiscount(productData);
+    const popularProducts = productsUpdatedWithOfferPrice.filter((product)=>{
+      return product.status === 'active' && product.category.status === 'active';
+    })
+
+
+// ------- this part is to get the best seller products -------
+const bestSellersBeforeStatusCheck = calculateFinalPrice(bestSeller);
+let bestSellers = bestSellersBeforeStatusCheck.filter((product) => {
+      return product.categoryStatus !== "blocked" && product.productStatus !== "blocked"})
+
+ //------------- to get trendy products -=-----------------
+let trendyProductsBeforeStatusCheck = calculateFinalPrice(combinedData)
+let trendyProducts = trendyProductsBeforeStatusCheck.filter((product) =>{
+  return product.productStatus !== 'blocked' && product.categoryStatus !== "blocked"
+})
+ 
+
+    res.render("home", { trendyProducts,bestSellers,categoriesWithProducts,cart, userNameforProfile, user:userId, banner, product:popularProducts, upcomingProducts, category,totalPriceOfCartProducts,cartProductCount,wishlistProductCount });
   } catch (error) {
     console.log("Error happens in userController loadIndex function:", error);
     res.status(500).redirect('/error');
@@ -88,6 +298,7 @@ let [upcomingProducts,banner,category,productData] = await Promise.all([
 //========================= Login user page rendering================
 const signinUser = async (req, res) => {
   try {
+    
     let message = req.flash("message");
     console.log('message passed at signin page when session is out:',message)
     res.render("userSignin", { message });
@@ -150,7 +361,7 @@ console.log('finally at session :',req.session.userData)
           return res.render('userSignin', { message: req.flash('er') });
         }
       } else {
-        req.flash('er', 'Incorrect username and password')
+        req.flash('er', 'Incorrect username or password')
         // User not found
         return res.render('userSignin', { message: req.flash('er') });
       }
@@ -880,7 +1091,7 @@ const updatedProductsDiscount = async (products) => {
       return product;
     }));
   } catch (error) {
-    console.error("Error updating products:", error);
+    console.error("Error updating products for calculating the discount of each products:", error);
     throw error;
   }
 };
@@ -923,7 +1134,7 @@ console.log('this is the skip value : ',skip)
 };
 
 
-
+//======== shop page for viewng, sorting, filtering,searching all prouduts =========
 
 let shopPage = async (req, res) => {
   try {

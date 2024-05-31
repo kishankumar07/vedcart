@@ -48,66 +48,63 @@ app.use(notFoundHandler)
 app.set('view engine', 'ejs');
 
 
-
-// Passport setup for Google authentication
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL,
-    passReqToCallback: true 
-}, 
-
-async function (req, accessToken, refreshToken, profile, cb) {
+    passReqToCallback: true
+  },
+  async function (req, accessToken, refreshToken, profile, cb) {
     try {
-
-console.log('profile at google auth:',profile)
-
-        // Search for the user in the database based on Google profile ID
-        let googleUser = await GoogleSignIn.findOne({ googleId: profile.id });
-        if (!googleUser) {
-            // If Google user doesn't exist, create a new user in GoogleSignIn model
-            const newGoogleUser = new GoogleSignIn({
-                googleId: profile.id,
-                name: profile.displayName,
-                email: profile.emails[0].value
-            });
-            await newGoogleUser.save();
-        }else{
-           return res.redirect('/');
+      console.log('profile at google auth:', profile);
+  
+      // Find user by Google ID
+      let user = await User.findOne({ googleId: profile.id });
+  
+      if (!user) {
+        // Find user by email if not found by Google ID
+        user = await User.findOne({ email: profile.emails[0].value });
+  
+        if (user) {
+          // Update the existing user's Google ID if the user exists
+          user.googleId = profile.id;
+          await user.save();
+        } else {
+          // If user does not exist, create a new user with Google details
+          user = new User({
+            name: profile.displayName,
+            email: profile.emails[0].value,
+            googleId: profile.id,
+            isVerified: true,
+          });
+          await user.save();
         }
-
-        // Check if the user already exists in the User model
-        let user = await User.findOne({ email: profile.emails[0].value });
-        if (!user) {
-            // If the user doesn't exist, create a new user in the User model
-            user = new User({
-                name: profile.displayName,
-                email: profile.emails[0].value,
-                googleUser: profile.id,
-                isVerified:true, // Reference the Google user ID
-            });
-           let savedUser =  await user.save();
-           console.log('saved User at google auth:',savedUser);
-        }
-
-        // Return the user
-        return cb(null, user);
+      }
+  
+      // Store user ID in session
+      req.session.userData = user._id;
+  
+      // Return the user
+      return cb(null, user);
     } catch (error) {
-        return cb(error);
+        console.log('error at google auth ; ',error)
+      return cb(error);
     }
-}));
-
-passport.serializeUser(function (user, done) {
-    done(null, user);
-});
-
-passport.deserializeUser(function (obj, done) {
-    done(null, obj);
-});
-
-
-
-
+  }));
+  
+  passport.serializeUser(function (user, done) {
+    done(null, user._id);
+  });
+  
+  passport.deserializeUser(async function (id, done) {
+    try {
+      const user = await User.findById(id);
+      done(null, user);
+    } catch (error) {
+      done(error, null);
+    }
+  });
+  
 
 // Start the server
 app.listen(3000, () => {
