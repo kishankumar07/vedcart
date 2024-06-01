@@ -295,6 +295,8 @@ let trendyProducts = trendyProductsBeforeStatusCheck.filter((product) =>{
   }
 };
 
+
+
 //========================= Login user page rendering================
 const signinUser = async (req, res) => {
   try {
@@ -303,9 +305,12 @@ const signinUser = async (req, res) => {
     console.log('message passed at signin page when session is out:',message)
     res.render("userSignin", { message });
   } catch (error) {
-    console.log("login user error");
+    console.log("login user error:",error);
+    res.status(500).redirect('/error')
   }
 };
+
+
 
 //================loading the sign up page==================
 const signUpUser = async (req, res) => {
@@ -313,27 +318,26 @@ const signUpUser = async (req, res) => {
     let message = req.flash("message");
     res.render("userSignup", { message });
   } catch (error) {
-    console.log(error.message);
+    console.error('error at signup page loading :',error)
+    res.status(500).redirect('/error');
   }
 };
 
-//=====================Login page=============================
 
 
-
+//=====================  verify the login  =============================
 const verifyLogin = async (req, res) => {
   try {
     console.log('reached at verifylogin controller ')
     let {email,password} = req.body;
     const userData = await User.findOne({ email: email });
 
-// console.log('this is the user data',userData);
+
     if (userData) {
       
       const passwordMatch = await bcrypt.compare(password, userData.password);
 
       if (passwordMatch) {
-
         if (userData.isBlocked === false && userData.isVerified == true) {
 
           if ( req.session.userData !== null ||req.session.userData !== undefined) {
@@ -342,33 +346,32 @@ const verifyLogin = async (req, res) => {
             console.log('at session when user is unblocked ',req.session.userData)
             req.session.userData = userData._id;
 
-console.log('finally at session :',req.session.userData)
+                  console.log('finally at session :',req.session.userData)
 
             return res.redirect('/');
 
 
           } else {
-            console.error(`in the session it is ${req.session.userData}`);
-            req.flash('er', ' Please login to continue')
+            console.error(`in the session middlemost part of plate : ${req.session.userData}`);
+            req.flash('message', ' Please login to continue')
             res.redirect('/signin')
           }
         } else {
 
          
-
-          req.flash('er', ' Account blocked by the administrator or user not verified')
+          req.flash('message', ' Account blocked by the administrator or user not verified')
           // User not found
-          return res.render('userSignin', { message: req.flash('er') });
+          return res.redirect('/signin');
         }
       } else {
-        req.flash('er', 'Incorrect username or password')
+        req.flash('message', 'Incorrect username or password')
         // User not found
-        return res.render('userSignin', { message: req.flash('er') });
+        return res.redirect('/signin');
       }
     } else {
-      req.flash('er', 'No user found')
+      req.flash('message', 'No user found')
       // User not found
-      return res.render('userSignin', { message: req.flash('er') });
+      return res.redirect('/signin');
     }
   } catch (error) {
     console.log('error at verify login ,:',error)
@@ -378,31 +381,8 @@ console.log('finally at session :',req.session.userData)
 };
 
 
-// async function otpGenerationAndMailSent(email) {
-//   const otp = generateotp();
-//   console.log("--------------------------------------", otp);
-//   const transporter = nodemailer.createTransport({
-//     service: "gmail",
-//     port: 587,
-//     secure: false,
-//     requireTLS: true,
-//     auth: {
-//       user: process.env.AUTH_MAIL,
-//       pass: process.env.AUTH_PASS,
-//     },
-//   });
-//   const info = await transporter.sendMail({
-//     from: process.env.AUTH_MAIL,
-//     to: email,
-//     subject: "Verify Your Account",
-//     text: `your OTP is :${otp}`,
-//     html: `<b> <h4> Your OTP ${otp}</h4> `,
-//   });
-//   return { info, otp };
-// }
 
-//========otp sending after saving to db=====
-
+//========  otp sending after saving to db   =====-------------------
 let otpGenerationSavedAndMailSent = async (
   req,
   res,
@@ -418,7 +398,7 @@ let otpGenerationSavedAndMailSent = async (
     email,
     mobile
   );
-
+try{
   const spassword = await securePassword(password);
 
   const user = new User({
@@ -429,12 +409,9 @@ let otpGenerationSavedAndMailSent = async (
   });
 
   await user.save();
-
-  console.log("User saved successfully at datavbase as :", user);
-
-  req.session.userData = user;
-
-  const secret = speakeasy.generateSecret({ length: 20 }); // Generate secret for OTP
+  req.session.userData = user._id;
+console.log('at otpgeneration part wht is at req.session.userData :',req.session.userData);
+  const secret = speakeasy.generateSecret({ length: 20 });
 
   const otp = speakeasy.totp({
     secret: secret.base32,
@@ -442,13 +419,13 @@ let otpGenerationSavedAndMailSent = async (
   });
 
   const otpDB = new OTP({
-    userId: req.session.userData._id,
+    userId: user._id,
     otp: otp,
   });
   console.log("otp generated is :", otp);
   await otpDB.save();
 
-  console.log("OTP saved to database:", otpDB);
+
 
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -460,22 +437,39 @@ let otpGenerationSavedAndMailSent = async (
       pass: process.env.AUTH_PASS,
     },
   });
-  const info = await transporter.sendMail({
+
+  const mailOptions = {
     from: process.env.AUTH_MAIL,
     to: email,
     subject: "Verify Your Account",
-    text: `your OTP is :${otp}`,
-    html: `<b> <h4> Your OTP ${otp}</h4> `,
-  });
+    text: `Your OTP is: ${otp}`,
+    html: `<b><h4>Your OTP: ${otp}</h4></b>`,
+  };
+
+  const info = await transporter.sendMail(mailOptions);
+
   if (info) {
+    req.session.otpSent = true; 
     res.render("emailOtp", { email });
     console.log("Message sent: %s", info.messageId);
   }
+}
+catch(err){
+  console.log('error while sending emailotp : ',err.message);
+  res.redirect('/error')
+}
 };
 
 //==================registring part=======================
 const createUser = async (req, res) => {
   try {
+    req.session.otpSent = false;
+    if (req.session.otpSent) {
+      // If OTP was already sent, render the email OTP page directly
+      res.render("emailOtp", { email: req.session.userData.email });
+      return;
+    }
+
     let { name, email, mobile, password } = req.body;
   
     // Case-insensitive email validation regex
@@ -493,71 +487,54 @@ const createUser = async (req, res) => {
       existingUser
     );
 
-    if (existingUser && existingUser.isVerified === true) {
-      //create a new user because it checked in database and found no matches
-      console.log("user already exists,if condition at createUser");
-
-      req.flash("message", "User already registered");
-      res.redirect("/signup");
-    } else if (existingUser && existingUser.isVerified !== true) {
-      console.log("user already exists but not verified");
-
-      await User.deleteMany({ email: email });
-
-      otpGenerationSavedAndMailSent(req, res, name, email, mobile, password);
-    } else {
-      console.log("new user is hrer");
-      console.log("password is :", password, mobile, email, name);
-      await otpGenerationSavedAndMailSent(
-        req,
-        res,
-        name,
-        email,
-        mobile,
-        password
-      );
+    if (existingUser) {
+      if (existingUser.isVerified) {
+        req.flash("message", "User already registered");
+        return res.redirect("/signup");
+      } else {
+       
+        await User.deleteMany({ email });
+      }
     }
+
+    await otpGenerationSavedAndMailSent(req, res, name, email, mobile, password);
   } catch (err) {
     console.log("error at create user catch is :  ", err.message);
+    res.status(500).redirect('/error');
   }
 };
 
 //=============Verify OTP======================
 let verifyOTP = async (req, res) => {
   try {
-    let otp = req.body.otp;
+    const { otp } = req.body;
 
     // console.log("otp type from fetch is :", typeof otp);
     console.log("otp sent by fetch is ", otp);
 
     if (!otp) {
-      res.json({ otp: "noRecord", message: "Field should not be blank" });
+      return res.json({ otp: "noRecord", message: "Field should not be blank" });
+    }
 
-
-    } else if (otp.length !== 6) {
-      console.log("otp length in otp.length is ", otp.length);
-      res.json({
-        otp: "lessNum",
-        message: `Please enter all the 6 digits sent to Email`,
-      });
+   if (otp.length !== 6) {
+        return res.json({ otp: "lessNum", message: "Please enter all 6 digits sent to Email" });
+      }
 
       
-    } else {
-      let userId = req.session.userData._id;
+    
+      let userId = req.session.userData;
+console.log('at verify otp : ',userId)
+      let otpFromDatabase = await OTP.findOne({ userId });
 
-      let otpFromDatabase = await OTP.findOne({ userId: userId });
+      
+      if (!otpFromDatabase) {
+        return res.json({ otp: "noRecord", message: "No OTP record found" });
+      }
 
-      console.log("balue of otpFromDatabase", otpFromDatabase);
-
-      let otpFromdb = otpFromDatabase.otp;
-
-      if (otp !== otpFromdb) {
-        //if user entered otp is different from the otp present in the database.
-        res.json({
-          otp: "invalidOtp",
-          message: `invalid otp...`,
-        });
-      } else {
+      if (otp !== otpFromDatabase.otp) {
+        return res.json({ otp: "invalidOtp", message: "Invalid OTP" });
+      }
+      
         //case where user enterd data is correct and going to save data into the database that user is verified
 
         let userverified = await User.findByIdAndUpdate(
@@ -571,12 +548,13 @@ let verifyOTP = async (req, res) => {
         );
 
         if (userverified) {
-          res.json({ otp: true, linkGoogle: true }); // Adding linkGoogle flag
+          res.json({ otp: true }); 
         }
-      }
-    }
+      
+    
   } catch (err) {
     console.log(`Here is the error ${err.message}`);
+    res.status(500).redirect('/error')
   }
 };
 
@@ -585,8 +563,18 @@ const resendOTP = async (req, res) => {
   try {
     let { email } = req.body;
     // Delete existing OTP  of user
-    await OTP.deleteOne({ userId: req.session.userData._id });
-    console.log("exisiting otp deleted just before");
+
+    if (!req.session.userData) {
+      return res.status(400).json({ success: false, message: 'User session is not valid' });
+    }
+
+
+    const userId = req.session.userData;
+  
+    // Delete existing OTP of user
+    const deleteResult = await OTP.deleteOne({ userId : userId });
+    console.log("Existing OTP deleted:", deleteResult.deletedCount > 0);
+
 
     // Generate new OTP
     const secret = speakeasy.generateSecret({ length: 20 });
@@ -597,7 +585,7 @@ const resendOTP = async (req, res) => {
 
     // Save new OTP to the database
     const otpDB = new OTP({
-      userId: req.session.userData._id,
+      userId: userId,
       otp: otp,
     });
     await otpDB.save();
@@ -621,13 +609,16 @@ const resendOTP = async (req, res) => {
       text: `your OTP is :${otp}`,
       html: `<b> <h4> Your OTP ${otp}</h4> `,
     });
+   
     if (info) {
-      res.json({ success: true });
-
-      console.log("Message sent: %s", info.messageId);
+      console.log("OTP email sent successfully:", info.messageId);
+      return res.json({ success: true, message: 'OTP resent successfully' });
+    } else {
+      throw new Error("Failed to send OTP email");
     }
   } catch (error) {
-    console.log("error in resend otp function", error);
+    console.error("Error in resendOTP function:", error);
+      return res.status(500).json({ success: false, message: 'Failed to resend OTP', error: error.message });
   }
 };
 
@@ -1055,7 +1046,7 @@ const updatedProductsDiscount = async (products) => {
     // Fetch all product offers and category offers concurrently
     const productOffers = await Promise.all(products.map(async (product) => {
       if (product.offer) {
-        console.log(`Product ${product.offer.name} with ${product.offer.discount}% off`);
+        // console.log(`Product ${product.offer.name} with ${product.offer.discount}% off`);
         return product.offer;
       }
       return null;
@@ -1063,7 +1054,7 @@ const updatedProductsDiscount = async (products) => {
 
     const categoryOffers = await Promise.all(products.map(async (product) => {
       if (product.category && product.category.offer) {
-        console.log(`Category ${product.category.offer.name} with ${product.category.offer.discount}% off`);
+        // console.log(`Category ${product.category.offer.name} with ${product.category.offer.discount}% off`);
         return product.category.offer;
       }
       return null;
@@ -1078,15 +1069,15 @@ const updatedProductsDiscount = async (products) => {
 
       if (chosenOffer) {
         const discount = chosenOffer.discount ? Math.round(product.price * (chosenOffer.discount / 100)) : 0;
-        console.log(`Discount is ${discount}`);
+        // console.log(`Discount is ${discount}`);
 
         product.offerprice = product.price - discount;
-        console.log(`offerPrice applied is ${product.offerprice}`);
+        // console.log(`offerPrice applied is ${product.offerprice}`);
         await product.save();
       } else {
         // No offer available, use original price
         product.offerprice = product.price;
-        console.log(`no offer price so price is applied ${product.offerprice}`);
+        // console.log(`no offer price so price is applied ${product.offerprice}`);
       }
       return product;
     }));

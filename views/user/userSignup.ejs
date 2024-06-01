@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="shortcut icon" href="/userAssets/home/assets/images/icons/logo_dcs.jpeg">
     <title>Sign up</title>
 
     <style>
@@ -84,7 +85,7 @@
             </form>
         </div>
         <div class="signup-image">
-            <figure><img src="/userAssets/loginPage/images/signup-image.jpg" alt="sing up image"></figure>
+            <figure><img src="/userAssets/loginPage/images/banner_wish.webp" alt="sing up image"></figure>
             <a href="/signin" class="signup-image-link">I am already member</a>
         </div>
     </div>
@@ -95,11 +96,11 @@
 
 <script>
     function registerValidation() {
-    var name = document.getElementById('name').value.trim();
-    var email = document.getElementById('email').value.trim();
-    var mobile = document.getElementById('mobile').value.trim();
-    var password = document.getElementById('password').value.trim();
-    var conPassword = document.getElementById('conPassword').value.trim();
+    var name = document.getElementById('name');
+    var email = document.getElementById('email');
+    var mobile = document.getElementById('mobile');
+    var password = document.getElementById('password');
+    var conPassword = document.getElementById('conPassword');
 
     // Reset error messages
     document.getElementById('nameErr').innerText = '';
@@ -109,39 +110,62 @@
     document.getElementById('passwordMismatch').innerText = '';
 
     var isValid = true;
-
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     // Validate name
-    if (name === '') {
+    if (name.value === '') {
         document.getElementById('nameErr').innerText = 'Name is required';
+        isValid = false;
+    }else if (name.value !== name.value.trim()){
+        document.getElementById('nameErr').innerText = 'Avoid trailing spaces';
         isValid = false;
     }
 
     // Validate email
-    if (email === '') {
+    if (email.value === '') {
         document.getElementById('emailErr').innerText = 'Email is required';
         isValid = false;
-    } else if (!validateEmail(email)) {
+    } else if (!validateEmail(email.value)) {
         document.getElementById('emailErr').innerText = 'Invalid email format';
+        isValid = false;
+    }else if(email.value !== email.value.trim()){
+        document.getElementById('emailErr').innerText = 'Avoid traling spaces';
         isValid = false;
     }
 
     // Validate mobile
-    if (mobile === '') {
+    if (mobile.value === '') {
         document.getElementById('mobileErr').innerText = 'Mobile is required';
         isValid = false;
-    } else if (!validateMobile(mobile)) {
+    } else if (!validateMobile(mobile.value)) {
         document.getElementById('mobileErr').innerText = 'Invalid mobile number';
         isValid = false;
-    }
+    }else if(mobile.value !== mobile.value.trim()){
+        document.getElementById('mobileErr').innerText =  'Avoid traling spaces';
+        isValid = false;
+    }else if (isAllSameDigit(mobile.value)) {
+              document.getElementById('mobileErr').innerText = 'Mobile number cannot have all the same digits';
+              isValid = false;
+          }
 
     // Validate password
-    if (password === '') {
+    if (password.value === '') {
         document.getElementById('passwordErr').innerText = 'Password is required';
         isValid = false;
+    }else if (password.value !== password.value.trim()){
+        document.getElementById('passwordErr').innerText =  'Avoid traling spaces';
+        isValid = false;
+    } else if (password.value.length < 7) {
+        document.getElementById('passwordErr').innerText =  'Password must be atleast 7 characters long';
+        isValid = false;
+    } else if (!passwordRegex.test(password.value)) {
+    document.getElementById('passwordErr').innerText =  'Enter a strong password with a Capital letter,special character and a number';
+        isValid = false;
     }
+  
+
 
     // Validate password match
-    if (conPassword !== password) {
+    if (conPassword.value !== password.value) {
         document.getElementById('passwordMismatch').innerText = 'Passwords do not match';
         isValid = false;
     }
@@ -161,6 +185,11 @@ function validateMobile(mobile) {
     var mobileRegex = /^\d{10}$/;
     return mobileRegex.test(mobile);
 }
+
+function isAllSameDigit(mobile) {
+          return /^(\d)\1+$/.test(mobile);
+      }
+  
 
 // Password toggle
 document.querySelector('.toggle-password').addEventListener('click', function() {

@@ -104,7 +104,8 @@ function validateOfferForm() {
     if (discountPercentage.value === '') {
         document.getElementById('offerDiscountPercentageErr').innerText = 'Discount percentage cannot be empty';
         isValid = false;
-    } else if (isNaN(discountPercentage) || discountPercentage < 0 || discountPercentage > 100) {
+    } else if (isNaN(discountPercentage.value) || discountPercentage.value < 0 || discountPercentage.value > 100) {
+        console.log('errror at here')
         document.getElementById('offerDiscountPercentageErr').innerText = 'Please enter a valid discount percentage between 0 and 100';
         isValid = false;
     }else if(discountPercentage.value !== discountPercentage.value.trim()){

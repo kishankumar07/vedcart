@@ -1,5 +1,5 @@
 
-
+<link rel="shortcut icon" href="/userAssets/home/assets/images/icons/logo_dcs.jpeg">
 <style>
     body{
     background:#eee;
@@ -40,7 +40,7 @@ a {
     <div class="container">
       <!-- Title -->
       <div class="d-flex justify-content-between align-items-center py-3">
-        <h2 class="h5 mb-0"><a href="#" class="text-muted"></a> Order #<%= orderPlacedByTheUser?.id %></h2>
+        <h2 class="h5 mb-0"><a href="#" class="text-muted"></a> Order #<%= orderPlacedByTheUser?.orderId %></h2>
       </div>
     
       <!-- Main content -->
@@ -54,7 +54,7 @@ a {
                   
                   <span class="me-3"><%= moment(orderPlacedByTheUser?.date).format('DD-MM-YYYY') %></span>                
                   <span class="me-3"><%= moment(orderPlacedByTheUser?.time).format('HH:mm:ss') %></span>
-                  <span class="me-3">#<%= orderPlacedByTheUser?.id %></span>
+                  <span class="me-3">#<%= orderPlacedByTheUser?.orderId %></span>
                   <!-- <span class="me-3">Visa -1234</span> -->
 
 
@@ -107,7 +107,7 @@ a {
                   
                     <td class="text-end">
 
-                      <% if(product.orderStatus=="placed"){%>
+                      <% if(product.orderStatus=="placed") { %>
                                                                     
                         
                             <h5 class="fw-normal mb-0">
@@ -138,6 +138,8 @@ a {
                                 </div>
                             </div>
                         <% } %>
+
+
                         <%if(product.orderStatus=="request cancellation"){%>
                           <h6 class="text-danger"><%=product.orderStatus%></h6>
                           <%}%>
@@ -148,7 +150,7 @@ a {
                               <h6 class="text-danger"><%=product.orderStatus%></h6>
                               <%}%>
                               <%if(product.orderStatus=="returned"){%>
-                                <h6 class="text-success"><%=product.orderStatus%></h6>
+                                <h6 class="text-danger"><%=product.orderStatus%></h6>
                                 <%}%>
 
                     </td>
@@ -247,69 +249,70 @@ a {
       <script>
 
 
-         function removefromorder(orderId, proId) {
-            console.log('tis is he order id ',orderId);
-            console.log('thsi is eh pro id ',proId);
-            Swal.fire({
-                title: 'Are you sure?',
-                text: 'You are about to cancel request the order. This action cannot be undone!',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, Cancel request!',
-            }).then((result) => {
-                if (result.isConfirmed) {
+        async function removefromorder(orderId, proId) {
+            console.log('this is the order id: ',orderId);
+            console.log('this is the product id :',proId);
+         
+            let result = await Swal.fire({
+              title: 'Are you sure?',
+            text: 'You are about to cancel the order. This action cannot be undone!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, cancel it!',
+            })
+
+            if(result.isConfirmed){
+              try{
+
+                Swal.fire({
+                  title: 'Processing...',
+                    text: 'Please wait a moment.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch(`/cancelOrder?orderId=${orderId}&productId=${proId}`, {
+                    method: 'PATCH',
+                });
+
+                const data = await response.json();
+
+              if (!response.ok) {
+                   throw new Error(data.message || 'Something went wrong');
+                  }
+                console.log('Cancel request submitted successfully:', data);
+
+                // success message to show at the frontend after the product was cancelled successfully.
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Cancelled!',
+                    text: 'Your cancel request has been submitted successfully.',
+                }).then(() => {
                    
-                  fetch(`/cancelOrder?orderId=${orderId}&productId=${proId}`, {
-    method: 'POST',
-})
+                    location.reload();
+                });
 
-                        .then(response => {
 
-                          console.log('response  is after order change at user profile page , order details',response);
-                          
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                           
-                            console.log('Cancel request submitted successfully:', data);
-                            
-                         
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'cancel request submitted!',
-                                text: 'Your Cancel request has been submitted successfully.',
-    
-                                
-                            }).then(() => {
-                                // page reload
-                             location.reload();
-        
-                               
-                            });
-                        })
-                        .catch(error => {
-                            
-                            console.error('There was a problem cancelling the order:', error.message);
-    
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'There was a problem cancelling the order. Please try again.',
-                            });
-                        });
-                }
-            });
+              }catch(error){
+                console.error('Error cancelling the order :',error.message);
+                Swal.fire({
+                  icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'There was an error while cancelling the order',
+                });
+              }
+            }
         }
 
 
 //===================== return a product from the order ====================
-        function returnfromorder(orderId, proId, orderStatus) {
-        Swal.fire({
+       async function returnfromorder(orderId, proId, orderStatus) {
+        
+          const result = await Swal.fire({
             title: 'Return Order',
             html: `You are about to request a return for an order with status: <strong>${orderStatus}</strong>.<br>Do you want to proceed?`,
             icon: 'info',
@@ -317,45 +320,51 @@ a {
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Yes, request return!',
-        }).then((result) => {
-            if (result.isConfirmed) {
-                fetch(`/returnOrder/${orderId}/${proId}`, {
-                    method: 'POST',
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Return request submitted successfully:', data);
-                        // $('#taborders').load('/profile #taborders')
-                      
-    
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Return Request Submitted!',
-                            text: 'Your return request has been submitted successfully.',
-                        }).then(() => {
-                            // page reload or redirect to the return requests page
-                            window.location.reload();
-                            // or window.location.href = '/return-requests'; // Redirect to a specific page
-                        });
-                    })
-                    .catch(error => {
-                        console.error('There was a problem submitting the return request:', error.message);
-    
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'There was a problem submitting the return request. Please try again.',
-                        });
-                    });
-            }
         });
-    }
 
+        if (result.isConfirmed) {
+            try {
+               
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Please wait a moment.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch(`/returnOrder/${orderId}/${proId}`, {
+                    method: 'POST',
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                     throw new Error(data.message || 'Something went wrong');
+                }
+
+                console.log('Return request submitted successfully:', data);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Return Request Submitted!',
+                    text: 'Your return request has been submitted successfully.',
+                }).then(() => {
+                    // Reload the page
+                    location.reload();
+                });
+
+            } catch (error) {
+                console.error('Error submitting the return request:', error.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message,
+                });
+            }
+       }
+  }
 
       </script>
 

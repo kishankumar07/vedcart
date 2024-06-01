@@ -127,25 +127,20 @@
 
                                 <% if(product.orderStatus === 'delivered') { %>
                                 <span id="orderStatus_<%= order._id %>" class="badge rounded-pill alert-success"><%= product.orderStatus %></span>
+
                                 <% }else if(product.orderStatus === 'returned'){ %>
-                                   
                                     <span id="orderStatus_<%= order._id %>" class="badge rounded-pill alert-danger"><%= product.orderStatus %></span>
 
                                     <% }else if(product.orderStatus ==='cancelled') { %>
-                                   
                                         <span id="orderStatus_<%= order._id %>" class="badge rounded-pill alert-danger"><%= product.orderStatus %></span>
 
-                                   
                                 <% }else { %>
-                                   
                                         <span id="orderStatus_<%= order._id %>" class="badge rounded-pill alert-warning"><%= product.orderStatus %></span>
-
                                     <% } %>
                             </td>
 
                             <td class="text-end">
-
-                                <a hidden  href="#" class="btn btn-md rounded font-sm">Detail</a>
+                               
                                 <% if (product.orderStatus !== 'cancelled' && product.orderStatus !== 'returned' && product.orderStatus !== 'delivered' ) { %>
                                 <div class="dropdown">
                                     <a href="#" data-bs-toggle="dropdown" class="btn btn-light rounded btn-sm font-sm"> <i class="material-icons md-more_horiz"></i> Status</a>

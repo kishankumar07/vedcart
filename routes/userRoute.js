@@ -98,6 +98,8 @@ router.get("/orderdetails",userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVer
 
 router.get('/download-invoice',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified, orderController.loadDownloadInvoice);
 
+router.patch('/cancelOrder',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified,orderController.cancelOrPlacedOrder)
+
 router.post('/returnOrder/:orderId/:productId',orderController.returnOrder)
 
   
