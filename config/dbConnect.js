@@ -4,9 +4,9 @@ const dbConnect=async(req,res)=>{
     try{
         const conn= await mongoose.connect(process.env.MONGODB_URL);
 
-        console.log("Database connected");
+        console.log("Database connected at atlas");
     }catch(error){
-        console.log("Database error");
+        console.error("Database error",error);
     }
 }
 

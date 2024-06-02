@@ -270,6 +270,7 @@
                                   <% 
                                      const productOffer = product.offer;
                                      const categoryOffer = product.category ? product.category.offer : null;
+                                     
                                      const discount = productOffer && categoryOffer ? Math.max(productOffer.discount, categoryOffer.discount) : (productOffer ? productOffer.discount : (categoryOffer ? categoryOffer.discount : 0));
                                   %>
                                   <% if (discount > 0) { %>
