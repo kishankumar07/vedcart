@@ -233,14 +233,11 @@ const loadSalesReport = async (req, res) => {
       
         const totalOrders = await Orders.countDocuments();
         // console.log('total orders when loading the sales report page is :',totalOrders)
-        const totalPages = Math.ceil(totalOrders / limit);
+        // const totalPages = Math.ceil(totalOrders / limit);
        
         res.render('salesReport', {
             orderDetails: orders,
             moment,
-            totalPages,
-            currentPage: page,
-            limit
         });
     } catch (error) {
         console.log('Error loading sales report page', error);
@@ -277,7 +274,9 @@ const customDateReport = async (req, res) => {
             {
                 $unwind: "$Products"
             },
-           
+            {
+                $match: { "Products.orderStatus": "delivered" }
+            },
             {
                 $project: {
                     orderId: 1,
@@ -373,9 +372,32 @@ const dailySalesReport = async (req, res) => {
         const endOfDay = moment().utc().endOf('day');
         
 
-
-        
-
+let dailyOrders1 = await Orders.aggregate([
+    {
+        $match :{
+            date :{ $gte : startOfDay.toDate(), $lte : endOfDay.toDate() }
+        }
+    },
+    {
+        $sort: { createdAt: -1 }
+    },
+    {
+        $unwind: "$Products"
+    },
+    {
+        $match: { "Products.orderStatus": "delivered" }
+    },
+    {
+        $project: {
+            orderId: 1,
+            paymentMode: 1,
+            date: 1,
+            address: 1,
+            orderStatus: "$Products.orderStatus",
+            productPrice:"$Products.subTotal"
+        }
+    }
+])
 
 
         const dailyOrders = await Orders.aggregate([
@@ -414,19 +436,11 @@ const dailySalesReport = async (req, res) => {
         ]);
         
         
-        
-
-
-        console.log('daily orders gonna be loaded after  stage :',dailyOrders)
-
-
-
-
-        
         res.render('reports', {
             report: dailyOrders , 
             reportType: 'Daily', 
             moment,
+            tableOrders :dailyOrders1
         });
     } catch (error) {
         console.log('Error generating daily sales report:', error);
@@ -454,6 +468,35 @@ const generateWeeklyReport = async (req, res) => {
         console.log('again debug :',moment(startOfWeek).format('DD-MM-YYYY'));
         console.log('End of Week:', endOfWeek.toDate());
         console.log('again debug :',moment(endOfWeek).format('DD-MM-YYYY'));
+
+        let weeklyOrders1 = await Orders.aggregate([
+            {
+                $match: {
+                    date: { $gte: startOfWeek.toDate(), $lte: endOfWeek.toDate() }
+                }
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $unwind: "$Products"
+            },
+            {
+                $match: { "Products.orderStatus": "delivered" }
+            },
+            {
+                $project: {
+                    orderId: 1,
+                    paymentMode: 1,
+                    date: 1,
+                    address: 1,
+                    orderStatus: "$Products.orderStatus",
+                    productPrice: "$Products.subTotal"
+                }
+            }
+        ]);
+
+
         const weeklyOrders = await Orders.aggregate([
             {
                 $match: {
@@ -518,6 +561,7 @@ const generateWeeklyReport = async (req, res) => {
             report: weeklyOrders, 
             reportType: 'Weekly', 
             moment,
+            tableOrders: weeklyOrders1
         });
     } catch (error) {
         console.log('Error generating weekly sales report:', error);
@@ -534,6 +578,38 @@ const generateMonthlyReport = async (req, res) => {
         // Get the start and end of the current month
         const startOfMonth = moment().startOf('month').toDate();
         const endOfMonth = moment().endOf('month').toDate();
+
+
+
+
+
+        let monthlyOrders1 = await Orders.aggregate([
+            {
+                $match: {
+                    date: { $gte: startOfMonth, $lte: endOfMonth }
+                }
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $unwind: "$Products"
+            },
+            {
+                $match: { "Products.orderStatus": "delivered" }
+            },
+            {
+                $project: {
+                    orderId: 1,
+                    paymentMode: 1,
+                    date: 1,
+                    address: 1,
+                    orderStatus: "$Products.orderStatus",
+                    productPrice: "$Products.subTotal"
+                }
+            }
+        ]);
+
 
         const monthlyOrders = await Orders.aggregate([
             {
@@ -606,6 +682,7 @@ const generateMonthlyReport = async (req, res) => {
             report: monthlyOrders, 
             reportType: 'Monthly', 
             moment,
+            tableOrders :monthlyOrders1
         });
     } catch (error) {
         console.log('Error generating monthly sales report:', error);
@@ -623,6 +700,35 @@ const generateYearlyReport = async (req, res) => {
         // Get the start and end of the current year
         const startOfYear = moment().startOf('year').toDate();
         const endOfYear = moment().endOf('year').toDate();
+
+
+        let yearlyOrders1 = await Orders.aggregate([
+            {
+                $match: {
+                    date: { $gte: startOfYear, $lte: endOfYear }
+                }
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $unwind: "$Products"
+            },
+            {
+                $match: { "Products.orderStatus": "delivered" }
+            },
+            {
+                $project: {
+                    orderId: 1,
+                    paymentMode: 1,
+                    date: 1,
+                    address: 1,
+                    orderStatus: "$Products.orderStatus",
+                    productPrice: "$Products.subTotal"
+                }
+            }
+        ]);
+
 
         const yearlyOrders = await Orders.aggregate([
             {
@@ -678,6 +784,7 @@ const generateYearlyReport = async (req, res) => {
             report: yearlyOrders, 
             reportType: 'Yearly', 
             moment,
+            tableOrders : yearlyOrders1
         });
     } catch (error) {
         console.log('Error generating yearly sales report:', error);

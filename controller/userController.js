@@ -806,13 +806,13 @@ const loadUserProfile = async (req, res) => {
 
     // console.log(`want to know the type of the orders :${typeof orders} and to whether it is an array :::${Array.isArray(orders)}`)
 
-    const deletePending = await Orders.deleteMany({paymentStatus:"pending"})
+    // const deletePending = await Orders.deleteMany({paymentStatus:"pending"})
 
-      .populate({
-        path: "Products.productId",
-        model: "Products",
-      })
-      .exec();
+    //   .populate({
+    //     path: "Products.productId",
+    //     model: "Products",
+    //   })
+    //   .exec();
 
 
       let states = [

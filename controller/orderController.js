@@ -24,12 +24,13 @@ var instance = new Razorpay(
 
 const placeTheOrder = async (req, res) => {
     try {
-        console.log('order placing started for debugging=-------------------------------------')
+        console.log('reached the placeOrder controller ')
         const userId = req.session.userData;
         const { couponCode,paymentMethod,selectedValue } = req.body;
   
         console.log('payment method selected is :',paymentMethod);
-        // console.log('this is the coupon code :',couponCode);
+        console.log('this is the coupon code :',couponCode);
+        console.log('address is :',selectedValue)
 
 
         //to check the cart quantity , whether less than the available stock ,validating whether out of stock of any product in the cart
@@ -190,15 +191,22 @@ console.log('this is the coupon at placeOrder:',coupon)
            // ----- Razorpay payment ---------------------
       else if (paymentMethod === "Razorpay") {
         const totalpriceInPaise = Math.round(grandTotal * 100);
+
+        console.log('totalpricePaise is :',totalpriceInPaise);
+
         const minimumAmount = 100;
         const total = Math.max(totalpriceInPaise, minimumAmount);
+
+        console.log('total is :',total)
 
         console.log('this is the orderInstanc._id :',orderInstance._id)
 
 
         generateRazorpay(orderInstance._id, total).then(async (response) => {
             const savedOrder = await orderInstance.save();
-
+console.log('respone si :',response);
+console.log('total is :',total);
+console.log('orderis :',savedOrder);
             res.json({ response, total: total, order: savedOrder });
         });
 
@@ -286,7 +294,7 @@ console.log('this is the coupon at placeOrder:',coupon)
   const verifyPayment = async (req, res) => {
     try {
         const userid = req.session.userData;
-
+console.log('req.body is :',req.body)
 
 
 const razorpay_payment_id = req.body['payment[razorpay_payment_id]'];
@@ -338,7 +346,28 @@ let order = req.body['order[orderId]'];
     }
   };
 
+//----------------- retry payment -------------------------------
+const retryPayment = async (req, res) => {
+    try {
+        const orderId = req.body.orderId;
 
+        const order = await Orders.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        const totalpriceInPaise = Math.round(order.grandTotal * 100);
+        const minimumAmount = 100;
+        const total = Math.max(totalpriceInPaise, minimumAmount);
+
+        generateRazorpay(order._id, total).then(async (response) => {
+            res.json({ response, total: total, order });
+        });
+    } catch (error) {
+        console.error('Error retrying payment:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+};
 
 
 //=============  order details -----------------------------
@@ -682,7 +711,8 @@ module.exports = {
     changeStatus,
     returnOrder,
     loadDownloadInvoice,
-    loadSingleOrder
+    loadSingleOrder,
+    retryPayment
 };
 
 

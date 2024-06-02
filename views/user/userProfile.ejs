@@ -416,14 +416,11 @@
 <% }else{ %>
   <p class="text-info"><%=product.orderStatus%></p>
   <% }%>
-
-
-                            <% }); %>
-
-
-
+  <% }); %>
                           </div>
-
+                          <% if (order.paymentStatus === 'pending') { %>
+                            <button class="btn btn-warning" onclick="retryPayment('<%= order._id %>')">Retry Payment</button>
+                        <% } %>
                           
                           <a
                             href="/orderdetails?orderId=<%= order._id %>"
@@ -1115,7 +1112,7 @@ aria-hidden="true"
 <!-- End .main -->
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
   // ==============  edit the basic user profile valdation ===================
 
@@ -1575,6 +1572,101 @@ if(!valid) return;
         });
       });
   }
+
+//======================= retry payment ========================
+function retryPayment(orderId) {
+    fetch('/retryPayment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId: orderId }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.response) {
+            var options = {
+                "key": 'rzp_test_Mjpyug9KzUZ3Wb',
+                "amount": data.response.order.amount,
+                "currency": "INR",
+                "name": "VedCart",
+                "description": "Test Transaction",
+                "image": "https://exahttps://media.istockphoto.com/id/855840144/photo/image-of-lotus-flower-on-the-water.jpg?s=612x612&w=0&k=20&c=Gh7KaGTxKRhuvunBm-kqPps3f-VOWgfO1kWhWdf6l4Q=mple.com/your_logo",
+                "order_id": data.response.order.id,
+                "handler": function (response) {
+                  console.log('respone at handler ?:',response)
+                    verifyPayment(response, data.response);
+                },
+                "prefill": {
+                    "name": "Gaurav Kumar",
+                    "email": "gaurav.kumar@example.com",
+                    "contact": "9000090000"
+                },
+                "notes": {
+                    "address": "Razorpay Corporate Office"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        } else {
+            Swal.fire({
+                title: 'Payment Retry Failed',
+                text: data.message,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error retrying payment:', error);
+    });
+}
+
+
+//---------------------  verify the payment ----------------------
+function verifyPayment(payment, order) {
+  console.log('response : ',payment)
+  console.log('orderdetails :',order)
+  $.ajax({
+	url: '/verifypayment',
+	data: {
+		payment,
+		order
+	},
+	method: 'post',
+	success: (response) => {
+		if (response.payment) {
+
+Swal.fire({
+  title: 'Order Placed Successfully!',
+  icon: 'success',
+  showConfirmButton: false,
+  timer: 2000 
+
+});
+
+setTimeout(() => {
+  window.location.href = '/ordersuccess';
+}, 2000)
+
+        } else {
+            Swal.fire({
+                title: 'Payment Verification Failed',
+                text: data.message,
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    }})
+    .catch(error => {
+        console.error('Error verifying payment:', error);
+    });
+}
+
+
 </script>
 
 <%- include('./layouts/footer') %>

@@ -587,7 +587,7 @@ dropdown.addEventListener('change', function() {
 
 function sendSelection(){
 
-
+//this is a select element with options having values of COD,Razorpay,wallet and it will be retrieved here
 const paymentMethod = document.getElementById("payment").value;
 
 
@@ -603,7 +603,7 @@ const couponCode = document.getElementById('couponCodeInputField').value;
 console.log(`typeof coupon code is ${typeof couponCode} and coupon code is ${couponCode}`)
 
 //address validation when address is not selected
-if (selectedAddress === '' || selectedAddress === undefined) {
+if ( !selectedAddress ) {
 			   // Show Izitoast toast with warning message
 iziToast.warning({
 title: 'Please select an address',
@@ -652,7 +652,7 @@ return;
 							window.location.href = '/ordersuccess';
 						}, 2000)
 					} else if (data.message) {
-						// Display SweetAlert error notification for product quantity check
+						// Display SweetAlert error notification for product quantity check while order placed
 						Swal.fire({
 							title: 'Order Processing Failed',
 							text: data.message,
@@ -669,7 +669,7 @@ console.log('response.data which is immediately resolved at backend',data.respon
 						console.log('data.response.order.orderId',data.response.order.orderId)
 
 						
-
+//data.response.order.id : id from razorpay, not the actual order id from mongodb
 
 
 						var options = {
@@ -678,18 +678,19 @@ console.log('response.data which is immediately resolved at backend',data.respon
 							"currency": "INR",
 							"name": "VedCart", //your business name
 							"description": "Test Transaction",
-							"image": "https://exahttps://media.istockphoto.com/id/855840144/photo/image-of-lotus-flower-on-the-water.jpg?s=612x612&w=0&k=20&c=Gh7KaGTxKRhuvunBm-kqPps3f-VOWgfO1kWhWdf6l4Q=mple.com/your_logo",
+							"image": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.peakpx.com%2Fen%2Fhd-wallpaper-desktop-fpsgp&psig=AOvVaw3fH5ZWb7wDSmXoBCNURaSJ&ust=1717344187047000&source=images&cd=vfe&opi=89978449&ved=2ahUKEwiF-onj47qGAxUua2wGHQtfBnwQjRx6BAgAEBU",
 							"order_id":data.response.order.id,
 							"handler": function (response) {
 
 
-								
+								console.log('response from handler :',response);
+								console.log('data.response : ',data.response)
 
 								verifyPayment(response,data.response)
 							},
 							"prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information, especially their phone number
-								"name": "Gaurav Kumar", //your customer's name
-								"email": "gaurav.kumar@example.com",
+								"name": "Narendran Adil", //your customer's name
+								"email": "adilnarendran@example.com",
 								"contact": "9000090000"  //Provide the customer's phone number for better conversion rates 
 							},
 							"notes": {

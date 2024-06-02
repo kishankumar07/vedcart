@@ -102,7 +102,8 @@ router.patch('/cancelOrder',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVe
 
 router.post('/returnOrder/:orderId/:productId',orderController.returnOrder)
 
-  
+router.post('/retryPayment',userAuth.isLoggedIn,userAuth.isBlocked,userAuth.isVerified, orderController.retryPayment);
+
 
 //------------ applying and removing the coupon -------------------------
 router.post("/applyCoupon",userAuth.isLoggedIn,userAuth.isBlocked,couponController.applyCoupon)

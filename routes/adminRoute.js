@@ -19,18 +19,8 @@ router.set('views',path.join(__dirname,'../views/admin'));
 //=========Login of admin related routes=============
 
 router.get('/login',adminAuth.isLoggedOut,adminController.adminLogin);
-
-
 router.post('/login',adminController.verifyAdminLogin);
-
-
 router.get('/dashboard',adminAuth.isLoggedIn,adminController.adminDashboard);
-
-
-
-
-
-
 router.get('/logout',adminController.logout);
 router.get('/users',adminAuth.isLoggedIn,adminController.userField);
 router.get('/searchUser', adminAuth.isLoggedIn, adminController.loadSearchQuery);

@@ -111,15 +111,7 @@
         </div>
        
          <!-- table-responsive end// -->
-         <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-start">
-                <% for (let i = 1; i <= totalPages; i++) { %>
-                    <li class="page-item <%= i === currentPage ? 'active' : '' %>">
-                        <a class="page-link" href="?page=<%= i %>&limit=<%= limit %>"><%= i %></a>
-                    </li>
-                <% } %>
-            </ul>
-        </nav>
+        
     </div>
     
 </div>
