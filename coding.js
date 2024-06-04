@@ -1,3 +1,11 @@
+
+Aws credentials 
+user : ubuntu
+password : Kckz@123
+
+pm2 start index --watch
+
+
 // let query = [{
 //     id:1,name:"Alice"
 // },
@@ -195,3 +203,105 @@ const loadUserProfile = async (req, res) => {
         res.redirect('/error'); // Redirect to an error page if an error occurs
     }
 };
+
+
+
+
+const mongoose = require("mongoose");
+
+const dbConnect = async (req, res) => {
+    try {
+        const conn = await mongoose.connect(process.env.MONGODB_URL, {
+            connectTimeoutMS: 30000, // Set the timeout to 30 seconds (adjust as needed)
+            useNewUrlParser: true, // Optional: These options are commonly used
+            useUnifiedTopology: true, // Optional: These options are commonly used
+        });
+
+        console.log("Database connected at atlas");
+    } catch (error) {
+        console.error("Database error", error);
+    }
+};
+
+module.exports = dbConnect;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Yes, using the VS Code Remote - SSH extension, you will be able to edit the code on your deployment server as if it were local. Here's how you can set it up and use it:
+
+Setting Up VS Code Remote - SSH Extension
+Install VS Code:
+Make sure you have Visual Studio Code installed on your local machine.
+
+Install the Remote - SSH Extension:
+
+Open VS Code.
+Go to the Extensions view by clicking the Extensions icon in the Activity Bar on the side of the window or by pressing Ctrl + Shift + X.
+Search for "Remote - SSH" and install the extension by Microsoft.
+Configure SSH Connection:
+
+Open the command palette by pressing Ctrl + Shift + P (or Cmd + Shift + P on macOS).
+Type Remote-SSH: Connect to Host... and select it.
+Enter your SSH connection string, e.g., ubuntu@your_server_ip.
+If prompted, select the SSH configuration file to update (usually ~/.ssh/config).
+Connecting to the Remote Server:
+
+After setting up the connection string, select Remote-SSH: Connect to Host... again.
+Choose your configured host from the list.
+VS Code will connect to your remote server and open a new window.
+Open Your Project:
+
+Once connected, you can open your project directory.
+Use File > Open Folder... to navigate to your project directory on the remote server (e.g., /home/ubuntu/vedcart).
+Editing and Deploying Code
+Editing Files:
+
+You can now edit any files in your project directory using VS Code as if they were on your local machine.
+All changes will be saved directly to the files on the remote server.
+Using Terminal:
+
+You can also open a terminal in VS Code that will run commands on the remote server.
+Use Terminal > New Terminal to open a new terminal window.
+From here, you can run commands like npm install, pm2 restart, or any other deployment commands needed.
+Deploying Changes:
+
+After making changes to your code, you can restart your application or run deployment scripts directly from the VS Code terminal.
+Example Workflow
+Open VS Code and connect to your server:
+
+Ctrl + Shift + P > Remote-SSH: Connect to Host... > select your host.
+Open your project directory:
+
+File > Open Folder... > navigate to /home/ubuntu/vedcart.
+Edit your files:
+
+Make changes to your code using the VS Code editor.
+Deploy changes:
+
+Open a terminal in VS Code (Terminal > New Terminal).
+Run deployment commands, e.g.:
+sh
+Copy code
+cd ~/vedcart
+pm2 restart index
+By using the VS Code Remote - SSH extension, you can have the full power of VS Code to edit and manage your project files on the remote server, making it much easier to develop, test, and deploy your application.
+
+
+
+
+
+
+git clone https://github.com/kishankumar07/vedcart.git

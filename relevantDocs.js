@@ -2,6 +2,15 @@
 
 
 
+# Check logs to ensure the application is running correctly
+pm2 logs
+
+# Set up PM2 to start on server reboot
+pm2 startup
+# Follow the instructions that appear, which will involve running a command with sudo
+
+# Save the PM2 process list
+pm2 save
 
 
 
