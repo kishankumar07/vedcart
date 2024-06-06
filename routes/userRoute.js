@@ -10,7 +10,7 @@ let cartController  = require('../controller/cartController')
 let couponController = require('../controller/couponController');
 let orderController  = require('../controller/orderController')
 let wishlistController = require('../controller/wishlistController');
-const {aProductPage,shopProduct,loadProductSearchQuery}=require('../controller/productController');
+const {aProductPage,shopProduct,loadProductSearchQuery,mainProductSearch}=require('../controller/productController');
 // const GoogleSignIn = require('../model/googleModel');
 const googleModel = require("../model/googleModel");
 
@@ -21,7 +21,8 @@ router.set("views", path.join(__dirname, "../views/user"));
 //=======================error route========================
 router.get("/error", userController.errorPage);
 
-
+// search at the header of all
+router.get('/mainSearch',mainProductSearch)
 
 
 
@@ -127,9 +128,9 @@ router.delete('/wishlist',userAuth.isLoggedIn,userAuth.isBlocked,wishlistControl
 //---------about page------------------------------
 router.get('/about',userController.loadAboutPage)
 
+router.get('/contact',userController.loadContactUsPage)
 
-
-
+router.get('/blog',userController.loadNewsPage)
 
 
 

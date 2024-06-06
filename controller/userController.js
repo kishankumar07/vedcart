@@ -1280,9 +1280,34 @@ try{
 }
 }
 
+//============== contact us page ============
+let loadContactUsPage = async(req,res)=>{
+  try{
+    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
+  
+    res.render('contactUs',{
+      userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount
+    })
+  }catch(err){
+    console.log('error loading the about page :',err);
+    res.redirect('/error')
+  }
+}
 
+//=================== news page coming soon =========
 
-
+let loadNewsPage = async(req,res)=>{
+  try{
+    const { userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount } = res.locals.commonData;
+  
+    res.render('blog',{
+      userNameforProfile, cart, categoriesWithProducts, totalPriceOfCartProducts,userId,cartProductCount,wishlistProductCount
+    })
+  }catch(err){
+    console.log('error loading the about page :',err);
+    res.redirect('/error')
+  }
+}
 
 
 
@@ -1306,7 +1331,9 @@ module.exports = {
   addAddressatProfile,
   editAddress,
   removeAddress,
-  loadAboutPage
+  loadAboutPage,
+  loadContactUsPage,
+  loadNewsPage
 };
 
 

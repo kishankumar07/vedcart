@@ -13,7 +13,7 @@ let User = require("./model/userModel");
 let session =require('express-session')
 const GoogleSignIn = require('./model/googleModel');
 const {notFoundHandler, multerErrorHandler } = require('./middleware/errorHandler');
-
+let port  = process.env.PORT || 3000
 dbConnect();
 app.use(express.static(path.join(__dirname,'public')));
 
@@ -107,7 +107,7 @@ passport.use(new GoogleStrategy({
   
 
 // Start the server
-app.listen(3000, () => {
+app.listen(port, () => {
     console.log(`Server is running on http://localhost:3000 admin is http://localhost:3000/admin/login`);
 });
 

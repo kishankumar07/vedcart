@@ -375,6 +375,38 @@ const deleteimage = async (req, res) => {
   }
 };
 
+// main prouct search -----------------------------------
+let mainProductSearch = async(req,res)=>{
+  try{
+
+    const query = req.query.q;
+    if (!query) {
+        return res.json([]);
+    }
+
+    const products = await Product.find({ 
+      name: { $regex: query, $options: 'i' },
+      status: 'active'
+  }).limit(10).select('name images'); 
+
+
+ const processedProducts = products.map(product => ({
+  _id: product._id,
+  name: product.name,
+  image: product.images.length > 0 ? product.images[0] : null
+}));
+
+
+
+  res.json(processedProducts);
+  }catch(err){
+    console.log('error at the main product search at the header :',err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+
+
 module.exports = {
   loadAddProduct,
   loadProductSearchQuery,
@@ -385,4 +417,5 @@ module.exports = {
   deleteimage,
   productListPage,
   toggleBlockStatusProduct,
+  mainProductSearch
 };

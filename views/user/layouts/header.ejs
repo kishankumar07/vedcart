@@ -66,8 +66,86 @@
     text-decoration: underline;
 }
 
+/* for the search bar main header*/
 
+.header-search-wrapper {
+    position: relative; 
+}
 
+.search-results-dropdown {
+        position: absolute;
+        background-color: white;
+        border: 1px solid #ccc;
+        max-height: 200px;
+        overflow-y: auto;
+        display: none;
+        width: 100%;
+        top: 100%;
+    left: 0;
+    z-index: 1000;
+    }
+    .search-result-item {
+        display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    }
+    .search-result-item:hover {
+        background-color: #f0f0f0;
+    }
+
+    .search-result-item img {
+    margin-right: 10px;
+    width: 50px; 
+    height: 50px;
+}
+
+.search-result-item span {
+    flex: 1;
+    color: #000; 
+    font-size: 16px; 
+        visibility: visible;
+}
+
+.mobile-search {
+    position: relative;
+}
+
+#mobileSearchResults {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    width: calc(100% - 20px); /* Adjust width to be slightly less than the input */
+            top: calc(100% + 5px); /* Adjust top to ensure it appears below the search input */
+            left: 10px; /* Center the dropdown below the input */
+            z-index: 1000;
+}
+
+#mobileSearchResults .search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+}
+
+#mobileSearchResults .search-result-item:hover {
+    background-color: #f0f0f0;
+}
+
+#mobileSearchResults .search-result-item img {
+    margin-right: 10px;
+    width: 50px; 
+    height: 50px;
+}
+
+#mobileSearchResults .search-result-item span {
+    flex: 1;
+    color: #000; 
+    font-size: 16px;
+}
 
 
 
@@ -94,22 +172,33 @@
                         </a>
                     </div><!-- End .header-left -->
 
+
+
+
                     <div class="header-center">
                         <div class="header-search header-search-extended header-search-visible header-search-no-radius d-none d-lg-block">
                             <a href="#" class="search-toggle" role="button"><i class="icon-search"></i></a>
                             <form id="searchForm" action="#" method="get">
-                                <div class="header-search-wrapper search-wrapper-wide">
+                                <div class="header-search-wrapper search-wrapper-wide" style="position: relative;">
                                     <label for="q" class="sr-only">Search</label>
                                     <input type="search" class="form-control" name="q"  id="q" placeholder="Search product ..." required>
                                     <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
-                                </div><!-- End .header-search-wrapper -->
+
+                                    <div id="searchResults" class="search-results-dropdown">
+                                        <!-- Search result item template -->
+                                        <div class="search-result-item">
+                                            <img class="default-img product-image" src="" alt="Product image">
+                                            <span class="product-name"></span>
+                                        </div>
+                                    </div>
+                                 </div>
                             </form>
                            
                         </div><!-- End .header-search -->
                     </div>
                  
 
-                    <div class="header-right">
+                    <div  class="header-right">
                         <div class="header-dropdown-link">
 
                     
@@ -539,6 +628,18 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+        
 
 
 

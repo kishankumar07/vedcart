@@ -108,46 +108,6 @@
         visibility: visible;
 }
 
-.mobile-search {
-    position: relative;
-}
-
-#mobileSearchResults {
-    position: absolute;
-    background-color: white;
-    border: 1px solid #ccc;
-    max-height: 200px;
-    overflow-y: auto;
-    display: none;
-    width: calc(100% - 20px); /* Adjust width to be slightly less than the input */
-            top: calc(100% + 5px); /* Adjust top to ensure it appears below the search input */
-            left: 10px; /* Center the dropdown below the input */
-            z-index: 1000;
-}
-
-#mobileSearchResults .search-result-item {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    cursor: pointer;
-}
-
-#mobileSearchResults .search-result-item:hover {
-    background-color: #f0f0f0;
-}
-
-#mobileSearchResults .search-result-item img {
-    margin-right: 10px;
-    width: 50px; 
-    height: 50px;
-}
-
-#mobileSearchResults .search-result-item span {
-    flex: 1;
-    color: #000; 
-    font-size: 16px;
-}
-
 
 </style>
     
@@ -199,7 +159,7 @@
                     </div>
                  
 
-                    <div  class="header-right">
+                    <div style="margin-left: 20%;" class="header-right">
                         <div class="header-dropdown-link">
 
                     
@@ -695,7 +655,7 @@
 </style>
 
  
-    <!-- <div class="page-wrapper"> -->
+    <div class="page-wrapper">
       <main class="main">
         <nav aria-label="breadcrumb" class="breadcrumb-nav mb-3">
           <div class="container">
@@ -1695,15 +1655,6 @@ document.addEventListener("DOMContentLoaded", function() {
       <label for="mobile-search" class="sr-only">Search</label>
       <input type="search" class="form-control" name="mobile-search" id="mobile-search" placeholder="Search in..." required>
       <button class="btn btn-primary" type="submit"><i class="icon-search"></i></button>
-
-      <div id="mobileSearchResults" class="search-results-dropdown">
-        <!-- Search result item template for mobile -->
-        <div class="search-result-item">
-            <img class="default-img product-image" src="" alt="Product image">
-            <span class="product-name"></span>
-        </div>
-    </div>
-
   </form>
 
   <ul class="nav nav-pills-mobile nav-border-anim" role="tablist">
@@ -1761,73 +1712,6 @@ document.addEventListener("DOMContentLoaded", function() {
           document.getElementById("current-year").textContent = currentYear;
       });
  
-
-// this search functionality is for mobile menu container
-document.addEventListener("DOMContentLoaded", function() {
-        const mobileSearchInput = document.getElementById("mobile-search");
-        const mobileSearchResults = document.getElementById("mobileSearchResults");
-        let mobileDebounceTimeout;
-
-        mobileSearchInput.addEventListener("input", function() {
-            clearTimeout(mobileDebounceTimeout);
-
-            mobileDebounceTimeout = setTimeout(function() {
-                const query = mobileSearchInput.value.trim();
-
-                if (query.length > 0) {
-                    fetch(`/mainSearch?q=${query}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            mobileSearchResults.innerHTML = "";
-
-                            if (data.length > 0) {
-                                data.forEach(product => {
-                                    const item = document.createElement("div");
-                                    item.classList.add("search-result-item");
-
-                                    const img = document.createElement("img");
-                                    img.classList.add("default-img", "product-image");
-                                    img.src = product.image ? `/adminAssets/imgs/category/${product.image}` : 'default-image.jpg';
-                                    img.alt = product.name;
-
-                                    const text = document.createElement("span");
-                                    text.classList.add("product-name");
-                                    text.textContent = product.name;
-
-                                    item.appendChild(img);
-                                    item.appendChild(text);
-
-                                    item.addEventListener("click", () => {
-                                        window.location.href = `/productPage/?id=${product._id}`;
-                                    });
-
-                                    mobileSearchResults.appendChild(item);
-                                });
-                                mobileSearchResults.style.display = "block";
-                            } else {
-                                const item = document.createElement("div");
-                                item.classList.add("search-result-item");
-                                const text = document.createElement("span");
-                                text.textContent = 'No item found';
-                                item.appendChild(text);
-                                mobileSearchResults.appendChild(item);
-                                mobileSearchResults.style.display = "block";
-                            }
-                        });
-                } else {
-                    mobileSearchResults.style.display = "none";
-                }
-            }, 1000);
-        });
-
-        document.addEventListener("click", function(event) {
-            if (!mobileSearchResults.contains(event.target) && event.target !== mobileSearchInput) {
-                mobileSearchResults.style.display = "none";
-            }
-        });
-    });
-
-
 </script>
 
 

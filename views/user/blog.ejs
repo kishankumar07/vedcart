@@ -1,0 +1,143 @@
+<%- include('./layouts/header') %>
+<link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+/>
+
+<body>
+    <div class="soon">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-9 col-lg-8">
+                    <div class="soon-content text-center">
+                        <div class="soon-content-wrapper">
+                            <img src="\userAssets\home\assets\images\demos\demo-13/logo_web.webp" alt="Logo" class="soon-logo mx-auto" width="105" height="25">
+                            <h3 class="animate__animated animate__heartBeat text-primary">Coming Soon</h4><!-- End .soon-title -->
+                            <div class="coming-countdown countdown-separator"></div><!-- End .coming-countdown -->
+                            <hr class="mt-2 mb-3 mt-md-3">
+                            <p>We are currently working on an awesome new site. Stay tuned for more information.
+                                Subscribe to our newsletter to stay updated on our progress.</p>
+                            <form action="#">
+                                <div class="input-group mb-5">
+                                    <input id="newsEmail" type="email" class="form-control bg-transparent" placeholder="Enter your Email Address" required>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-primary-2" type="button" onclick="swalFire();return false">
+                                            <span>SUBSCRIBE</span>
+                                            <i class="icon-long-arrow-right"></i>
+                                        </button>
+                                        <p id="emailErr" class="text-danger"></p>
+                                    </div>
+                                </div>
+                            </form>
+                            <div class="social-icons justify-content-center mb-0">
+                                <a href="#" class="social-icon" target="" title="Facebook"><i class="icon-facebook-f"></i></a>
+                                <a href="#" class="social-icon" target="" title="Twitter"><i class="icon-twitter"></i></a>
+                                <a href="#" class="social-icon" target="" title="Instagram"><i class="icon-instagram"></i></a>
+                                <a href="#" class="social-icon" target="" title="Youtube"><i class="icon-youtube"></i></a>
+                                <a href="#" class="social-icon" target="" title="Pinterest"><i class="icon-pinterest"></i></a>
+                            </div><!-- End .soial-icons -->
+                        </div><!-- End .soon-content-wrapper -->
+                    </div><!-- End .soon-content -->
+                </div><!-- End .col-md-9 col-lg-8 -->
+            </div><!-- End .row -->
+        </div><!-- End .container -->
+        <div class="soon-bg bg-image" style="background-image: url(/userAssets/home/assets/images/about/contactus/news.jpg)"></div>
+        <!-- End .soon-bg bg-image -->
+    </div><!-- End .soon -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Plugins JS File -->
+    <script src="/userAssets/home/assets/js/jquery.min.js"></script>
+    <script src="/userAssets/home/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="/userAssets/home/assets/js/jquery.plugin.min.js"></script>
+    <script src="/userAssets/home/assets/js/jquery.countdown.min.js"></script>
+    <!-- Main JS File -->
+    <script src="/userAssets/home/assets/js/main.js"></script>
+    <script>
+  $(function() {
+    "use strict";
+    if ($.fn.countdown) {
+        $('.coming-countdown').countdown({
+            until: new Date(2024, 6, 20), // 6th month = July (Months are 0 - 11)
+            format: 'DHMS',
+            padZeroes: true
+        });
+
+        // Pause
+        // $('.coming-countdown').countdown('pause');
+    }
+});
+
+
+function swalFire(){
+    
+let email = document.getElementById('newsEmail');
+var isValid = true;
+let emailValue = email.value.trim();
+
+if (emailValue === '') {
+        showToast('error', 'Please enter an email');
+        isValid = false;
+    } else if (email.value !== emailValue) {
+        showToast('error', 'Avoid trailing spaces');
+        isValid = false;
+    } else if (!validateEmail(emailValue)) {
+        showToast('error', 'Enter a valid email');
+        isValid = false;
+    }
+    
+
+    if (!isValid) return;
+
+    
+
+    Swal.fire({
+        title: "Thank you, We'll get back to you shortly",
+        imageUrl: "https://unsplash.it/400/200",
+        imageWidth: 300,
+        imageHeight: 200,
+        imageAlt: "Seems your internet is slow..!",
+        showClass: {
+            popup: 'animate__animated animate__fadeInUp animate__faster'
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutDown animate__faster'
+        }
+    });
+
+function validateEmail(email) {
+    // Case-insensitive email validation regex
+    var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
+    return emailRegex.test(email);
+}
+
+
+
+function showToast(icon, title) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.onmouseenter = Swal.stopTimer;
+                toast.onmouseleave = Swal.resumeTimer;
+            }
+        });
+        Toast.fire({
+            icon: icon,
+            title: title
+        });
+    }
+
+
+
+}
+
+
+    </script>
+</body>
+
+
+<!-- molla/coming-soon.html  22 Nov 2019 10:04:05 GMT -->
+</html>

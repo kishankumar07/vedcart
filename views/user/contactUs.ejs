@@ -1,0 +1,216 @@
+<%- include('./layouts/header') %>
+<link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+/>
+
+        <main class="main">
+            <nav aria-label="breadcrumb" class="breadcrumb-nav border-0 mb-0">
+                <div class="container">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item"><a href="#">Pages</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Contact us</li>
+                    </ol>
+                </div><!-- End .container -->
+            </nav><!-- End .breadcrumb-nav -->
+            <div class="container">
+	        	<div class="page-header page-header-big text-center" style="background-image: url('/userAssets/home/assets/images/about/contactus/cb1.jpg')">
+        			<h1 class="page-title text-white">Contact us<span class="text-white">keep in touch with us</span></h1>
+	        	</div><!-- End .page-header -->
+            </div><!-- End .container -->
+
+            <div class="page-content pb-0">
+                <div class="container">
+                	<div class="row">
+                		<div class="col-lg-6 mb-2 mb-lg-0">
+                           
+                			<h2 class="title mb-1">Contact Information</h2><!-- End .title mb-2 -->
+                			<p class="mb-3">Our dedicated customer support team is here to assist you with any questions or concerns you may have. Reach out to us for personalized guidance on our products and services. We are committed to providing prompt and helpful responses to ensure your satisfaction. Contact us today and experience our unwavering commitment to your well-being.</p>
+                			<div class="row">
+                				<div class="col-sm-7">
+                					<div class="contact-info">
+                						<h3>The Office</h3>
+
+                						<ul class="contact-list">
+                							<li>
+                								<i class="icon-map-marker"></i>
+	                							123 Ayurveda Lane, Wellness City, 45678
+	                						</li>
+                							<li>
+                								<i class="icon-phone"></i>
+                								<a href="tel:#">+91-7907131945</a>
+                							</li>
+                							<li>
+                								<i class="icon-envelope"></i>
+                								<a href="mailto:#">info@kishanta.in</a>
+                							</li>
+                						</ul><!-- End .contact-list -->
+                					</div><!-- End .contact-info -->
+                				</div><!-- End .col-sm-7 -->
+
+                				
+                			</div><!-- End .row -->
+                		</div><!-- End .col-lg-6 -->
+                		<div class="col-lg-6">
+                			<h2 class="animate__animated animate__bounce">Got Any Questions?</h2><!-- End .title mb-2 -->
+                			<p class="mb-2">Use the form below to get in touch with our team</p>
+
+                			<form id="getBackForm" action="#" class="contact-form mb-3">
+                				<div class="row">
+                					<div class="col-sm-6">
+                                        <label for="cname" class="sr-only">Name</label>
+                						<input  type="text" class="form-control" id="name" placeholder="Name *" required>
+                					</div><!-- End .col-sm-6 -->
+
+                					<div class="col-sm-6">
+                                        <label for="cemail" class="sr-only">Email</label>
+                						<input type="email" class="form-control" id="email" placeholder="Email *" required>
+                					</div><!-- End .col-sm-6 -->
+                				</div><!-- End .row -->
+
+                				<div class="row">
+                					<div class="col-sm-6">
+                                        <label for="cphone" class="sr-only">Phone</label>
+                						<input type="tel" class="form-control" id="phone" placeholder="Phone">
+                					</div><!-- End .col-sm-6 -->
+
+                					<div class="col-sm-6">
+                                        <label for="csubject" class="sr-only">Subject</label>
+                						<input type="text" class="form-control" id="subject" placeholder="Subject">
+                					</div><!-- End .col-sm-6 -->
+                				</div><!-- End .row -->
+
+                                <label for="cmessage" class="sr-only">Message</label>
+                				<textarea class="form-control" cols="30" rows="4" id="message" required placeholder="Message *"></textarea>
+
+                				<button type="button" onclick="saveResponse()" class="btn btn-outline-primary-2 btn-minwidth-sm">
+                					<span>SUBMIT</span>
+            						<i class="icon-long-arrow-right"></i>
+                				</button>
+                			</form><!-- End .contact-form -->
+                		</div><!-- End .col-lg-6 -->
+                	</div><!-- End .row -->
+
+                	<hr class="mt-4 mb-5">
+
+                	<div class="stores mb-4 mb-lg-5">
+	                	<h2 class="title text-center mb-3">Our Stores</h2><!-- End .title text-center mb-2 -->
+
+	                	<div class="row">
+	                		<div class="col-lg-6">
+	                			<div class="store">
+	                				<div class="row">
+	                					<div class="col-sm-5 col-xl-6">
+	                						<figure class="store-media mb-2 mb-lg-0">
+	                							<img src="/userAssets/home/assets/images/about/contactus/store1.avif" alt="image">
+	                						</figure><!-- End .store-media -->
+	                					</div><!-- End .col-xl-6 -->
+	                					<div class="col-sm-7 col-xl-6">
+	                						<div class="store-content">
+	                							<h3 class="store-title">Wellness Avenue, Suite 102, Health Town, 12345</h3><!-- End .store-title -->
+	                							<address>Phone: (987) 654-3210</address>
+	                							<div><a href="tel:#">Email: support@holisticwellness.com</a></div>
+
+	                							<h4 class="store-subtitle">Store Hours:</h4><!-- End .store-subtitle -->
+                								<div>Monday - Saturday 11am to 7pm</div>
+                								<div>Sunday 11am to 6pm</div>
+
+                								<a href="#" class="btn btn-link" target=""><span>View Map</span><i class="icon-long-arrow-right"></i></a>
+	                						</div><!-- End .store-content -->
+	                					</div><!-- End .col-xl-6 -->
+	                				</div><!-- End .row -->
+	                			</div><!-- End .store -->
+	                		</div><!-- End .col-lg-6 -->
+
+	                		<div class="col-lg-6">
+	                			<div class="store">
+	                				<div class="row">
+	                					<div class="col-sm-5 col-xl-6">
+	                						<figure class="store-media mb-2 mb-lg-0">
+	                							<img src="/userAssets/home/assets/images/about/contactus/store2.jpeg" alt="image">
+	                						</figure><!-- End .store-media -->
+	                					</div><!-- End .col-xl-6 -->
+
+	                					<div class="col-sm-7 col-xl-6">
+	                						<div class="store-content">
+	                							<h3 class="store-title">Saraswati Ayurvedic Store, 78901</h3><!-- End .store-title -->
+	                							<address>Phone: (555) 123-4567</address>
+	                							<div><a href="tel:#">Email: info@saraswatiayur.com</a></div>
+
+	                							<h4 class="store-subtitle">Store Hours:</h4><!-- End .store-subtitle -->
+												<div>Monday - Friday 9am to 8pm</div>
+												<div>Saturday - 9am to 2pm</div>
+												<div>Sunday - Closed</div>
+
+                								<a href="#" class="btn btn-link" target=""><span>View Map</span><i class="icon-long-arrow-right"></i></a>
+	                						</div><!-- End .store-content -->
+	                					</div><!-- End .col-xl-6 -->
+	                				</div><!-- End .row -->
+	                			</div><!-- End .store -->
+	                		</div><!-- End .col-lg-6 -->
+	                	</div><!-- End .row -->
+                	</div><!-- End .stores -->
+                </div><!-- End .container -->
+            	<div id="map"></div><!-- End #map -->
+            </div><!-- End .page-content -->
+        </main><!-- End .main -->
+
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+	
+	function saveResponse(addressId) {
+ 
+        const name = document
+          .getElementById(`name`)
+          .value.trim();
+        const email = document
+          .getElementById(`email`)
+          .value.trim();
+        const phone = document
+          .getElementById(`phone`)
+          .value.trim();
+       
+        const subject = document
+          .getElementById(`subject`)
+          .value.trim();
+		  const message = document
+          .getElementById(`message`)
+          .value.trim();
+        
+        if (!name || !email || !phone || !subject || !message) {
+          Swal.fire({
+            icon: "warning",
+            title: "Oops...",
+            text: "Please fill out all fields",
+          });
+          return;
+        }
+
+		
+
+
+let timerInterval;
+Swal.fire({
+	
+  title: "Loading...",
+  html: "Our team will reach out to you shortly",
+  timer: 6000,
+  timerProgressBar: true,
+  didOpen: () => {
+    Swal.showLoading();
+   
+  },
+  willClose: () => {
+    clearInterval(timerInterval);
+  }
+})
+
+
+	}
+</script>
+
+
+
+
+        <%- include('./layouts/footer') %>
