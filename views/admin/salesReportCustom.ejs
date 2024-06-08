@@ -1,118 +1,102 @@
 <%- include('./layouts/header') %>
 
-
 <h1 class="ms-3 my-3"> <%= reportType %> Report</h1>
-
-
 
 <!-- Include html2pdf and xlsx CDNs -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
+
+
 <br><br>
+
+
 <div class="row align-items-center">
   <div class="d-flex justify-content-between align-items-center w-100">
-      <form id="customSortForm" action="/admin/customDateReport" method="GET" class="d-flex ms-5">
-          <div class="me-2">
-              <h6>Start date</h6>
-              <input type="date" value="<%= moment(startDate).format('YYYY-MM-DD') %>" class="form-control" id="startDate" name="startDate" required>
-          </div>
-          <div class="me-2">
-              <h6>End date</h6>
-              <input type="date" value="<%= moment(endDate).format('YYYY-MM-DD') %>" class="form-control" id="endDate" name="endDate" required>
-          </div>
-          <div>
-              <button type="submit" id="customSortBtn" class="btn btn-primary mt-4">Find</button>
-          </div>
-      </form>
-      <div class="dropdown">
-          <button
-              class="btn btn-secondary dropdown-toggle me-3"
-              type="button"
-              id="salesReportDropdown"
-              data-bs-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-          >
-              Miscellaneous Reports
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="salesReportDropdown">
-              <li>
-                  <a class="dropdown-item" href="/admin/salesDaily"><i class="fas fa-calendar-day me-2"></i>Daily</a>
-              </li>
-              <li>
-                  <a class="dropdown-item" href="/admin/salesWeekly"><i class="fas fa-calendar-week me-2"></i>Weekly</a>
-              </li>
-              <li>
-                  <a class="dropdown-item" href="/admin/salesMonthly"><i class="fas fa-calendar-alt me-2"></i>Monthly</a>
-              </li>
-              <li>
-                  <a class="dropdown-item" href="/admin/salesYearly"><i class="fas fa-calendar me-2"></i>Yearly</a>
-              </li>
-          </ul>
+
+
+    <form id="customSortForm" action="/admin/customDateReport" method="GET" class="d-flex ms-5">
+      <div class="me-2">
+        <h6>Start date</h6>
+        <input type="date" value="<%= moment(startDate).format('YYYY-MM-DD') %>" class="form-control" id="startDate" name="startDate" required>
       </div>
+      <div class="me-2">
+        <h6>End date</h6>
+        <input type="date" value="<%= moment(endDate).format('YYYY-MM-DD') %>" class="form-control" id="endDate" name="endDate" required>
+      </div>
+      <div>
+        <button type="submit" id="customSortBtn" class="btn btn-primary mt-4">Find</button>
+      </div>
+    </form>
+
+
+    <div class="dropdown">
+      
+      <button class="btn btn-secondary dropdown-toggle me-3" type="button" id="salesReportDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Miscellaneous Reports
+      </button>
+
+      <ul class="dropdown-menu" aria-labelledby="salesReportDropdown">
+        <li><a class="dropdown-item" href="/admin/salesDaily"><i class="fas fa-calendar-day me-2"></i>Daily</a></li>
+        <li><a class="dropdown-item" href="/admin/salesWeekly"><i class="fas fa-calendar-week me-2"></i>Weekly</a></li>
+        <li><a class="dropdown-item" href="/admin/salesMonthly"><i class="fas fa-calendar-alt me-2"></i>Monthly</a></li>
+        <li><a class="dropdown-item" href="/admin/salesYearly"><i class="fas fa-calendar me-2"></i>Yearly</a></li>
+      </ul>
+    </div>
   </div>
 </div>
 
-
-<div class="card-body">
-<!-- start -->
-
-<div class="table-responsive">
-  <table id="myTable" class="table align-middle table-nowrap mb-0 ">
+<div id="reportWrapper" class="card-body">
+  <!-- start -->
+  <div class="table-responsive">
+    <table id="myTable" class="table align-middle table-nowrap mb-0">
       <thead class="table-light">
-          <tr>
-              <th class="text-center">Id</th>
-              <th>Order Number</th>
-              <th>Order Status</th>
-              <th>Payment method</th>
-              <th>Date</th>
-              <th>Customer Name</th>
-              <th>Total Price</th>
-          </tr>
+        <tr>
+          <th class="text-center">Id</th>
+          <th>Order Number</th>
+          <th>Order Status</th>
+          <th>Payment method</th>
+          <th>Date</th>
+          <th>Customer Name</th>
+          <th>Total Price</th>
+        </tr>
       </thead>
       <tbody>
-          <% let orderCounter = 0; %>
-          <% if(tableOrders && tableOrders.length !==0) {%>
-          <% tableOrders.forEach((order) => { %>
-            
-                  <tr>
-                      <td><a href="#" class="fw-bold"><%= ++orderCounter %></a></td>
-                      <td><%= order.orderId %></td>
-                      <td style="color:
-                          <% if (order.orderStatus === 'cancelled' || order.orderStatus === 'returned') { %>
-                              red;
-                          <% } else if (order.orderStatus === 'pending') { %>
-                              blue;
-                          <% } else if (order.orderStatus === 'delivered') { %>
-                              green;
-                          <% } else { %>
-                              black; 
-                          <% } %>">
-                          <%= order.orderStatus %>
-                      </td>
-                      <td><%= order.paymentMode %></td>
-                      <td><%= moment(order.date).format('DD-MM-YYYY') %></td>
-                      <td><%= order.address ? order.address.name : 'N/A' %></td>
-                      <td><span class="badge badge-pill badge-soft-success">₹<%= order.productPrice %></span></td>
-                  </tr>
-              <% }); %>
-                  <% }else { %>
-                    <td colspan="7">No data available</td>
-                    <% } %>
+        <% let orderCounter = 0; %>
+        <% if(tableOrders && tableOrders.length !==0) {%>
+        <% tableOrders.forEach((order) => { %>
+        <tr>
+          <td><a href="#" class="fw-bold"><%= ++orderCounter %></a></td>
+          <td><%= order.orderId %></td>
+          <td style="color:
+            <% if (order.orderStatus === 'cancelled' || order.orderStatus === 'returned') { %>
+              red;
+            <% } else if (order.orderStatus === 'pending') { %>
+              blue;
+            <% } else if (order.orderStatus === 'delivered') { %>
+              green;
+            <% } else { %>
+              black; 
+            <% } %>">
+            <%= order.orderStatus %>
+          </td>
+          <td><%= order.paymentMode %></td>
+          <td><%= moment(order.date).format('DD-MM-YYYY') %></td>
+          <td><%= order.address ? order.address.name : 'N/A' %></td>
+          <td><span class="badge badge-pill badge-soft-success">₹<%= order.productPrice %></span></td>
+        </tr>
+        <% }); %>
+        <% } else { %>
+        <td colspan="7">No data available</td>
+        <% } %>
       </tbody>
-      
-  </table>
-</div>
+    </table>
+  </div>
+  <!-- end -->
 
-<!-- end -->
+  <br><br><br>
+  <hr>
 
-
-
-<br><br><br>
-<hr>
-
-
-  <div  class="table-responsive">
+  <div class="table-responsive">
     <table id="myTables" class="table table-hover">
       <thead>
         <tr>
@@ -133,13 +117,12 @@
     </table>
   </div>
 </div>
+
 <div class="text-center mb-4">
-  <!-- Add buttons for downloading as PDF and Excel -->
-  <button id="download-excel" class="btn btn-success" aria-controls="myTable">
+  <button id="download-excel" class="btn btn-success" aria-controls="reportWrapper">
     Download as Excel
   </button>
-
-  <button id="download-pdf" class="btn btn-danger mr-2" aria-controls="myTable">
+  <button id="download-pdf" class="btn btn-danger mr-2" aria-controls="reportWrapper">
     Download as PDF
   </button>
 </div>
@@ -151,13 +134,13 @@
   document
     .getElementById("download-pdf")
     .addEventListener("click", function () {
-      // Select the table element
-      const element = document.getElementById("myTable");
+      // Select the wrapper element
+      const element = document.getElementById("reportWrapper");
 
       // Options for PDF generation
       const opt = {
         margin: 0.5,
-        filename: "sales_report.pdf",
+        filename: "custom_report.pdf",
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
@@ -171,26 +154,15 @@
   document
     .getElementById("download-excel")
     .addEventListener("click", function () {
-      // Prepare data for Excel file
-      const data = [
-        ["Start Date", "End Date", "Total Orders", "Total Amount"],
-        [
-          "<%= startDate %>",
-          "<%= endDate %>",
-          "<%= totalCount %>",
-          "<%= totalAmount %>",
-        ],
-      ];
-
-      // Create new workbook and sheet
-      const ws = XLSX.utils.aoa_to_sheet(data);
+      const tables = document.getElementById('reportWrapper').getElementsByTagName('table');
       const wb = XLSX.utils.book_new();
 
-      // Add worksheet to workbook
-      XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
+      Array.from(tables).forEach((table, index) => {
+          const ws = XLSX.utils.table_to_sheet(table);
+          XLSX.utils.book_append_sheet(wb, ws, `Sheet${index + 1}`);
+      });
 
-      // Save the workbook as Excel file
-      XLSX.writeFile(wb, "sales_report.xlsx");
+      XLSX.writeFile(wb, 'custom_report.xlsx');
     });
 </script>
 

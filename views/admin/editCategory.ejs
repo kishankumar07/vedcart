@@ -120,9 +120,11 @@ let valid = true;
     // Validate Name
     var name = document.getElementById('product_name');
     if (name.value === '') {
+      console.log('name is empty')
       document.getElementById('name-error').innerHTML = 'Name is required.';
      valid = false;
     }else if(name.value !== name.value.trim()){
+      console.log('trailing spaces')
       document.getElementById('name-error').innerHTML = "Avoid trailing spaces";
       valid = false
     }else{
@@ -133,25 +135,20 @@ let valid = true;
  //validation part for  image  
     var image = document.getElementById('image');
     var file = image.files[0]; 
-    if (!file) {
-      document.getElementById('image-error').innerHTML = 'Image is required.';
-      valid = false;
-    } else {
+   if(file){
       var allowedExtensions = /(\.jpg|\.jpeg|\.png|\.webp)$/i;
       if (!allowedExtensions.exec(file.name)) {
+        console.log('unallowed extension came for image')
         document.getElementById('image-error').innerHTML = 'Only image files are expected';
         valid = false;
       }
-    }
+   }
 
 
     var description = document.getElementById('description');
     if (description.value === '') {
       document.getElementById('description-error').innerHTML = 'Description is required.';
      valid = false;
-    }else if(description.value !== description.value.trim()){
-      document.getElementById('description-error').innerHTML = "Avoid trailing spaces";
-      valid = false
     }else{
       document.getElementById('description-error').innerHTML = ""
     }

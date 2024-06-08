@@ -241,10 +241,7 @@ document.addEventListener("DOMContentLoaded", function() {
       if (productDesc.value.trim() === '') {
       document.getElementById('description-error').textContent = 'Product description is required';
       isValid = false;
-  } else if (productDesc.value !== productDesc.value.trim()) {
-      document.getElementById('description-error').textContent = 'Product description should not have leading or trailing spaces';
-      isValid = false;
-  } else {
+  }  else {
       document.getElementById('description-error').textContent = '';
   }
 

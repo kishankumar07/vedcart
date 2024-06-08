@@ -17,58 +17,56 @@ const chooseOffer = (productOffer, categoryOffer) => {
 const fetchCommonData = async (req, res, next) => {
     try {
 
-      // console.log('this is the user id of the user at session at common data middleware:',req.session.userData)
+  let categoriesWithProducts = await Category.aggregate([
+    {
+      $match: {
+        status: "active"
+      }
+    },
+    {
+      $lookup: {
+        from: 'products',
+        localField: '_id',
+        foreignField: 'category',
+        as: 'products'
+      }
+    },
+    {
+      $addFields: {
+        products: {
+          $filter: {
+            input: "$products",
+            as: "product",
+            cond: { $eq: ["$$product.status", "active"] }
+          }
+        }
+      }
+    },
+    {
+      $project: {
+        name: 1,
+        image: 1,
+        description: 1,
+        status: 1,
+        offer: 1,
+        products: 1
+      }
+    }
+  ])
      
       if(req.session.userData){
         const userId = req.session.userData;
-        const [userNameforProfile, cart, wishlist, categoriesWithProducts] = await Promise.all([
+        const [userNameforProfile, cart, wishlist] = await Promise.all([
             User.findById(userId), 
             Cart.findOne({ userId }).populate({ path: "products.productId", 
             model: 'Product' }),
             Wishlist.findOne({user:userId}),
-            Category.aggregate([
-                {
-                  $match: {
-                    status: "active"
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'products',
-                    localField: '_id',
-                    foreignField: 'category',
-                    as: 'products'
-                  }
-                },
-                {
-                  $addFields: {
-                    products: {
-                      $filter: {
-                        input: "$products",
-                        as: "product",
-                        cond: { $eq: ["$$product.status", "active"] }
-                      }
-                    }
-                  }
-                },
-                {
-                  $project: {
-                    name: 1,
-                    image: 1,
-                    description: 1,
-                    status: 1,
-                    offer: 1,
-                    products: 1
-                  }
-                }
-              ])
-        //after aggregation if the id field is not required, then specify _id:0 
-            ]);
-      // console.log('cart value debugger if this is null, it will show empty cart imoji animation : ',cart)
+         ]);
+    
            
             let productIds = cart?.products.map(product =>product.productId._id);
 
-        // console.log('debugger point for productIds :',productIds)
+        
 
  const productsDetailsInCart = await Product.find({ _id: { $in: productIds } }).populate({
       path: 'category',
@@ -80,7 +78,7 @@ const fetchCommonData = async (req, res, next) => {
     });
 
 
-//the optional chaining below this line is necessary in the sense that ,if a new user logins without any cart data , then without error it will be handled
+//the optional chaining below this line is necessary in the sense that ,if a new user logins without any cart data , then there will be no error handling
     cart?.products.forEach(cartProduct => {
       const product = productsDetailsInCart.find(product => product._id.equals(cartProduct.productId._id));
       if (product) {
@@ -90,10 +88,10 @@ const fetchCommonData = async (req, res, next) => {
           cartProduct.appliedOffer = chosenOffer.name;
           cartProduct.appliedOfferDiscount = chosenOffer.discount;
           cartProduct.productId.offerprice = product.price - discount;
-          // console.log(`Applied offer: ${cartProduct.appliedOffer}, Discount: ${cartProduct.appliedOfferDiscount}, Offer price: ${cartProduct.productId.offerprice}`);
+        
         } else {
           cartProduct.productId.offerprice = product.price;
-          // console.log(`No offer applied. Original price: ${cartProduct.productId.offerprice}`);
+         
         }
       } else {
         req.flash('message', "Product does not exist");
@@ -114,11 +112,11 @@ const fetchCommonData = async (req, res, next) => {
             // to count the total of wishlist items 
             const wishlistProductCount = wishlist?.products.length || 0;
 
-// console.log('wishlist count at header : ::  :: :::',wishlistProductCount)
+
 
         res.locals.commonData = { userNameforProfile, cart,userId, categoriesWithProducts, totalPriceOfCartProducts,cartProductCount,wishlistProductCount };
           }else{
-            res.locals.commonData = {}
+            res.locals.commonData = {categoriesWithProducts}
           }
         next();
 

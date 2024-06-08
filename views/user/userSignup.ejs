@@ -110,7 +110,7 @@
     document.getElementById('passwordMismatch').innerText = '';
 
     var isValid = true;
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     // Validate name
     if (name.value === '') {
         document.getElementById('nameErr').innerText = 'Name is required';
@@ -155,12 +155,14 @@
         document.getElementById('passwordErr').innerText =  'Avoid traling spaces';
         isValid = false;
     } else if (password.value.length < 7) {
+        console.log('password value is : ',password.value.length)
         document.getElementById('passwordErr').innerText =  'Password must be atleast 7 characters long';
         isValid = false;
-    } else if (!passwordRegex.test(password.value)) {
-    document.getElementById('passwordErr').innerText =  'Enter a strong password with a Capital letter,special character and a number';
-        isValid = false;
     }
+    // } else if (!passwordRegex.test(password.value)) {
+    // document.getElementById('passwordErr').innerText =  'Enter a strong password with a Capital letter,special character and a number';
+    //     isValid = false;
+    // }
   
 
 

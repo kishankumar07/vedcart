@@ -168,7 +168,7 @@
                         </button>
                         
                         <a href="/" class="logo">
-                            <img src="/userAssets/home/assets/images/demos/demo-13/logo_web.webp" alt="vedCart Logo" width="105" height="25">
+                            <img src="/userAssets/home/assets/images/demos/demo-13/logo_web.webp" alt="vedCart Logo" width="120" height="25">
                         </a>
                     </div><!-- End .header-left -->
 
@@ -343,71 +343,65 @@
 
                             
                             <div class="dropdown cart-dropdown">
-                                <% if(userNameforProfile && userNameforProfile.isVerified ) { %>
+                                <% if(userNameforProfile && userNameforProfile.isVerified) { %>
                                 <a href="/cart" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
                                     <lord-icon
-                                    src="https://cdn.lordicon.com/guothkao.json"
-                                    trigger="loop"
-                                    delay="2000"
-                                    style="width:40px;height:40px">
-                                </lord-icon>
+                                        src="https://cdn.lordicon.com/guothkao.json"
+                                        trigger="loop"
+                                        delay="2000"
+                                        style="width:40px;height:40px">
+                                    </lord-icon>
                                     <span class="cart-count"><%= cartProductCount %></span>
                                     <span class="cart-txt">Cart</span>
                                 </a>
-                               
                             
+                                <div class="dropdown-menu dropdown-menu-right" style="padding: 1rem 3rem; border-radius: 8%;">
+                                    <% if(cart && cart?.products && cart?.products?.length !== 0) { %>
+                                    <div class="dropdown-cart-products" style="max-height: 300px; overflow-y: auto;">
+                                        <% cart.products.forEach((item, index) => { %>
+                                        <div class="product">
+                                            <div class="product-cart-details">
+                                                <h4 class="product-title">
+                                                    <a href="/productPage?id=<%= item.productId.id %>"><%= item.productId.name %></a>
+                                                </h4>
                             
+                                                <span class="cart-product-info">
+                                                    <span class="cart-product-qty"><%= item.quantity %></span>
+                                                    x ₹<%= item.productId.offerprice ? item.productId.offerprice : item.productId.price %>
+                                                </span>
+                                            </div><!-- End .product-cart-details -->
                             
-                                <div class="dropdown-menu dropdown-menu-right" style="padding: 1rem 3rem;">
-                                   
-                                    <div class="dropdown-menu dropdown-menu-right" style="border-radius: 8%;">
-                                        <div class="dropdown-cart-products">
-                                            <% if(cart && cart?.products && cart?.products?.length !==0) {%>
-                                            <% cart.products.forEach((item,index)=> {%>
-                                            <div class="product">
-                                                <div class="product-cart-details">
-                                                    <h4 class="product-title">
-                                                        <a href="/productPage?id=<%= item.productId.id %>"><%= item.productId.name %></a>
-                                                    </h4>
+                                            <figure class="product-image-container">
+                                                <a href="product.html" class="product-image">
+                                                    <img src="/adminAssets/imgs/category/<%= item.productId.images[0] %>" alt="product">
+                                                </a>
+                                            </figure>
+                                            <a hidden href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
+                                        </div><!-- End .product -->
+                                        <% }) %>
                             
-                                                    <span class="cart-product-info">
-                                                        <span class="cart-product-qty"><%= item.quantity %></span>
-                                                        x ₹<%= item.productId.offerprice ? item.productId.offerprice : item.productId.price %>
-                                                    </span>
-                                                </div><!-- End .product-cart-details -->
-                            
-                                                <figure class="product-image-container">
-                                                    <a href="product.html" class="product-image">
-                                                        <img src="/adminAssets/imgs/category/<%= item.productId.images[0] %>" alt="product">
-                                                    </a>
-                                                </figure>
-                                                <a hidden href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
-                                            </div><!-- End .product -->
-
-                                            
-                                            <% }) %>
-
-                                            <div class="dropdown-cart-total">
-                                                <span>Total</span>
-                                
-                                                <span class="cart-total-price">₹<%= totalPriceOfCartProducts %></span>
-                                            </div><!-- End .dropdown-cart-total -->
-                                          <% }else{ %>
-                                            <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/39e3eb45-7c4d-40b4-b99e-6e44219446b7/F3b6kldNwX.json" background="transparent" speed="1" style="width: 250px; height: 290px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
-                                            <h4 class="mb-5 text-warning">Oops.. Empty cart !</h4>
-                                            <% } %>
-                                        </div><!-- End .cart-product -->
-                            
-                                        
-                            
-                                        <div class="dropdown-cart-action">
-                                            <a href="/cart" class="btn btn-primary">View Cart</a>
-                                            <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
+                                        <div class="dropdown-cart-total">
+                                            <span>Total</span>
+                                            <span style="display: inline-block;margin-right: 15%;" class="cart-total-price">₹<%= totalPriceOfCartProducts %></span>
                                         </div><!-- End .dropdown-cart-total -->
-                                    </div><!-- End .dropdown-menu -->
+                                    </div><!-- End .dropdown-cart-products -->
+                                    <% } else { %>
+                                    <div class="dropdown-cart-products">
+                                        <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
+                                        <dotlottie-player src="https://lottie.host/39e3eb45-7c4d-40b4-b99e-6e44219446b7/F3b6kldNwX.json" background="transparent" speed="1" style="width: 250px; height: 290px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+                                        <h4 class="mb-5 text-warning">Oops.. Empty cart !</h4>
+                                    </div>
+                                    <% } %>
+                            
+                                    <div class="dropdown-cart-action">
+                                        <a href="/cart" class="btn btn-primary">View Cart</a>
+                                        <a href="/checkout" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
+                                    </div><!-- End .dropdown-cart-action -->
                                 </div><!-- End .dropdown-menu -->
                                 <% } %>
                             </div><!-- End .cart-dropdown -->
+                            
+                            
                         </div>
                     </div><!-- End .header-right -->
                 </div><!-- End .container -->
@@ -428,6 +422,9 @@
                                     <ul class="menu-vertical sf-arrows">
                                         
                                        
+
+
+
                                         <% if(categoriesWithProducts && categoriesWithProducts?.length !== 0) { %>
                                             <%categoriesWithProducts.forEach((cat,index)=>{%>
                                         <li class="megamenu-container">
@@ -522,18 +519,6 @@
 
                     </div><!-- End .col-lg-3 -->
 
-
-                    <!-- <script>
-                        function toggleDropdown() {
-                        var dropdownMenu = document.getElementById("dropdownMenu");
-                        if (dropdownMenu.style.display === "none") {
-                            dropdownMenu.style.display = "block";
-                        } else {
-                            dropdownMenu.style.display = "none";
-                        }
-                    }
-                    
-                    </script> -->
 
 
 

@@ -412,21 +412,26 @@
   <% }else if(product.orderStatus === 'delivered'){ %>  
 
     <p class="text-success"><%=product.orderStatus%></p>
+  <% }else if(order.paymentStatus === 'pending'){ %>  
 
+      <p class="text-danger">Payment Failed</p>
+  
+  
 <% }else{ %>
   <p class="text-info"><%=product.orderStatus%></p>
   <% }%>
   <% }); %>
                           </div>
                           <% if (order.paymentStatus === 'pending') { %>
-                            <button class="btn btn-warning" onclick="retryPayment('<%= order._id %>')">Retry Payment</button>
-                        <% } %>
+                            <button class="btn btn-warning" onclick="retryPayment('<%= order._id %>')">Click here for retry payment</button>
+                        <% }else{ %>
                           
                           <a
                             href="/orderdetails?orderId=<%= order._id %>"
                             class="btn btn-primary"
                             >View More</a
                           >
+                          <% }%>
                         </div>
                       </div>
                     </div>
@@ -508,7 +513,13 @@ aria-hidden="true"
 
                     <tr>
                       <td><%=  moment(wallet.date).format('DD-MM-YYYY') %></td>
-                      <td>₹<%= wallet.amount %></td>
+                      <td>
+                        <% if (wallet.amount < 0) { %>
+                          -₹<%= Math.abs(wallet.amount) %>
+                        <% } else { %>
+                          ₹<%= wallet.amount %>
+                        <% } %>
+                      </td>
                       <td><%= wallet.reason %></td>
                     </tr>
 
@@ -558,7 +569,7 @@ aria-hidden="true"
                         Wallet Balance : ₹<%= userNameforProfile.wallet %>
 
                        
-                        <!-- <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/5154e78e-684f-4826-bc12-d121a055f545/DdWUNPZxpJ.json" background="#FFFFFF" speed="1" style="width: 300px; height: 250px" direction="1" playMode="normal" loop autoplay></dotlottie-player> -->
+                        <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/5154e78e-684f-4826-bc12-d121a055f545/DdWUNPZxpJ.json" background="#FFFFFF" speed="1" style="width: 300px; height: 250px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
                         <br>
                         <button
                         type="button"
@@ -570,7 +581,8 @@ aria-hidden="true"
                       </button>
                       </p>
                       <% }else{ %>
-                        <!-- <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/82fa0462-1fe7-4f73-b4e8-b7e7eb0aff75/z8x23pbnQM.json" background="#FFFFFF" speed="1" style="width: 270px; height: 250px" direction="1" playMode="normal" loop autoplay></dotlottie-player> -->
+                        <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script><dotlottie-player src="https://lottie.host/82fa0462-1fe7-4f73-b4e8-b7e7eb0aff75/z8x23pbnQM.json" background="#FFFFFF" speed="1" style="width: 300px; height: 250px" direction="1" playMode="normal" loop autoplay></dotlottie-player>
+                        <br>
                        <h6 class="text-center">Wallet Balance : ₹<%= userNameforProfile.wallet %></h5> 
                         <% } %>
                         
@@ -1130,7 +1142,7 @@ aria-hidden="true"
       isValid = false;
     }else if(name.value !== name.value.trim()){
       console.log('7')
-        document.getElementById('nameProfileEditErr').innerText = 'Avoid triling spaces';
+        document.getElementById('nameProfileEditErr').innerText = 'Avoid trailing spaces';
         isValid = false;
     }else if (name.value.length < 4) {
       console.log('9')
@@ -1229,7 +1241,7 @@ if (!response.ok) {
   confirmNewPasswordErr.textContent = "";
 
 
-
+console.log('pass len :',newPassword.length)
   let valid = true;
 
   if (!currentPassword) {
@@ -1250,8 +1262,10 @@ if (!response.ok) {
     currentPasswordErr.textContent = "Avoid trailing spaces";
     valid = false;
   }
-  else if (newPassword.length < 8) {
-    newPasswordErr.textContent = "New password must be at least 8 characters long.";
+  
+  else if (newPassword.length < 7) {
+    
+    newPasswordErr.textContent = "New password must be at least 7 characters long.";
     valid = false;
   }
 
@@ -1271,11 +1285,11 @@ if (!response.ok) {
     valid = false;
   }
 
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  if (!passwordRegex.test(newPassword)) {
-    newPasswordErr.textContent = "New password must include an uppercase letter, a lowercase letter, a number, and a special character.";
-    valid = false;
-  }
+  // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  // if (!passwordRegex.test(newPassword)) {
+  //   newPasswordErr.textContent = "New password must include an uppercase letter, a lowercase letter, a number, and a special character.";
+  //   valid = false;
+  // }
 
   if (newPassword !== confirmNewPassword) {
     confirmNewPasswordErr.textContent = "New password and confirm password do not match.";
@@ -1369,10 +1383,9 @@ if(!valid) return;
       document.getElementById("addressAddnameErr").innerText =
         "Name is required";
       isValid = false;
-    } else if (name.length < 2 || !isNaN(name.charAt(0))) {
-      document.getElementById("addressAddnameErr").innerText =
-        "Please enter a valid name";
-      isValid = false;
+    } else if (name.length < 2 || !isNaN(name.charAt(0)) || name !== name.trim()) {
+        document.getElementById("addressAddnameErr").innerText = "Please enter a valid name without leading or trailing spaces";
+        isValid = false;
     }
     // else if (!isNaN(name.charAt(0))) { // Check if the first character is a number
     // //     document.getElementById('nameErr').innerText = '';

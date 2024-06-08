@@ -219,7 +219,7 @@ function toggleBlockStatus(userId) {
   // Make a fetch request to toggle the block status
   fetch(`/admin/toggleBlock?id=${userId}`,{
 
-          method: "POST",
+          method: "PATCH",
                              
         })
 
@@ -250,7 +250,7 @@ function toggleBlockStatus(userId) {
    
        
     .catch(error => {
-      console.error('Error toggling block status:', error);
+      console.error('Error toggling block status:', error.message);
     });
 }
 

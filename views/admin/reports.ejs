@@ -6,7 +6,6 @@
 
 <h1> <%= reportType %> Sales Report</h1>
 
-
 <div class="d-flex justify-content-end pe-4 pt-2">
     <div class="dropdown">
         <button class="btn btn-secondary dropdown-toggle" type="button" id="salesReportDropdown"
@@ -28,12 +27,9 @@
     </div>
 </div>
 
-
-
-<div class="card-body">
-
+<div id="reportWrapper" class="card-body">
     <div class="table-responsive">
-        <table id="myTable" class="table align-middle table-nowrap mb-0 ">
+        <table id="myTable" class="table align-middle table-nowrap mb-0">
             <thead class="table-light">
                 <tr>
                     <th class="text-center">Id</th>
@@ -49,50 +45,45 @@
                 <% let orderCounter = 0; %>
                 <% if(tableOrders && tableOrders.length !==0) {%>
                 <% tableOrders.forEach((order) => { %>
-                  
-                        <tr>
-                            <td><a href="#" class="fw-bold"><%= ++orderCounter %></a></td>
-                            <td><%= order.orderId %></td>
-                            <td style="color:
-                                <% if (order.orderStatus === 'cancelled' || order.orderStatus === 'returned') { %>
-                                    red;
-                                <% } else if (order.orderStatus === 'pending') { %>
-                                    blue;
-                                <% } else if (order.orderStatus === 'delivered') { %>
-                                    green;
-                                <% } else { %>
-                                    black; 
-                                <% } %>">
-                                <%= order.orderStatus %>
-                            </td>
-                            <td><%= order.paymentMode %></td>
-                            <td><%= moment(order.date).format('DD-MM-YYYY') %></td>
-                            <td><%= order.address ? order.address.name : 'N/A' %></td>
-                            <td><span class="badge badge-pill badge-soft-success">₹<%= order.productPrice %></span></td>
-                        </tr>
-                    <% }); %>
-                        <% }else { %>
-                          <td colspan="7">No data available</td>
-                          <% } %>
+                    <tr>
+                        <td><a href="#" class="fw-bold"><%= ++orderCounter %></a></td>
+                        <td><%= order.orderId %></td>
+                        <td style="color:
+                            <% if (order.orderStatus === 'cancelled' || order.orderStatus === 'returned') { %>
+                                red;
+                            <% } else if (order.orderStatus === 'pending') { %>
+                                blue;
+                            <% } else if (order.orderStatus === 'delivered') { %>
+                                green;
+                            <% } else { %>
+                                black; 
+                            <% } %>">
+                            <%= order.orderStatus %>
+                        </td>
+                        <td><%= order.paymentMode %></td>
+                        <td><%= moment(order.date).format('DD-MM-YYYY') %></td>
+                        <td><%= order.address ? order.address.name : 'N/A' %></td>
+                        <td><span class="badge badge-pill badge-soft-success">₹<%= order.productPrice %></span></td>
+                    </tr>
+                <% }); %>
+                <% } else { %>
+                    <td colspan="7">No data available</td>
+                <% } %>
             </tbody>
-            
         </table>
-      </div>
+    </div>
 
-
-<br><br><br><br><br><br><br><br>
+    <br><br><br><br><br><br><br><br>
 
     <div class="table-responsive">  
         <table id="myTables" class="table table-hover">
             <thead>
                 <tr>
                     <th style="width: 50px;">ID</th>
-                    <th>TIme Line</th>
+                    <th>Time Line</th>
                     <th>Total Orders</th>
                     <th>Total Revenue</th>
-                  
                     <th>Total Coupon Discount</th>
-                    
                 </tr>
             </thead>
             <tbody>
@@ -102,15 +93,9 @@
                         <td><%= order._id %></td>
                         <td><%= order.totalOrders %></td>
                         <td>₹<%= order.totalSubTotal.toFixed(2) %></td>
-                      
                         <td><%= order.totalCouponDiscount %></td>
-                      
                     </tr>
                 <% }); %>
-
-
-
-
                 <tr> 
                     <td colspan="2"><strong>Total:</strong></td> 
                     <td><%= (report.reduce((acc,curr) => acc+curr.totalOrders,0)) %></td> 
@@ -118,22 +103,18 @@
                     </td> 
                     <td><%= (report.reduce((acc,curr)=> acc+curr.totalCouponDiscount,0)) %></td>
                 </tr>
-
-
-                
             </tbody>   
         </table>
     </div>
 </div>
 
 <div class="text-center mb-4">
-    
-    <button id="download-pdf" class="btn btn-danger mr-2" aria-controls="myTable">
+    <button id="download-pdf" class="btn btn-danger mr-2" aria-controls="reportWrapper">
         Download as PDF
     </button>
-    <a id="download-excel" class="btn btn-success" aria-controls="myTable">
+    <button id="download-excel" class="btn btn-success" aria-controls="reportWrapper">
         Download as Excel
-    </a>
+    </button>
 </div>
 <br><br><br>
 <style>
@@ -155,29 +136,27 @@
 </style>
 
 <script>
-   
-    function downloadExcel() {
-       
-        const table = document.getElementById('myTable');
-        
-        
-        const wb = XLSX.utils.table_to_book(table);
+    document
+    .getElementById("download-excel")
+    .addEventListener("click", function () {
+      const tables = document.querySelectorAll('#reportWrapper table');
+      const wb = XLSX.utils.book_new();
 
-      
-        XLSX.writeFile(wb, 'sales_report.xlsx');
-    }
+      tables.forEach((table, index) => {
+        const ws = XLSX.utils.table_to_sheet(table);
+        XLSX.utils.book_append_sheet(wb, ws, `Sheet${index + 1}`);
+      });
 
-   
-    document.getElementById('download-excel').addEventListener('click', function() {
-        downloadExcel();
+      XLSX.writeFile(wb, 'custom_report.xlsx');
     });
 
-    
-    document.getElementById('download-pdf').addEventListener('click', function() {
-       
-        const element = document.getElementById('myTable');
 
-        
+
+
+
+    document.getElementById('download-pdf').addEventListener('click', function() {
+        const element = document.getElementById('reportWrapper');
+
         const opt = {
             margin: 0.5,
             filename: 'sales_report.pdf',
@@ -186,21 +165,8 @@
             jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
 
-       
         html2pdf().from(element).set(opt).save();
     });
 </script>
 
-
-
 <%- include('./layouts/footer') %>
-
-
-
-
-
-
-
-
-
-

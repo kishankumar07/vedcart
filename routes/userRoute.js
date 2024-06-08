@@ -38,7 +38,7 @@ router.post("/verifyOTP", userController.verifyOTP);
 router.post("/resendOTP",userController.resendOTP);
 router.get('/signout',userController.signout);
 router.post('/verify-email',userController.verifyEmail)
-
+router.post('/update-password',userController.forgotPasswordChangePassword)
 
 
 

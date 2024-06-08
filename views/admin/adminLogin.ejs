@@ -20,7 +20,7 @@
         <main>
             <header class="main-header style-2 navbar">
                 <div class="col-brand">
-                    <a href="index.html" class="brand-wrap">
+                    <a href="/admin/login" class="brand-wrap">
                         <img style="width:50%;height: 50%;" src="/adminAssets/imgs/theme/logo_new.png" class="logo" alt="Nest Dashboard" />
                     </a>
                 </div>
@@ -33,7 +33,7 @@
                         
 
 
-                      <form action="/admin/login" onsubmit="return loginValidation()" method="post">
+                      <form action="/admin/login" method="post">
 
 
                             <div class="mb-3">
@@ -80,43 +80,7 @@
         <script src="/adminAssets/js/main.js?v=1.1" type="text/javascript"></script>
     </body>
 </html>
-<script>
-   function loginValidation(event){
-  event.preventDefault(); // Prevent the default form submission
-      
-        const email = document.getElementById("email");
-        const password = document.getElementById("password");
-        const emailErr = document.getElementById("emailErr");
-        const passwordErr = document.getElementById("passwordErr");
-        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
-        // Email field
-        if (email.value.trim() === "") {
-          emailErr.innerHTML = "Email field is required";
-          setTimeout(() => {
-            emailErr.innerHTML = "";
-          }, 5000);
-          return false;
-        } else if (!emailRegex.test(email.value)) {
-          emailErr.innerHTML = "Please enter a valid email";
-          setTimeout(() => {
-            emailErr.innerHTML = "";
-          }, 5000);
-          return false;
-        }
-
-        // Password field
-        if (password.value.trim() === "") {
-          passwordErr.innerHTML = "Password field is required";
-          setTimeout(() => {
-            passwordErr.innerHTML = "";
-          }, 5000);
-          return false;
-        }
-
-        return true; // Form is valid
-      }
-</script>
 
 
 </body>

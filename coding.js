@@ -37,6 +37,13 @@ console.log('value of b is :',b)
 
 
 
+sahajarati kashayam
+sukumara kashayam
+danwantharam kashayam
+moolakathi kashayam
+mridyugadhi kashayam
+baladi kashayam
+punarnavadi kashayam
 
 
 
@@ -305,3 +312,132 @@ By using the VS Code Remote - SSH extension, you can have the full power of VS C
 
 
 git clone https://github.com/kishankumar07/vedcart.git
+
+
+
+
+
+
+
+
+
+const updateCategory = async (req, res) => {
+    try {
+      let { id, name, description } = req.body;
+  
+      // Check if category with the same name already exists (case-insensitive)
+      let existingCategory = await Category.findOne({
+        name: { $regex: new RegExp(name, "i") },
+      });
+  
+      // If category exists and it's not the same as the one being updated
+      if (existingCategory && existingCategory._id.toString() !== id) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Category already exists" });
+      }
+  
+      // Build the update object
+      let updateObject = {
+        name: name,
+        description: description,
+      };
+  
+      // If image file is provided, add it to the update object
+      if (req.file && req.file.filename) {
+        updateObject.image = req.file.filename;
+      }
+  
+      // Find the category by ID and update it
+      let categoryFound = await Category.findByIdAndUpdate(
+        id,
+        updateObject,
+        { new: true }
+      );
+  
+      return res
+        .status(201)
+        .json({ success: true, message: "Category updated successfully" });
+    } catch (error) {
+      console.log("Error at update category:", error);
+      res.status(500).redirect("/error");
+    }
+  };
+  
+
+
+  const forgotPasswordChangePassword = async (req, res) => {
+    console.log('change password when forgot password controller at userProfile reached');
+    const userId = req.session.userData;
+    const {  password } = req.body;
+
+    try {
+  
+  
+      const user = await User.findById(userId)
+  
+  
+      if (!user) {
+        console.log('user was not found');
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      if (!password) {
+        return res.status(400).json({ message: 'Password is requiired.' });
+      }
+  
+  
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(password)) {
+          return res.status(400).json({ message: 'New password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.' });
+        }
+  
+     
+      //if all the validations are passed, move on to update the password
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      user.password = hashedPassword;
+  
+      await user.save()
+      
+  
+      return res.status(200).json({ success: true, message: 'Password changed successfully' });
+    } catch (error) {
+    console.error('error while updating the password at user profile : ',error);
+    res.status(500).redirect('/error');
+    }
+  }
+  
+  
+
+  const updatePassword = async (req, res) => {
+    const email = req.query.email;
+    const { password } = req.body;
+
+    try {
+        const user = await User.findOne({ email: email });
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: "User not found" });
+        }
+
+        // Assuming you have a method to hash passwords
+        user.password = await hashPassword(password);
+        await user.save();
+
+        return res.json({ success: true, message: "Password updated successfully" });
+    } catch (err) {
+        console.log('Error updating password:', err);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+
+
+
+
+
+
+
+
+  

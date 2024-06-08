@@ -3,7 +3,7 @@ let isLoggedIn = async(req,res,next)=>{
         if(req.session.Admin) next();
         else{
             
-            console.log(`admin session value is ${req.session.Admin} no session found, hence redirecting to the login page `)
+            // console.log(`admin session value is ${req.session.Admin} no session found, hence redirecting to the login page `)
             
             res.redirect('/admin/login');
         }

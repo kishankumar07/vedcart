@@ -761,7 +761,7 @@ function copyToClipboard(text, element) {
       console.log('Copied to clipboard at coupon modal click:', text);
       element.closest('td').querySelector('.copiedToClipBoard').innerHTML = 'Copied to clipboard';
       setTimeout(() => {
-        $('#applyCouponModal').modal('hide'); // Close the modal after copying
+        $('#applyCouponModal').modal('hide'); 
       }, 1000);
     })
     .catch((error) => {

@@ -1468,7 +1468,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             item.appendChild(text);
 
                                 item.addEventListener("click", () => {
-                                    window.location.href = `/productPage/?id=${product._id}`;
+                                    window.location.href = `/shop`;
                                 });
                                 searchResults.appendChild(item);
                             });
@@ -1514,15 +1514,15 @@ document.addEventListener("DOMContentLoaded", function() {
           </div><!-- End .col-lg-5 -->
           
           <div class="col-3xl-5col">
-              <form action="#">
-                  <div class="input-group">
-                      <input type="email" class="form-control form-control-white" placeholder="Enter your Email Address" aria-label="Email Adress" required>
-                      <div class="input-group-append">
-                          <button class="btn btn-outline-white-2" type="submit"><span>Subscribe</span><i class="icon-long-arrow-right"></i></button>
-                      </div><!-- .End .input-group-append -->
-                  </div><!-- .End .input-group -->
-              </form>
-          </div><!-- End .col-lg-7 -->
+            <form id="newsletterForm" action="#">
+                <div class="input-group">
+                    <input type="email" id="newsLetterEmail" class="form-control form-control-white" placeholder="Enter your Email Address" aria-label="Email Address" required>
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-white-2" type="button" id="subscribeButton"><span>Subscribe</span><i class="icon-long-arrow-right"></i></button>
+                    </div><!-- .End .input-group-append -->
+                </div><!-- .End .input-group -->
+            </form>
+        </div>
       </div><!-- End .row -->
   </div><!-- End .container -->
 </div><!-- End .cta -->
@@ -1727,15 +1727,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     
                   </li>
                   <li>
-                      <a href="product.html" class="sf-with-ul">About</a>
+                      <a href="/about" class="sf-with-ul">About</a>
                      
                   </li>
                   <li>
-                      <a href="#">Contact us</a>
+                      <a href="/contact">Contact us</a>
                      
                   </li>
                   <li>
-                      <a href="blog.html">Blog</a>
+                      <a href="/blog">Blog</a>
 
                      
                   </li>
@@ -1798,7 +1798,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     item.appendChild(text);
 
                                     item.addEventListener("click", () => {
-                                        window.location.href = `/productPage/?id=${product._id}`;
+                                        window.location.href = `/shop`;
                                     });
 
                                     mobileSearchResults.appendChild(item);
@@ -1826,6 +1826,71 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+
+
+//--------------- Sweet alert for newsLetter email at the footer --------
+document.addEventListener("DOMContentLoaded", function() {
+        // Function to validate email
+        function validateEmail(email) {
+            var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Function to handle newsletter email submission
+        function newsLetterEmail() {
+            console.log('work started')
+            let email = document.getElementById('newsLetterEmail').value.trim();
+            if (!validateEmail(email)) {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.onmouseenter = Swal.stopTimer;
+                        toast.onmouseleave = Swal.resumeTimer;
+                    }
+                });
+                Toast.fire({
+                    icon: 'error',
+                    title: "Please Enter a valid Email"
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: "Terms and conditions",
+                input: "checkbox",
+                inputValue: 1,
+                inputPlaceholder: "I agree with the terms and conditions",
+                confirmButtonText: "Continue&nbsp;<i class='fa fa-arrow-right'></i>",
+                inputValidator: (result) => {
+                    return !result && "You need to agree with T&C";
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Thank you, We'll get back to you shortly",
+                        imageUrl: "https://unsplash.it/400/200",
+                        imageWidth: 300,
+                        imageHeight: 200,
+                        imageAlt: "Seems your internet is slow..!",
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInUp animate__faster'
+                        },
+                        hideClass: {
+                            popup: 'animate__animated animate__fadeOutDown animate__faster'
+                        }
+                    });
+                }
+            });
+        }
+
+        // Attach event listener to button after the DOM is fully loaded
+        document.getElementById('subscribeButton').addEventListener('click', newsLetterEmail);
+    });
+
 
 
 </script>

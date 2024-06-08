@@ -397,7 +397,7 @@ let mainProductSearch = async(req,res)=>{
 }));
 
 
-
+console.log('products gonna come here :',processedProducts)
   res.json(processedProducts);
   }catch(err){
     console.log('error at the main product search at the header :',err);

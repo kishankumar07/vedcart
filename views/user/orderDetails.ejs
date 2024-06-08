@@ -65,8 +65,13 @@ a {
                   
                 </div>
                 <div class="d-flex">
-                  <button class="btn-danger"><i class="bi bi-download"></i> <span class="text"><a href="/download-invoice/?id=<%= orderPlacedByTheUser.id %>">Invoice</a></span></button>
-                  <div class="dropdown">
+
+
+                  <button class="btn btn-info"><i class="bi bi-download"></i> <span class="text"><a href="/download-invoice/?id=<%= orderPlacedByTheUser.id %>" style="text-decoration: none;">Download Invoice</a></span></button>
+
+
+
+                  <div class="dropdown" hidden>
                     <button class="btn btn-link p-0 text-muted" type="button" data-bs-toggle="dropdown">
                       <i class="bi bi-three-dots-vertical"></i>
                     </button>
@@ -172,7 +177,7 @@ a {
                  
                   <tr class="fw-bold">
                     <td colspan="4">TOTAL</td>
-                    <td class="text-end"><%= orderPlacedByTheUser?.grandTotal %></td>
+                    <td class="text-end">₹<%= orderPlacedByTheUser?.grandTotal %></td>
                   </tr>
                 </tfoot>
               </table>
@@ -193,7 +198,7 @@ a {
                     <strong><%= orderPlacedByTheUser?.address.name %></strong><br>
                     <%= orderPlacedByTheUser?.address?.addressDetails %>
                     <br>
-                    <abbr title="Phone">Phone:</abbr>₹.<%= orderPlacedByTheUser?.address?.mobile %>
+                    <p title="Phone">Phone:<%= orderPlacedByTheUser?.address?.mobile %>
                   </address>
                 </div>
               </div>
@@ -220,7 +225,7 @@ a {
                 <strong><%= orderPlacedByTheUser?.address.name %></strong><br>
                 <%= orderPlacedByTheUser?.address.addressDetails %>
                 <br>
-                <abbr title="Phone">Phone:</abbr>  <%= orderPlacedByTheUser?.address.mobile %>
+                <p title="Phone">Phone:  <%= orderPlacedByTheUser?.address.mobile %>
               </address>
             </div>
             <a href="/" class="btn btn-info btn-block mb-3">

@@ -24,7 +24,7 @@ router.get('/dashboard',adminAuth.isLoggedIn,adminController.adminDashboard);
 router.get('/logout',adminController.logout);
 router.get('/users',adminAuth.isLoggedIn,adminController.userField);
 router.get('/searchUser', adminAuth.isLoggedIn, adminController.loadSearchQuery);
-router.post('/toggleBlock',adminAuth.isLoggedIn,adminController.toggleBlockStatus)
+router.patch('/toggleBlock',adminAuth.isLoggedIn,adminController.toggleBlockStatus)
 
 
 
@@ -43,6 +43,12 @@ router.get('/salesMonthly',adminAuth.isLoggedIn,adminController.generateMonthlyR
 
 router.get('/salesYearly',adminAuth.isLoggedIn,adminController.generateYearlyReport)
 
+
+
+//----------------------- chart area ------------------------------------
+router.get('/monthlydata',adminAuth.isLoggedIn,adminController.displayMonthlyData);
+
+router.get('/yearlydata',adminAuth.isLoggedIn,adminController.displayYearlyData)
 
 //========= Proudct Management  ============================
 

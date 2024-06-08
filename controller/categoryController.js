@@ -9,11 +9,11 @@ const allCategory = async (req, res) => {
   try {
     //category is set at session
     let errMess = req.flash("message");
-    console.log("flash message status at catgory management:", errMess);
+    // console.log("flash message status at catgory management:", errMess);
     const category = await Category.find().populate({
       path: "offer",
       model: "Offer",
-    });
+    })
 
     const currentDate = new Date();
 
@@ -68,7 +68,8 @@ const addCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     let { id, name, description } = req.body;
-
+      
+      //Immediate validation to check for whether it is existing category 
     let existingCategory = await Category.findOne({
       name: { $regex: new RegExp(name, "i") },
     });
@@ -79,15 +80,18 @@ const updateCategory = async (req, res) => {
         .json({ success: false, message: "Category already exists" });
     }
 
-    let categoryFound = await Category.findByIdAndUpdate(
-      id,
-      {
-        name: name,
-        image: req.file.filename,
-        description: description,
-      },
-      { new: true }
-    );
+
+    let updateObject = {
+      name : name,
+      description : description,
+    }
+
+    if(req.file && req.file.filename){
+      updateObject.image = req.file.filename;
+    }
+
+
+    
 
     return res
       .status(201)

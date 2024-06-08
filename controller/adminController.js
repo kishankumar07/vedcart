@@ -1,6 +1,8 @@
 // admin login page not set
 let path = require('path');
 let User = require('../model/userModel');
+let Product = require("../model/productModel");
+let Category = require("../model/categoryModel");
 let adminAuth = require('../middleware/adminAuth');
 const Orders = require("../model/orderModel");
 let moment = require('moment')
@@ -39,7 +41,10 @@ const verifyAdminLogin=async(req,res)=>{
 //==================Loading the admin dashboar==============
 const adminDashboard = async (req, res) => {
     try{
-    
+        let productTotal = await Product.countDocuments();
+        let categoryTotal = await Category.countDocuments();
+        let users = await User.countDocuments();
+
         let orders = await Orders.aggregate([
 
             {
@@ -69,18 +74,120 @@ const adminDashboard = async (req, res) => {
                   totalCouponDiscount: { $first: "$totalCouponDiscount" }, 
                   totalSubTotal: { $sum: "$products.subTotal" }
               }
-          },
-          
-          
+          },  
           ])
-          console.log('when admin dashboard is loaded the order values are  :',orders)
-        res.render('dashboard',{orders});
+     
+    let codRevenue = await Orders.aggregate([
+        {
+            $match : { "paymentMode" : "Cash on delivery" }
+        },
+        {
+            $unwind : "$Products"
+        },
+        {
+            $match : { "Products.orderStatus" : "delivered" }
+        },
+        {
+            $group : {
+                _id : null,
+                total : { $sum : "$Products.subTotal" }
+            }
+        }
+    ])
+   
+  
+        
+          const onlineRevenue = await Orders.aggregate([
+            {
+              $match: {
+                paymentMode: { $in: ['Razorpay', 'wallet'] }
+              }
+            },
+            {
+              $unwind: "$Products"
+            },
+            {
+              $match: {
+                "Products.orderStatus": "delivered"
+              }
+            },
+            {
+              $group: {
+                _id: null,
+                totalSubTotal: { $sum: "$Products.subTotal" }
+              }
+            }
+          ]);
+    
+          let newUsers = await User.find().sort({createdAt : 1}).limit(5)
+
+
+
+
+        res.render('dashboard',{orders,codRevenue,productTotal,categoryTotal,users,onlineRevenue,newUsers});
 
     } catch (error) {
         console.log('Error happened in admin controller at adminLoginPage function ', error);
     }
 
-}
+}// chart portion-------------------
+
+//----------------- to get monthly sales data for the chart -----------------------
+const displayMonthlyData = async (req, res) => {
+    try {
+        const monthlySales = Array.from({ length: 12 }, () => 0);
+     
+        const orders = await Orders.find({ "Products.orderStatus": "delivered" });
+
+       
+
+        for (const order of orders) {
+            if (order.date instanceof Date) {
+                const month = order.date.getMonth();
+               
+                monthlySales[month] += order.total;
+            } else {
+                console.warn(`Invalid createdAt date for order ${order._id}`);
+            }
+        }
+        
+        res.json({ monthlySales });
+    } catch (err) {
+        console.error('error at the monthly data fetching for graph at admin side :',err.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+//----------  get the yearly data =---------------------------
+const displayYearlyData = async (req, res) => {
+    try {
+        const START_YEAR = 2022;
+        const currentYear = new Date().getFullYear();
+        const yearlySales = Array.from({ length: currentYear - START_YEAR + 1 }, () => 0);
+
+        const orders = await Orders.find({ "Products.orderStatus" : "delivered" });
+
+        for (const order of orders) {
+           
+            if (order.date instanceof Date) {
+                const year = order.date.getFullYear();
+                yearlySales[year - START_YEAR] += order.total;
+            } else {
+                console.warn(`Invalid createdAt date for order ${order._id}`);
+            }
+        }
+
+        res.json({ yearlySales, START_YEAR });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+
+
+
+
 
 //logout admin------------------------------------------------------------------
 
@@ -803,6 +910,8 @@ module.exports = {
     loadSearchQuery,
     verifyAdminLogin,
     adminDashboard,
+    displayMonthlyData,
+    displayYearlyData,
     userField,
     logout,
     userField,

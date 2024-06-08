@@ -4,7 +4,7 @@
 
 <div class="card mb-4">
     <header class="card-header">
-        <h4 class="card-title">Sales report</h4>
+        <h2 class="card-title">Sales report</h2>
         <div class="row align-items-center">
             <div class="col-md-3 col-12 me-auto mb-md-0 mb-3">
                 <div class="d-flex justify-content-end pe-4 pt-2">
@@ -18,7 +18,7 @@
                         aria-expanded="false"
                         
                       >
-                        Sales Report
+                        Other Reports
                       </button>
                       <ul class="dropdown-menu" aria-labelledby="salesReportDropdown">
                         <li>
@@ -87,7 +87,7 @@
                                 <td><a href="#" class="fw-bold"><%= ++orderCounter %></a></td>
                                 <td><%= order.orderId %></td>
                                 <td style="color:
-                                    <% if (order.orderStatus === 'cancelled' || order.orderStatus === 'returned') { %>
+                                    <% if (order.orderStatus === 'cancelled' || order.orderStatus === 'returned' || order.orderStatus === 'request cancellation' || order.orderStatus === 'request return') { %>
                                         red;
                                     <% } else if (order.orderStatus === 'pending') { %>
                                         blue;
@@ -101,7 +101,14 @@
                                 <td><%= order.paymentMode %></td>
                                 <td><%= moment(order.date).format('DD-MM-YYYY') %></td>
                                 <td><%= order.address ? order.address.name : 'N/A' %></td>
-                                <td><span class="badge badge-pill badge-soft-success">₹<%= order.productPrice %></span></td>
+                                <td>
+                                  <span class="badge badge-pill
+                                      <%= order.orderStatus !== 'shipped' && order.orderStatus !== 'placed' && order.orderStatus !== 'delivered' ? 'badge-soft-danger' : ( order.orderStatus === 'delivered' ? 'badge-soft-success' : 'badge-soft-warning')%>"
+                                      >
+                                  
+                              <%= order.productPrice %>
+                                  </span>
+                              </td>
                             </tr>
                         <% }); %>
                    
@@ -110,7 +117,7 @@
             </table>
         </div>
        
-         <!-- table-responsive end// -->
+        
         
     </div>
     

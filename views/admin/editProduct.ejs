@@ -198,10 +198,7 @@ function validateForm() {
       if (productName.value.trim() === '') {
       document.getElementById('name-error').textContent = 'Product name is required';
       isValid = false;
-  } else if (productName.value !== productName.value.trim()) {
-      document.getElementById('name-error').textContent = 'Product name should not have leading or trailing spaces';
-      isValid = false;
-  } else {
+  }  else {
       document.getElementById('name-error').textContent = '';
   }
 
@@ -209,10 +206,7 @@ function validateForm() {
       if (productDesc.value.trim() === '') {
       document.getElementById('description-error').textContent = 'Product description is required';
       isValid = false;
-  } else if (productDesc.value !== productDesc.value.trim()) {
-      document.getElementById('description-error').textContent = 'Product description should not have leading or trailing spaces';
-      isValid = false;
-  } else {
+  }  else {
       document.getElementById('description-error').textContent = '';
   }
 
@@ -606,7 +600,7 @@ function updateImageIndices(productId) {
 
 
 
-<script>
+<!-- <script>
     document.querySelector('form').addEventListener('submit', async function(event) {
       event.preventDefault(); // Prevent the default form submission
   
@@ -665,10 +659,7 @@ function updateImageIndices(productId) {
       if (description.value.trim() === '') {
         document.getElementById('description-error').textContent = 'Description is required';
         valid = false;
-      } else if (description.value !== description.value.trim()) {
-        document.getElementById('description-error').textContent = 'Avoid trailing spaces in description';
-        valid = false;
-      } else {
+      }  else {
         document.getElementById('description-error').textContent = '';
       }
   
@@ -680,5 +671,5 @@ function updateImageIndices(productId) {
       document.getElementById('image-error').textContent = '';
       document.getElementById('description-error').textContent = '';
     }
-  </script>
+  </script> -->
   

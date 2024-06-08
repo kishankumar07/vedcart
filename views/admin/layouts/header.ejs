@@ -97,10 +97,11 @@
                         </a>
                     </li>
                     <li id="reports-menu" class="menu-item">
-                        <a class="menu-link" href="page-reviews.html">
+                        <a class="menu-link" href="/admin/salesReport">
                             <i class="icon material-icons md-comment"></i>
-                            <span class="text">Reports</span>
+                            <span class="text">Sales Reports</span>
                         </a>
+                        
                     </li>
                    
                     
@@ -196,8 +197,8 @@
             document.getElementById("users-menu").classList.add('active');
         } else if (path.startsWith("/admin/banner")) {
             document.getElementById("banner-menu").classList.add('active');
-        } else if (path.startsWith("/page-reviews")) {
-            document.getElementById("reports-menu").classList.add('active');
+        } else if(path.startsWith('/admin/salesReport')){
+            document.getElementById('reports-menu').classList.add('active');
         }
     });
 </script>

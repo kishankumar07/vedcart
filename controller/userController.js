@@ -624,61 +624,65 @@ const resendOTP = async (req, res) => {
 
 
 //---------------- verfiy email for forgot password --------------
-let verifyEmail = async(req,res)=>{
-  let email = req.query.email;
-  try{console.log('req.query.email:',email)
-    let userFound = await User.findOne({email:email});
-    console.log('email of the user is :',userFound);
+const verifyEmail = async (req, res) => {
+  const email = req.query.email;
+  try {
+      console.log('forgotEmail controller reached:', email);
+      let userFound = await User.findOne({ email: email });
 
-    if(!userFound){
-      return res.status(400).json(false,{message:"User not registered"})
-    }
-    
+      if (!userFound) {
+          return res.status(400).json({ success: false, message: "User not found" });
+      }
 
-
-    const secret = speakeasy.generateSecret({ length: 20 }); // Generate secret for OTP
-
-    const otp = speakeasy.totp({
-      secret: secret.base32,
-      encoding: "base32",
-    });
-  
-    const otpDB = new OTP({
-      userId: userFound.id,
-      otp: otp,
-    });
-    console.log("otp generated is :", otp);
-    await otpDB.save();
-  
-    console.log("OTP saved to database:", otpDB);
-  
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      auth: {
-        user: process.env.AUTH_MAIL,
-        pass: process.env.AUTH_PASS,
-      },
-    });
-    const info = await transporter.sendMail({
-      from: process.env.AUTH_MAIL,
-      to: email,
-      subject: "Verify Your Account",
-      text: `your OTP is :${otp}`,
-      html: `<b> <h4> Your OTP ${otp}</h4> `,
-    });
-    if (info) {
-      res.render("emailOtp", { email });
-      console.log("Message sent: %s", info.messageId);
-    }
-
-  }catch(err){
-    console.log('error at verify email :',err)
-    res.redirect('/error')
+          return res.json({ success: true, message: "" });
+  } catch (err) {
+      console.log('Error at verify email:', err);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 }
+
+//---------------   forgot password change password--------
+const forgotPasswordChangePassword = async (req, res) => {
+  console.log('change password when forgot password controller at userProfile reached');
+  let email = req.query.email;
+  const { password } = req.body;
+
+  try {
+    let user = await User.findOne({ email })
+
+    if (!user) {
+      console.log('user was not found');
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!password) {
+      return res.status(400).json({ message: 'Password is required.' });
+    }
+
+   
+    if (password.trim() !== password) {
+      return res.status(400).json({ message: 'Password must not contain leading or trailing spaces.' });
+    }
+
+    
+    if (password.length < 7) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long.' });
+    }
+
+  
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    user.password = hashedPassword;
+
+    await user.save()
+
+    return res.status(200).json({ success: true, message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('error while updating the password at user profile : ', error);
+    res.status(500).redirect('/error');
+  }
+}
+
 
 
 
@@ -709,6 +713,9 @@ const aProductPage = async (req, res) => {
     const currentDate = new Date();
     let queriedProductId = req.query.id;
   
+console.log('queriedProductId ;',queriedProductId)
+
+
     let [aProductFoundFromDb,product] = await Promise.all([
       Product.findById(queriedProductId).populate({
         path: 'category',
@@ -747,6 +754,9 @@ const aProductPage = async (req, res) => {
       })
     ])
    
+console.log('product found from db :',aProductFoundFromDb)
+
+
     let relatedProductCatId = aProductFoundFromDb.category.id;
 let relatedProds = product.filter(prod=>prod.category._id.toString() === relatedProductCatId)
 
@@ -904,10 +914,10 @@ const changePassword = async (req, res) => {
         return res.json({ message: 'Current password is incorrect' });
       }
 
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(newPassword)) {
-        return res.status(400).json({ message: 'New password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.' });
-      }
+      // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      // if (!passwordRegex.test(newPassword)) {
+      //   return res.status(400).json({ message: 'New password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.' });
+      // }
 
     if (newPassword !== confirmNewPassword) {
      
@@ -1317,6 +1327,7 @@ module.exports = {
   verifyLogin,
   signinUser,
   signUpUser,
+  forgotPasswordChangePassword,
   errorPage,
   createUser,
   verifyOTP,
