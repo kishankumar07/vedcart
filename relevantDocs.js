@@ -13,7 +13,8 @@ pm2 startup
 pm2 save
 
 
-
+// to create a new file using command prompt 
+// type nul > fileName.extension
 
 
 

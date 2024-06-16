@@ -384,12 +384,13 @@
                                   Qt: <%= product.quantity %> item
                                 </p>
                                 <h4 class="mb-3">
-                                  ₹ <%= product.subTotal %>
+                                  ₹ <%= order.shipping === "free delivery" ? (product.subTotal || 0) : (product.subTotal || 0) + parseInt(40) %>
                                   <span class="small text-muted">
                                     <br />
-                                    via ( <%=order.paymentMode%>)
+                                    via ( <%= order.paymentMode %> )
                                   </span>
                                 </h4>
+                                
                               </div>
                               <div>
                                 <img

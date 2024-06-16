@@ -26,7 +26,7 @@ app.use(session({
     resave:false,
     saveUninitialized:true,
     cookie:{
-        maxAge:72*60*1000,      //Session expires in 72 hours
+        maxAge:72*60*1000,      
         httpOnly:true
     },
 }));

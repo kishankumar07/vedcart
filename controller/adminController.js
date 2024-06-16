@@ -122,9 +122,57 @@ const adminDashboard = async (req, res) => {
           let newUsers = await User.find().sort({createdAt : 1}).limit(5)
 
 
+          const bestSellingProducts = await Orders.aggregate([
+            { $unwind: "$Products" }, 
+            { 
+              $group: {
+                _id: "$Products.productId",
+                name: { $first: "$Products.name" },
+                totalQuantity: { $sum: "$Products.quantity" },
+                images: { $first: "$Products.image" }
+              } 
+            },
+            { $sort: { totalQuantity: -1 } }, 
+            { $limit: 10 } 
+          ]);
 
+         
+              const bestSellingCategories = await Orders.aggregate([
+                { $unwind: "$Products" }, 
+                {
+                  $lookup: {
+                    from: "products", 
+                    localField: "Products.productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                  }
+                },
+                { $unwind: "$productDetails" }, 
+                {
+                  $lookup: {
+                    from: "categories", 
+                    localField: "productDetails.category",
+                    foreignField: "_id",
+                    as: "categoryDetails"
+                  }
+                },
+                { $unwind: "$categoryDetails" },
+                {
+                  $group: {
+                    _id: "$categoryDetails._id",
+                    name: { $first: "$categoryDetails.name" },
+                    image: { $first: "$categoryDetails.image" },
+                    totalQuantity: { $sum: "$Products.quantity" }
+                  }
+                },
+                { $sort: { totalQuantity: -1 } }, 
+                { $limit: 10 } 
+              ]);
+          
+             
 
-        res.render('dashboard',{orders,codRevenue,productTotal,categoryTotal,users,onlineRevenue,newUsers});
+          
+        res.render('dashboard',{orders,bestSellingCategories,bestSellingProducts,codRevenue,productTotal,categoryTotal,users,onlineRevenue,newUsers});
 
     } catch (error) {
         console.log('Error happened in admin controller at adminLoginPage function ', error);

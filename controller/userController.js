@@ -804,6 +804,12 @@ const loadUserProfile = async (req, res) => {
  
     // console.log('this is the full user details of this user :',userNameforProfile);
 
+
+    if (userNameforProfile && userNameforProfile.wallet_history) {
+      userNameforProfile.wallet_history.sort((a, b) => b.date - a.date);
+    }
+
+
    // Query orders sorted by createdAt field in descending order
    const orders = await Orders.find({ userId: userId })
    .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
