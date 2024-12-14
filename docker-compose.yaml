@@ -1,0 +1,17 @@
+version: '3.8' 
+services:
+  # There can be lots of services for an application, in our case only one service is going to define : app
+  app:
+    build:
+      context: .     
+    # Container name for easy identification
+    container_name: vedcart_ayurvedic  
+    ports:
+      - "3000:3000" 
+    volumes:
+      - .:/app            
+      - /app/node_modules 
+    # Environment variables for the app
+    env_file:
+      - .env  
+
